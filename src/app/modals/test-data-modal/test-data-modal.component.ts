@@ -35,7 +35,8 @@ export class TestDataModalComponent implements OnInit {
     this.modalClose.nativeElement.disabled = true;
     this.modalYes.nativeElement.disabled = true;
 
-    let did = 'did:ethr:0xB07Ead9717b44B6cF439c474362b9B0877CBBF83';
+    // let did = 'did:ethr:0xB07Ead9717b44B6cF439c474362b9B0877CBBF83';
+    let did = 'did:ethr:rinkeby:0x0345dd0c781893a801588a36051e3bdc61f15f0dd51aa716915e763bd2a2f613f6';    
     if(did){
       this.messageService.sendMessage({
         task: TASKS.CHANGE_DID,
@@ -44,7 +45,8 @@ export class TestDataModalComponent implements OnInit {
         (response) =>{
           if(response.result){
             this.identityService.setCurrentDID(did);
-            let keyString = 'CE438802C1F0B6F12BC6E686F372D7D495BC5AA634134B4A7EA4603CB25F0964';
+            // let keyString = 'CE438802C1F0B6F12BC6E686F372D7D495BC5AA634134B4A7EA4603CB25F0964';
+            let keyString = '2d0651990af6802bf1509cafe5784f98ec35932cb57ee2d8ef7ab0f8f43cf83e';
         
             this.messageService.sendMessage({
               task: TASKS.ADD_KEY,

@@ -288,7 +288,8 @@ async function processRequest(request_index: number, confirmation: any){
                         let decodedRequest = await provider.validateRequest(request);
                         try{
                             let response = await provider.generateResponse(decodedRequest.payload);
-                            let uri = decodedRequest.payload.client_id + '#' + response;
+                            // let uri = decodedRequest.payload.client_id + '#' + response;
+                            let uri = decodedRequest.payload.redirect_uri + '#' + response;                            
                             tabs.create({
                                 url: uri,
                             });

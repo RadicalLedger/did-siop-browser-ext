@@ -13,10 +13,9 @@ Following are the primary specifications followed by this implementation.
 | ------------- | --------|
 | [OpenID Connect Core 1.0 incorporating errata set 1](https://openid.net/specs/openid-connect-core-1_0.html#SelfIssued) | Final v1.0 |
 | [Self-Issued OpenID Provider](https://openid.net/specs/openid-connect-self-issued-v2-1_0.html) | v2.0 |
-| | |
 
 **NOTE:** This extension is compliant with manifest version 2. There was an effort to port this to manifest version 3 but it did not materialize due to the following reasons 
-- In manifest version 3, background pages are replaced with service workers. Service Works' execution context is NOT the [Window](https://developer.mozilla.org/docs/Web/API/Window) and hence has NO access to the DOM and certain aother resources ([more info](https://developer.chrome.com/docs/extensions/mv3/migrating_to_service_workers/#workers))
+- In manifest version 3, background pages are replaced with service workers. Service Works' execution context is NOT the [Window](https://developer.mozilla.org/docs/Web/API/Window) and hence has NO access to the DOM and certain other resources ([more info](https://developer.chrome.com/docs/extensions/mv3/migrating_to_service_workers/#workers))
 - [did-siop](https://github.com/RadicalLedger/did-siop-lib/tree/dev) heavily use cryptographic related libraries which are designed to operate on the execution context of Window
 - Porting did-siop to use a set of cryptograhic libraries which are not relying on the execution environment of Window is a considerable development and does not have the right priority yet
 - Developer believes compliance with Manifest v3 as a necessary improvement, but it is not included in the platform roadmap yet

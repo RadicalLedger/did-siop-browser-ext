@@ -12,10 +12,14 @@ Following are the primary specifications followed by this implementation.
 | Specification | Version |
 | ------------- | --------|
 | [OpenID Connect Core 1.0 incorporating errata set 1](https://openid.net/specs/openid-connect-core-1_0.html#SelfIssued) | Final v1.0 |
-| [Self-Issued OpenID Connect Provider DID Profile](https://identity.foundation/did-siop/) | :exclamation: DIF WG Draft v0.1 (Unapproved) :exclamation: |
+| [Self-Issued OpenID Provider](https://openid.net/specs/openid-connect-self-issued-v2-1_0.html) | v2.0 |
 | | |
 
-**NOTE:** Work on DIF SIOP DID Profile specification has moved to OIDF AB WG. The group will work on a new SIOP v2 specification that will likely introduce breaking changes to the DIF SIOP DID Profile specification.
+**NOTE:** This extension is compliant with manifest version 2. There was an effort to port this to manifest version 3 but it did not materialize due to the following reasons 
+- In manifest version 3, background pages are replaced with service workers. Service Works' execution context is NOT the [Window](https://developer.mozilla.org/docs/Web/API/Window) and hence has NO access to the DOM and certain aother resources ([more info](https://developer.chrome.com/docs/extensions/mv3/migrating_to_service_workers/#workers))
+- [did-siop](https://github.com/RadicalLedger/did-siop-lib/tree/dev) heavily use cryptographic related libraries which are designed to operate on the execution context of Window
+- Porting did-siop to use a set of cryptograhic libraries which are not relying on the execution environment of Window is a considerable development and does not have the right priority yet
+- Developer believes compliance with Manifest v3 as a necessary improvement, but it is not included in the platform roadmap yet
 
 ### Background ###
 Even though the OIDC specifications have defined protocols to to be independent of any single or few authorization providers, currently day millions of people rely on Social Login schemes provided by companies such as Google and Facebook. DID-SIOP brings the authorization provider service under the control of true owner of the identity and its meta data. In other words, DID-SIOP replace Social Login Schemes with a software module run out of his/her browser (as an add-on) or smart phone application. Significance of this is that, identification and personal data will be under the full control of the owner of the data and will prevent unauthorized use of such data by any other party.

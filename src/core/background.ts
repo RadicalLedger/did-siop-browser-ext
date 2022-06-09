@@ -3,6 +3,7 @@
 
 import { Provider, ERROR_RESPONSES} from 'did-siop';
 import * as queryString from 'query-string';
+import { stringify } from 'querystring';
 import { STORAGE_KEYS, TASKS } from '../const';
 import { authenticate, checkExtAuthenticationState, initExtAuthentication } from './AuthUtils';
 import { encrypt, decrypt } from './CryptoUtils';
@@ -141,6 +142,7 @@ runtime.onMessage.addListener(function(request, sender, sendResponse) {
                     sendResponse({result: result});
                 })
                 .catch(err=>{
+                    console.log("Error in processing request : ", err.message);                    
                     sendResponse({err:err.message});
                 });
                 break;
@@ -288,14 +290,25 @@ async function processRequest(request_index: number, confirmation: any){
                         let decodedRequest = await provider.validateRequest(request);
                         try{
                             let response = await provider.generateResponse(decodedRequest.payload);
-                            // let uri = decodedRequest.payload.client_id + '#' + response;
-                            let uri = decodedRequest.payload.redirect_uri + '#' + response;                            
-                            tabs.create({
-                                url: uri,
-                            });
-                            console.log('Sent response to ' + decodedRequest.payload.client_id + ' with id_token: ' + response);
+                            console.log("decodedRequest.payload",decodedRequest.payload);
+                            if (decodedRequest.payload.response_mode && decodedRequest.payload.response_mode === 'post')
+                            {
+                                try{
+                                    await postToRP(decodedRequest.payload.redirect_uri , response)
+                                }
+                                catch(e){
+                                    console.log("PostToRP failed",e)
+                                }
+                            }
+                            else{
+                                let uri = decodedRequest.payload.redirect_uri + '#' + response;                            
+                                tabs.create({
+                                    url: uri,
+                                });
+                            }
+                            console.log('Sent response to ' + decodedRequest.payload.redirect_uri + ' with id_token: ' + response);                            
                             removeRequest(request_index);
-                            return 'Successfully logged into ' + decodedRequest.payload.client_id;
+                            return 'Successfully logged into ' + decodedRequest.payload.redirect_uri;
                         }
                         catch(err){
                             processError = err;
@@ -336,6 +349,25 @@ async function processRequest(request_index: number, confirmation: any){
         }
     }
     if(processError) throw processError;
+}
+
+async function postToRP(redirectUri:string, response:any) {
+    const rawResponse = await fetch(redirectUri, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({"token":response})
+    });
+
+    try {
+        const content = await rawResponse.json();
+        console.log(content);        
+    }
+    catch(e){
+        console.log(e);        
+    }
 }
 
 function getRequests(): any[]{

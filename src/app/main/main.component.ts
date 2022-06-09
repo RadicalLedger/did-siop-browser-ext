@@ -85,7 +85,7 @@ export class MainComponent {
   processRequest(confirmation: boolean){
     this.requestModalYes.nativeElement.disabled = true;
     this.requestModalNo.nativeElement.disabled = true;
-    this.requestModalClose.nativeElement.disabled = true;
+    this.requestModalClose.nativeElement.disabled = false;    
     this.requestModalInfo.nativeElement.classList.add('waiting');
     this.requestModalInfo.nativeElement.innerHTML = 'Processing request. Please wait';
 
@@ -99,14 +99,17 @@ export class MainComponent {
             this.loadRequests();
             this.requestModalClose.nativeElement.click();
         }
-        if(response.err){
-            this.requestModalInfo.nativeElement.classList.remove('waiting');
-            this.requestModalInfo.nativeElement.classList.add('error');
-            this.requestModalInfo.nativeElement.innerHTML = response.err;
-            this.requestModalClose.nativeElement.disabled = false;
-        }
+        else if(response.err){
+          console.log("ERROR returned from background processRequest");          
+          this.requestModalInfo.nativeElement.classList.remove('waiting');
+          this.requestModalInfo.nativeElement.classList.add('error');
+          this.requestModalInfo.nativeElement.innerHTML = response.err;
+          this.requestModalClose.nativeElement.disabled = false;
       }
-    );
+      else{
+          console.log("Error returned from background - response.result & response.err are null");
+      }
+    });
   }
 
   private loadIdentity(){

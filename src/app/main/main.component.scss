@@ -130,3 +130,24 @@
 .waiting{
     color: $app-primary;
 }
+
+.text-wrap {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    width: 100%;
+    padding: 10px 20px 10px 20px;
+
+    .title {
+        font-weight: 500;
+    }
+    
+    &.active {
+        display: flex;
+    }
+
+    textarea {
+        width: 100%;
+    }
+
+}

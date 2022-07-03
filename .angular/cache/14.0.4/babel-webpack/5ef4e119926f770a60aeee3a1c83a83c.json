@@ -1,0 +1,1 @@
+{"ast":null,"code":"import * as process from 'process';\nwindow['process'] = process;\nmodule.exports = window;","map":null,"metadata":{},"sourceType":"module"}

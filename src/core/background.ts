@@ -1,7 +1,7 @@
 /// <reference types="chrome"/>
 /// <reference types="firefox-webext-browser"/>
 
-import { Provider, ERROR_RESPONSES } from 'did-siop';
+import { Provider, ERROR_RESPONSES, VPData } from 'did-siop';
 import * as queryString from 'query-string';
 import { stringify } from 'querystring';
 import { STORAGE_KEYS, TASKS } from '../const';
@@ -33,9 +33,9 @@ catch (err) {
 async function checkSigning() {
     try {
         if (!provider) {
-            provider = new Provider();
+
             let did = decrypt(localStorage.getItem(STORAGE_KEYS.userDID), loggedInState);
-            await provider.setUser(did);
+            provider = await Provider.getProvider(did);
         }
 
         if (signingInfoSet.length < 1) {
@@ -45,7 +45,7 @@ async function checkSigning() {
             }
             else {
                 signingInfoSet.forEach(info => {
-                    provider.addSigningParams(info.key, info.kid, info.format, info.alg);
+                    provider.addSigningParams(info.key);
                 })
             }
         }
@@ -232,8 +232,7 @@ function changePassword(oldPassword: string, newPassword: string): boolean {
 
 async function changeDID(did: string): Promise<string> {
     try {
-        let newProvider = new Provider();
-        await newProvider.setUser(did);
+        let newProvider = await Provider.getProvider(did);
         provider = newProvider;
         let encryptedDID = encrypt(did, loggedInState);
         localStorage.setItem(STORAGE_KEYS.userDID, encryptedDID);
@@ -295,8 +294,15 @@ async function processRequest(request_index: number, confirmation: any, vp_token
                     }
                     //console.log(JSON.parse(Buffer.from(request.split('.')[1], 'base64').toString()))
 
+                    let vps: VPData = {
+                        vp_token: vp_token,
+                        _vp_token: {}
+                    }
+
                     try {
                         let decodedRequest = await provider.validateRequest(request);
+                        // let response = vp_token ? await provider.generateResponseWithVPData(decodedRequest.payload, 5000, vps) : await provider.generateResponse(decodedRequest.payload);
+
                         try {
                             let response = await provider.generateResponse(decodedRequest.payload);
                             console.log("decodedRequest.payload", decodedRequest.payload);

@@ -137,7 +137,7 @@ runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 break;
             }
             case TASKS.PROCESS_REQUEST: {
-                processRequest(request.did_siop_index, request.confirmation, request.vp_token)
+                processRequest(request.did_siop_index, request.confirmation, request.vp_data)
                     .then(result => {
                         sendResponse({ result: result });
                     })
@@ -279,32 +279,36 @@ async function removeKey(kid: string): Promise<string> {
     }
 }
 
-async function processRequest(request_index: number, confirmation: any, vp_token: any) {
+async function processRequest(request_index: number, confirmation: any, vp_data: any) {
     let processError: Error;
     let request = getRequestByIndex(request_index).request;
+
+    console.log({ vp_data }, !!vp_data)
 
     if (queryString.parseUrl(request).url === 'openid://') {
         try {
             await checkSigning();
             try {
                 if (confirmation) {
-                    if (vp_token) {
-                        let new_request = await generateRequestWithVP(queryString.parseUrl(request).query.redirect_uri, vp_token)
-                        if (new_request) request = new_request
-                    }
-                    //console.log(JSON.parse(Buffer.from(request.split('.')[1], 'base64').toString()))
-
-                    let vps: VPData = {
-                        vp_token: vp_token,
-                        _vp_token: {}
-                    }
 
                     try {
                         let decodedRequest = await provider.validateRequest(request);
-                        // let response = vp_token ? await provider.generateResponseWithVPData(decodedRequest.payload, 5000, vps) : await provider.generateResponse(decodedRequest.payload);
 
                         try {
-                            let response = await provider.generateResponse(decodedRequest.payload);
+                            //let response = await provider.generateResponse(decodedRequest.payload);
+                            let response = {}
+
+                            if (!!vp_data) {
+                                let vps: VPData = {
+                                    vp_token: vp_data.vp_token,
+                                    _vp_token: vp_data._vp_token
+                                }
+
+                                response = await provider.generateResponseWithVPData(decodedRequest.payload, 5000, vps);
+                            } else {
+                                response = await provider.generateResponse(decodedRequest.payload)
+                            }
+
                             console.log("decodedRequest.payload", decodedRequest.payload);
                             if (decodedRequest.payload.response_mode && decodedRequest.payload.response_mode === 'post') {
                                 try {
@@ -363,28 +367,6 @@ async function processRequest(request_index: number, confirmation: any, vp_token
         }
     }
     if (processError) throw processError;
-}
-
-const generateRequestWithVP = (redirect_url, vp_token) => {
-    return new Promise<string>((resolve) => {
-        let url = new URL(redirect_url);
-
-        fetch(`${url.origin}/get_request_object_vp/vp`, {
-            method: "POST",
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ vp_token })
-        })
-            .then(res => res.json())
-            .then(data => {
-                resolve(data.reqObj)
-            })
-            .catch(err => {
-                resolve(null)
-            })
-    })
 }
 
 async function postToRP(redirectUri: string, response: any) {

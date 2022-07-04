@@ -10,9 +10,12 @@ import { BackgroundMessageService } from '../background-message.service';
 })
 export class MainComponent {
   title = 'did-siop-ext';
+
   currentDID: string;
   currentRequests: any[];
-  vpInfo: null
+  requestVpData: any[];
+  responseVpTokenData: any[];
+  response_VpTokenData: any[];
 
   selectedRequest: any;
   selectedRequestClientID: string;
@@ -21,8 +24,19 @@ export class MainComponent {
   @ViewChild('requestModalInfo') requestModalInfo: ElementRef;
   @ViewChild('requestModalYes') requestModalYes: ElementRef;
   @ViewChild('requestModalNo') requestModalNo: ElementRef;
-  @ViewChild('requestVPInfo') requestVPInfo: ElementRef;
-  @ViewChild('requestVPInfoTxT') requestVPInfoTxT: ElementRef;
+
+  //request
+  @ViewChild('requestVPData') requestVPData: ElementRef;
+  @ViewChild('requestVPDataTxT') requestVPDataTxT: ElementRef;
+
+  //response
+  @ViewChild('responseVPData') responseVPData: ElementRef;
+  // response vp_token
+  @ViewChild('responseVPTokenDataTxT') responseVPTokenDataTxT: ElementRef;
+  @ViewChild('responseVPTokenWarningDataTxT') responseVPTokenWarningDataTxT: ElementRef;
+  // response _vp_token
+  @ViewChild('response_VPTokenDataTxT') response_VPTokenDataTxT: ElementRef;
+  @ViewChild('response_VPTokenWarningDataTxT') response_VPTokenWarningDataTxT: ElementRef;
 
   @Output() loggedOut = new EventEmitter<boolean>();
 
@@ -81,43 +95,87 @@ export class MainComponent {
 
     this.selectedRequest = request;
     this.selectedRequestClientID = this.selectedRequest.client_id;
-    
+
+    this.responseVpTokenData= null
+    this.response_VpTokenData = null
+    this.requestVpData = null
+
     if (request.request) {
       try {
         let decode_request = this.parseJwt(request.request);
 
         if (decode_request.claims?.vp_token) {
-          //set current vp data to textarea
-          this.vpInfo = decode_request.claims?.vp_token
+          this.requestVPData.nativeElement.classList.add('active')
+          this.requestVpData = decode_request.claims.vp_token
 
-          this.requestVPInfo.nativeElement.classList.add('active')
+          this.responseVPData.nativeElement.classList.add('active')
         } else {
-          //empty current vp data to textarea
-          this.vpInfo = null
+          this.requestVpData = null
+          this.requestVPData.nativeElement.classList.remove('active')
 
-          this.requestVPInfo.nativeElement.classList.remove('active')
+          this.responseVpTokenData = null
+          this.response_VpTokenData = null
+          this.responseVPData.nativeElement.classList.remove('active')
         }
       } catch (error) {
-        //empty current vp data to textarea
-        this.vpInfo = null
-        this.requestVPInfoTxT.nativeElement.value = this.vpTextAreaValue
+        this.requestVpData = null
+        this.requestVPData.nativeElement.classList.remove('active')
 
-        this.requestVPInfo.nativeElement.classList.remove('active')
+        this.responseVpTokenData = null
+        this.response_VpTokenData = null
+        this.responseVPData.nativeElement.classList.remove('active')
       }
     }
-    
+
     this.changeDetector.detectChanges();
   }
 
-  get vpTextAreaValue() {
-    return JSON.stringify(this.vpInfo, null, 2);
+  // request vp_token txt change
+  get vpRequestTextAreaValue() {
+    if (!this.requestVpData) return '{}';
+
+    return JSON.stringify(this.requestVpData, null, 2);
   }
 
-  set vpTextAreaValue(v) {
+  set vpRequestTextAreaValue(v) {
     try {
-      this.vpInfo = JSON.parse(v);
+      this.requestVpData = JSON.parse(v);
     } catch (e) {
       console.log("error occored while you were typing the JSON");
+    }
+  }
+
+  // response vp_token txt change
+  get vpTokenResponseTextAreaValue() {
+    if (!this.responseVpTokenData) return '';
+
+    return JSON.stringify(this.responseVpTokenData, null, 2);
+  }
+
+  set vpTokenResponseTextAreaValue(v) {
+    try {
+      this.responseVpTokenData = JSON.parse(v);
+      this.responseVPTokenWarningDataTxT.nativeElement.classList.remove('active')
+    } catch (e) {
+      console.log("error occored while you were typing the JSON");
+      this.responseVPTokenWarningDataTxT.nativeElement.classList.add('active')
+    }
+  }
+  
+  // response _vp_token txt change
+  get _vpTokenResponseTextAreaValue() {
+    if (!this.response_VpTokenData) return '';
+
+    return JSON.stringify(this.response_VpTokenData, null, 2);
+  }
+
+  set _vpTokenResponseTextAreaValue(v) {
+    try {
+      this.response_VpTokenData = JSON.parse(v);
+      this.response_VPTokenWarningDataTxT.nativeElement.classList.remove('active')
+    } catch (e) {
+      console.log("error occored while you were typing the JSON");
+      this.response_VPTokenWarningDataTxT.nativeElement.classList.add('active')
     }
   }
 
@@ -136,7 +194,10 @@ export class MainComponent {
       task: TASKS.PROCESS_REQUEST,
       did_siop_index: this.selectedRequest.index,
       confirmation: confirmation,
-      vp_token: this.vpInfo
+      vp_data: {
+        vp_token: this.responseVpTokenData,
+        _vp_token: this.response_VpTokenData
+      }
     },
       (response) => {
         if (response.result) {

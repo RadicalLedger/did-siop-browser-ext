@@ -16,11 +16,12 @@
         <button class="btn btn-link flex-fill" (click)="showSettings()">Settings</button>
         <button class="btn btn-link flex-fill" (click)="logout()">Logout</button>
       </div>
-      <p>{{currentDID}}</p>
+      <p class="p-3">{{currentDID}}</p>
     </div>
     <p class="requests-title">Pending Requests</p>
     <div class="d-flex flex-column align-items-center container-fluid requests">
       <button *ngFor="let request of currentRequests" class="btn btn-success btn-request"
+        style="white-space: normal;"
         (click)="selectRequest(request)" data-toggle="modal" data-target="#requestModal">{{request.client_id}}</button>
 
       <div class="modal" id="requestModal" tabindex="-1" role="dialog" aria-labelledby="requestModalLabel"
@@ -38,9 +39,28 @@
               <p #requestModalInfo></p>
             </div>
 
-            <div #requestVPInfo class="text-wrap">
-              <p class="title">vp_token data :</p>
-              <textarea #requestVPInfoTxT [(ngModel)]='vpTextAreaValue' cols="30" rows="10"></textarea>
+            <div class="main-text-wrap" #requestVPData>
+              <h5 class="title">Request</h5>
+              
+              <div class="text-wrap">
+                <p class="sub-title">vp_token :</p>
+                <textarea readonly #requestVPDataTxT [(ngModel)]='vpRequestTextAreaValue' cols="30" rows="10"></textarea>
+              </div>
+            </div>
+            
+            <div class="main-text-wrap" #responseVPData>
+              <h5 class="title">Response</h5>
+              
+              <div class="text-wrap">
+                <p class="sub-title">vp_token :</p>
+                <p #responseVPTokenWarningDataTxT class="json_warning warning">Invalid JSON format</p>
+                <textarea #responseVPTokenDataTxT [(ngModel)]='vpTokenResponseTextAreaValue' cols="30" rows="10"></textarea>
+              </div>
+              <div class="text-wrap">
+                <p class="sub-title">_vp_token :</p>
+                <p #response_VPTokenWarningDataTxT class="json_warning warning">Invalid JSON format</p>
+                <textarea #response_VPTokenDataTxT [(ngModel)]='_vpTokenResponseTextAreaValue' cols="30" rows="10"></textarea>
+              </div>
             </div>
             
             <div class="modal-footer d-flex justify-content-start">

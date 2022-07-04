@@ -3,7 +3,7 @@ var webpack = require('webpack');
 // webpack 5 https://gist.github.com/ef4/d2cf5672a93cf241fd47c020b9b3066a
 
 module.exports = {
-    entry: { 
+    entry: {
         background: 'src/core/background.ts',
         inject: 'src/core/inject.ts'
     },
@@ -11,6 +11,7 @@ module.exports = {
         global: false
     },
     resolve: {
+        extensions: ['.ts', '.js'],
         fallback: {
             stream: require.resolve('stream-browserify'),
             crypto: require.resolve('crypto-browserify'),
@@ -19,12 +20,19 @@ module.exports = {
             https: require.resolve('https-browserify'),
             url: require.resolve('url'),
             os: require.resolve('os-browserify/browser'),
-            util: require.resolve('util')
+            util: require.resolve('util'),
+            buffer: require.resolve("buffer")
         }
     },
     plugins: [
         new webpack.ProvidePlugin({
-          global: require.resolve('./global.js')
+            global: require.resolve('./global.js')
+        }),
+        new webpack.ProvidePlugin({
+            process: 'process/browser',
+        }),
+        new webpack.ProvidePlugin({
+            Buffer: ['buffer', 'Buffer'],
         })
     ],
 }

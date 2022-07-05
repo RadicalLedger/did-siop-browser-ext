@@ -10,8 +10,12 @@ import { BackgroundMessageService } from '../background-message.service';
 })
 export class MainComponent {
   title = 'did-siop-ext';
+
   currentDID: string;
   currentRequests: any[];
+  requestVpData: any[];
+  responseVpTokenData: any[];
+  response_VpTokenData: any[];
 
   selectedRequest: any;
   selectedRequestClientID: string;
@@ -20,6 +24,19 @@ export class MainComponent {
   @ViewChild('requestModalInfo') requestModalInfo: ElementRef;
   @ViewChild('requestModalYes') requestModalYes: ElementRef;
   @ViewChild('requestModalNo') requestModalNo: ElementRef;
+
+  //request
+  @ViewChild('requestVPData') requestVPData: ElementRef;
+  @ViewChild('requestVPDataTxT') requestVPDataTxT: ElementRef;
+
+  //response
+  @ViewChild('responseVPData') responseVPData: ElementRef;
+  // response vp_token
+  @ViewChild('responseVPTokenDataTxT') responseVPTokenDataTxT: ElementRef;
+  @ViewChild('responseVPTokenWarningDataTxT') responseVPTokenWarningDataTxT: ElementRef;
+  // response _vp_token
+  @ViewChild('response_VPTokenDataTxT') response_VPTokenDataTxT: ElementRef;
+  @ViewChild('response_VPTokenWarningDataTxT') response_VPTokenWarningDataTxT: ElementRef;
 
   @Output() loggedOut = new EventEmitter<boolean>();
 
@@ -32,20 +49,20 @@ export class MainComponent {
     this.loadRequests();
   }
 
-  
-  logout(){
+
+  logout() {
     this.messageService.sendMessage({
       task: TASKS.LOGOUT
     },
-      (response)=>{
-        if(response.result){
+      (response) => {
+        if (response.result) {
           this.loggedOut.emit(true);
         }
       }
     );
   }
 
-  showMainContent(){
+  showMainContent() {
     this.displayMainContent = true;
     this.displayGuides = false;
     this.displaySettings = false;
@@ -53,39 +70,123 @@ export class MainComponent {
     this.changeDetector.detectChanges();
   }
 
-  showGuides(){
+  showGuides() {
     this.displayGuides = true;
     this.displayMainContent = false;
     this.displaySettings = false;
     this.changeDetector.detectChanges();
   }
 
-  showSettings(){
+  showSettings() {
     this.displaySettings = true;
     this.displayGuides = false;
     this.displayMainContent = false;
     this.changeDetector.detectChanges();
   }
 
-  selectRequest(request:any){
+  selectRequest(request: any) {
     this.requestModalInfo.nativeElement.innerHTML = '';
     this.requestModalInfo.nativeElement.classList.remove('error');
     this.requestModalInfo.nativeElement.classList.remove('waiting');
 
-    
     this.requestModalYes.nativeElement.disabled = false;
     this.requestModalNo.nativeElement.disabled = false;
     this.requestModalClose.nativeElement.disabled = false;
 
     this.selectedRequest = request;
     this.selectedRequestClientID = this.selectedRequest.client_id;
+
+    this.responseVpTokenData= null
+    this.response_VpTokenData = null
+    this.requestVpData = null
+
+    if (request.request) {
+      try {
+        let decode_request = this.parseJwt(request.request);
+
+        if (decode_request.claims?.vp_token) {
+          this.requestVPData.nativeElement.classList.add('active')
+          this.requestVpData = decode_request.claims.vp_token
+
+          this.responseVPData.nativeElement.classList.add('active')
+        } else {
+          this.requestVpData = null
+          this.requestVPData.nativeElement.classList.remove('active')
+
+          this.responseVpTokenData = null
+          this.response_VpTokenData = null
+          this.responseVPData.nativeElement.classList.remove('active')
+        }
+      } catch (error) {
+        this.requestVpData = null
+        this.requestVPData.nativeElement.classList.remove('active')
+
+        this.responseVpTokenData = null
+        this.response_VpTokenData = null
+        this.responseVPData.nativeElement.classList.remove('active')
+      }
+    }
+
     this.changeDetector.detectChanges();
   }
 
-  processRequest(confirmation: boolean){
+  // request vp_token txt change
+  get vpRequestTextAreaValue() {
+    if (!this.requestVpData) return '{}';
+
+    return JSON.stringify(this.requestVpData, null, 2);
+  }
+
+  set vpRequestTextAreaValue(v) {
+    try {
+      this.requestVpData = JSON.parse(v);
+    } catch (e) {
+      console.log("error occored while you were typing the JSON");
+    }
+  }
+
+  // response vp_token txt change
+  get vpTokenResponseTextAreaValue() {
+    if (!this.responseVpTokenData) return '';
+
+    return JSON.stringify(this.responseVpTokenData, null, 2);
+  }
+
+  set vpTokenResponseTextAreaValue(v) {
+    try {
+      this.responseVpTokenData = JSON.parse(v);
+      this.responseVPTokenWarningDataTxT.nativeElement.classList.remove('active')
+    } catch (e) {
+      console.log("error occored while you were typing the JSON");
+      this.responseVPTokenWarningDataTxT.nativeElement.classList.add('active')
+    }
+  }
+  
+  // response _vp_token txt change
+  get _vpTokenResponseTextAreaValue() {
+    if (!this.response_VpTokenData) return '';
+
+    return JSON.stringify(this.response_VpTokenData, null, 2);
+  }
+
+  set _vpTokenResponseTextAreaValue(v) {
+    try {
+      this.response_VpTokenData = JSON.parse(v);
+      this.response_VPTokenWarningDataTxT.nativeElement.classList.remove('active')
+    } catch (e) {
+      console.log("error occored while you were typing the JSON");
+      this.response_VPTokenWarningDataTxT.nativeElement.classList.add('active')
+    }
+  }
+
+  parseJwt(token: string) {
+    return JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
+  }
+
+  processRequest(confirmation: boolean) {
     this.requestModalYes.nativeElement.disabled = true;
     this.requestModalNo.nativeElement.disabled = true;
-    this.requestModalClose.nativeElement.disabled = true;
+    this.requestModalClose.nativeElement.disabled = false;
     this.requestModalInfo.nativeElement.classList.add('waiting');
     this.requestModalInfo.nativeElement.innerHTML = 'Processing request. Please wait';
 
@@ -93,33 +194,40 @@ export class MainComponent {
       task: TASKS.PROCESS_REQUEST,
       did_siop_index: this.selectedRequest.index,
       confirmation: confirmation,
-    },
-      (response)=>{
-        if(response.result){
-            this.loadRequests();
-            this.requestModalClose.nativeElement.click();
-        }
-        if(response.err){
-            this.requestModalInfo.nativeElement.classList.remove('waiting');
-            this.requestModalInfo.nativeElement.classList.add('error');
-            this.requestModalInfo.nativeElement.innerHTML = response.err;
-            this.requestModalClose.nativeElement.disabled = false;
-        }
+      vp_data: {
+        vp_token: this.responseVpTokenData,
+        _vp_token: this.response_VpTokenData
       }
-    );
+    },
+      (response) => {
+        if (response.result) {
+          this.loadRequests();
+          this.requestModalClose.nativeElement.click();
+        }
+        else if (response.err) {
+          console.log("ERROR returned from background processRequest");
+          this.requestModalInfo.nativeElement.classList.remove('waiting');
+          this.requestModalInfo.nativeElement.classList.add('error');
+          this.requestModalInfo.nativeElement.innerHTML = response.err;
+          this.requestModalClose.nativeElement.disabled = false;
+        }
+        else {
+          console.log("Error returned from background - response.result & response.err are null");
+        }
+      });
   }
 
-  private loadIdentity(){
+  private loadIdentity() {
     this.messageService.sendMessage(
       {
         task: TASKS.GET_IDENTITY
       }
       ,
       (response) => {
-        if(response.did){
+        if (response.did) {
           this.currentDID = response.did;
         }
-        else{
+        else {
           this.currentDID = 'No DID provided';
         }
         this.changeDetector.detectChanges();
@@ -127,17 +235,17 @@ export class MainComponent {
     )
   }
 
-  private loadRequests(){
+  private loadRequests() {
     this.messageService.sendMessage(
       {
         task: TASKS.GET_REQUESTS
       }
       ,
       (response) => {
-        if(response.didSiopRequests){
+        if (response.didSiopRequests) {
           this.currentRequests = response.didSiopRequests;
         }
-        else{
+        else {
           this.currentRequests = [];
         }
         this.changeDetector.detectChanges();

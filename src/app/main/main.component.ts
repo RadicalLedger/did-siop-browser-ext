@@ -2,20 +2,22 @@ import { Component, ChangeDetectorRef, EventEmitter, Output, ViewChild, ElementR
 import { ToastrService } from 'ngx-toastr';
 import { TASKS } from 'src/const';
 import { BackgroundMessageService } from '../background-message.service';
+import SampleResponseVpData from './sample.response.vp_data.json';
 
 @Component({
   selector: 'app-main',
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss']
 })
+
 export class MainComponent {
   title = 'did-siop-ext';
 
   currentDID: string;
   currentRequests: any[];
   requestVpData: any[];
-  responseVpTokenData: any[];
-  response_VpTokenData: any[];
+  responseVpTokenData: any;
+  response_VpTokenData: any;
 
   selectedRequest: any;
   selectedRequestClientID: string;
@@ -96,33 +98,27 @@ export class MainComponent {
     this.selectedRequest = request;
     this.selectedRequestClientID = this.selectedRequest.client_id;
 
-    this.responseVpTokenData= null
-    this.response_VpTokenData = null
     this.requestVpData = null
+    this.responseVpTokenData = null
+    this.response_VpTokenData = null
 
     if (request.request) {
       try {
         let decode_request = this.parseJwt(request.request);
 
         if (decode_request.claims?.vp_token) {
-          this.requestVPData.nativeElement.classList.add('active')
           this.requestVpData = decode_request.claims.vp_token
+          this.responseVpTokenData = SampleResponseVpData.vp_token
+          this.response_VpTokenData = SampleResponseVpData._vp_token
 
+          this.requestVPData.nativeElement.classList.add('active')
           this.responseVPData.nativeElement.classList.add('active')
         } else {
-          this.requestVpData = null
           this.requestVPData.nativeElement.classList.remove('active')
-
-          this.responseVpTokenData = null
-          this.response_VpTokenData = null
           this.responseVPData.nativeElement.classList.remove('active')
         }
       } catch (error) {
-        this.requestVpData = null
         this.requestVPData.nativeElement.classList.remove('active')
-
-        this.responseVpTokenData = null
-        this.response_VpTokenData = null
         this.responseVPData.nativeElement.classList.remove('active')
       }
     }
@@ -161,7 +157,7 @@ export class MainComponent {
       this.responseVPTokenWarningDataTxT.nativeElement.classList.add('active')
     }
   }
-  
+
   // response _vp_token txt change
   get _vpTokenResponseTextAreaValue() {
     if (!this.response_VpTokenData) return '';

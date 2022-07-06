@@ -298,7 +298,7 @@ async function processRequest(request_index: number, confirmation: any, vp_data:
                             //let response = await provider.generateResponse(decodedRequest.payload);
                             let response = {}
 
-                            if (!!vp_data) {
+                            if (vp_data.vp_token && vp_data._vp_token) {
                                 let vps: VPData = {
                                     vp_token: vp_data.vp_token,
                                     _vp_token: vp_data._vp_token

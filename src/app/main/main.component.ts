@@ -104,8 +104,9 @@ export class MainComponent {
 
     if (request.request) {
       try {
-        let decode_request = this.parseJwt(request.request);
-
+        let token = request.request.split("request=")
+        let decode_request = this.parseJwt(token[1]);
+        
         if (decode_request.claims?.vp_token) {
           this.requestVpData = decode_request.claims.vp_token
           this.responseVpTokenData = SampleResponseVpData.vp_token
@@ -118,6 +119,7 @@ export class MainComponent {
           this.responseVPData.nativeElement.classList.remove('active')
         }
       } catch (error) {
+        console.log({ error })
         this.requestVPData.nativeElement.classList.remove('active')
         this.responseVPData.nativeElement.classList.remove('active')
       }

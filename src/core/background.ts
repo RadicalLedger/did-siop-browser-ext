@@ -308,7 +308,8 @@ async function processRequest(request_index: number, confirmation: any, vp_data:
                             } else {
                                 response = await provider.generateResponse(decodedRequest.payload)
                             }
-
+                            
+                            console.log({response})
                             console.log("decodedRequest.payload", decodedRequest.payload);
                             if (decodedRequest.payload.response_mode && decodedRequest.payload.response_mode === 'post') {
                                 try {
@@ -333,6 +334,7 @@ async function processRequest(request_index: number, confirmation: any, vp_data:
                         }
                     }
                     catch (err) {
+                        console.log({err})
                         let uri = queryString.parseUrl(request).query.client_id;
                         if (uri) {
                             uri = uri + '#' + provider.generateErrorResponse(err.message);

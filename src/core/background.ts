@@ -33,13 +33,18 @@ catch (err) {
 async function checkSigning() {
     try {
         if (!provider) {
+            let keyResolve2018 = new Resolvers.KeyDidResolver(
+                "key",
+                "@digitalbazaar/ed25519-verification-key-2018"
+            );
 
             let did = decrypt(localStorage.getItem(STORAGE_KEYS.userDID), loggedInState);
-            provider = await Provider.getProvider(did);
+            provider = await Provider.getProvider(did, undefined, [keyResolve2018]);
         }
-
+        
         if (signingInfoSet.length < 1) {
             signingInfoSet = JSON.parse(decrypt(localStorage.getItem(STORAGE_KEYS.signingInfoSet), loggedInState));
+
             if (!signingInfoSet) {
                 signingInfoSet = [];
             }
@@ -51,6 +56,7 @@ async function checkSigning() {
         }
     }
     catch (err) {
+        console.log({ err })
         provider = undefined;
         signingInfoSet = [];
         throw err;
@@ -311,7 +317,7 @@ async function processRequest(request_index: number, confirmation: any, vp_data:
                             } else {
                                 response = await provider.generateResponse(decodedRequest.payload)
                             }
-                            
+
                             if (decodedRequest.payload.response_mode && decodedRequest.payload.response_mode === 'post') {
                                 try {
                                     await postToRP(decodedRequest.payload.redirect_uri, response)
@@ -326,7 +332,7 @@ async function processRequest(request_index: number, confirmation: any, vp_data:
                                     url: uri,
                                 });
                             }
-                            console.log('Sent response to ' + decodedRequest.payload.redirect_uri + ' with id_token: ' + response);
+                            console.log('Sent response to ' + decodedRequest.payload.redirect_uri + ' with token: ', response);
                             removeRequest(request_index);
                             return 'Successfully logged into ' + decodedRequest.payload.redirect_uri;
                         }
@@ -380,7 +386,7 @@ async function postToRP(redirectUri: string, response: any) {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ "token": response })
+        body: JSON.stringify({ token: response })
     });
 
     try {

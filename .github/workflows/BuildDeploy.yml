@@ -18,7 +18,7 @@ jobs:
           echo "REMOTE_FILE_NAME=siop-did-extension-1" >> $GITHUB_ENV
           echo "REMOTE_APP_BINARY=dist" >> $GITHUB_ENV
       - name: Set env vars (prod)
-        if: endsWith(github.ref, '/master')
+        if: endsWith(github.ref, '/siopv2_with_mfv2_terance_upgraded')
         run: |
           echo "REMOTE_APP_ENV=prod" >> $GITHUB_ENV
           echo "REMOTE_HOST="${{ secrets.SSH_HOST_PROD }} >> $GITHUB_ENV
@@ -32,7 +32,6 @@ jobs:
       - run: npm run build
 
       - name: Compress build
-      - uses: actions/checkout@v2
       - uses: vimtor/action-zip@v1
         with:
           files: ${{ env.REMOTE_APP_BINARY }}/

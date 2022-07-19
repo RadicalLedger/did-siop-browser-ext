@@ -13,6 +13,7 @@ jobs:
     steps:
       - name: Set env vars (common)
         run: |      
+          echo "REMOTE_APP_NAME=siopv2-demo" >> $GITHUB_ENV
           echo "REMOTE_APP_FOLDER=~/apps/siopv2-demo" >> $GITHUB_ENV
           echo "REMOTE_SUB_FOLDER=/public/other" >> $GITHUB_ENV
           echo "REMOTE_FILE_NAME=siop-did-extension-1" >> $GITHUB_ENV

@@ -1,7 +1,7 @@
 /// <reference types="chrome"/>
 /// <reference types="firefox-webext-browser"/>
 
-import { Provider, ERROR_RESPONSES, VPData } from 'did-siop';
+import { Provider, ERROR_RESPONSES, VPData, Resolvers } from 'did-siop';
 import * as queryString from 'query-string';
 import { stringify } from 'querystring';
 import { STORAGE_KEYS, TASKS } from '../const';
@@ -33,13 +33,18 @@ catch (err) {
 async function checkSigning() {
     try {
         if (!provider) {
+            let keyResolve2018 = new Resolvers.KeyDidResolver(
+                "key",
+                "@digitalbazaar/ed25519-verification-key-2018"
+            );
 
             let did = decrypt(localStorage.getItem(STORAGE_KEYS.userDID), loggedInState);
-            provider = await Provider.getProvider(did);
+            provider = await Provider.getProvider(did, undefined, [keyResolve2018]);
         }
-
+        
         if (signingInfoSet.length < 1) {
             signingInfoSet = JSON.parse(decrypt(localStorage.getItem(STORAGE_KEYS.signingInfoSet), loggedInState));
+
             if (!signingInfoSet) {
                 signingInfoSet = [];
             }
@@ -51,6 +56,7 @@ async function checkSigning() {
         }
     }
     catch (err) {
+        console.log({ err })
         provider = undefined;
         signingInfoSet = [];
         throw err;
@@ -232,7 +238,12 @@ function changePassword(oldPassword: string, newPassword: string): boolean {
 
 async function changeDID(did: string): Promise<string> {
     try {
-        let newProvider = await Provider.getProvider(did);
+        let keyResolve2018 = new Resolvers.KeyDidResolver(
+            "key",
+            "@digitalbazaar/ed25519-verification-key-2018"
+        );
+
+        let newProvider = await Provider.getProvider(did, undefined, [keyResolve2018]);
         provider = newProvider;
         let encryptedDID = encrypt(did, loggedInState);
         localStorage.setItem(STORAGE_KEYS.userDID, encryptedDID);
@@ -283,8 +294,6 @@ async function processRequest(request_index: number, confirmation: any, vp_data:
     let processError: Error;
     let request = getRequestByIndex(request_index).request;
 
-    console.log({ vp_data }, !!vp_data)
-
     if (queryString.parseUrl(request).url === 'openid://') {
         try {
             await checkSigning();
@@ -308,9 +317,7 @@ async function processRequest(request_index: number, confirmation: any, vp_data:
                             } else {
                                 response = await provider.generateResponse(decodedRequest.payload)
                             }
-                            
-                            console.log({response})
-                            console.log("decodedRequest.payload", decodedRequest.payload);
+
                             if (decodedRequest.payload.response_mode && decodedRequest.payload.response_mode === 'post') {
                                 try {
                                     await postToRP(decodedRequest.payload.redirect_uri, response)
@@ -325,7 +332,7 @@ async function processRequest(request_index: number, confirmation: any, vp_data:
                                     url: uri,
                                 });
                             }
-                            console.log('Sent response to ' + decodedRequest.payload.redirect_uri + ' with id_token: ' + response);
+                            console.log('Sent response to ' + decodedRequest.payload.redirect_uri + ' with token: ', response);
                             removeRequest(request_index);
                             return 'Successfully logged into ' + decodedRequest.payload.redirect_uri;
                         }
@@ -334,8 +341,9 @@ async function processRequest(request_index: number, confirmation: any, vp_data:
                         }
                     }
                     catch (err) {
-                        console.log({err})
-                        let uri = queryString.parseUrl(request).query.client_id;
+                        console.log({ err })
+
+                        let uri = queryString.parseUrl(request).query.redirect_uri;
                         if (uri) {
                             uri = uri + '#' + provider.generateErrorResponse(err.message);
                             tabs.create({
@@ -348,7 +356,7 @@ async function processRequest(request_index: number, confirmation: any, vp_data:
                     }
                 }
                 else {
-                    let uri = queryString.parseUrl(request).query.client_id;
+                    let uri = queryString.parseUrl(request).query.redirect_uri;
                     if (uri) {
                         uri = uri + '#' + provider.generateErrorResponse(ERROR_RESPONSES.access_denied.err.message);
                         tabs.create({
@@ -378,7 +386,7 @@ async function postToRP(redirectUri: string, response: any) {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ "token": response })
+        body: JSON.stringify({ token: response })
     });
 
     try {

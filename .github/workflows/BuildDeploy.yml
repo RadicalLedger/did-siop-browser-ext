@@ -31,11 +31,9 @@ jobs:
       - run: npm install
       - run: npm run build
 
-      - uses: vimtor/action-zip@v1
+      - uses: montudor/action-zip@v1
       - name: Compress build
-        with:
-          files: ${{ env.REMOTE_APP_BINARY }}/
-          dest: ${{ env.REMOTE_FILE_NAME }}.zip
+        run: zip -qq -r ${{ env.REMOTE_FILE_NAME }}.zip ${{ env.REMOTE_APP_BINARY }}
 
       - name: Copy build to server
         uses: nogsantos/scp-deploy@master

@@ -133,5 +133,8 @@
         }
       }
     }},
-  "defaultProject": "did-siop-ext"
+  "defaultProject": "did-siop-ext",
+  "cli": {
+    "analytics": false
+  }
 }

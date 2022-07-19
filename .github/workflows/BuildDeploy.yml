@@ -1,0 +1,57 @@
+name: BuildDeploy
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Build and Deploy
+
+    steps:
+      - name: Set env vars (common)
+        run: |      
+          echo "REMOTE_APP_NAME=siopv2-demo" >> $GITHUB_ENV
+          echo "REMOTE_APP_FOLDER=~/apps/siopv2-demo" >> $GITHUB_ENV
+          echo "REMOTE_SUB_FOLDER=/public/other" >> $GITHUB_ENV
+          echo "REMOTE_FILE_NAME=siop-did-extension" >> $GITHUB_ENV
+          echo "REMOTE_APP_BINARY=dist" >> $GITHUB_ENV
+      - name: Set env vars (prod)
+        if: endsWith(github.ref, '/master')
+        run: |
+          echo "REMOTE_APP_ENV=prod" >> $GITHUB_ENV
+          echo "REMOTE_HOST="${{ secrets.SSH_HOST_PROD }} >> $GITHUB_ENV
+
+      - uses: actions/checkout@master
+      - name: Bucket actions
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16
+      - run: npm install
+      - run: npm run build
+
+      - uses: montudor/action-zip@v1
+      - name: Compress build
+        run: zip -qq -r ${{ env.REMOTE_FILE_NAME }}.zip ${{ env.REMOTE_APP_BINARY }}
+
+      - name: Copy build to server
+        uses: nogsantos/scp-deploy@master
+        with:
+          src: ./${{ env.REMOTE_FILE_NAME }}.zip
+          host: ${{ env.REMOTE_HOST }}
+          remote: ${{ env.REMOTE_APP_FOLDER }}/${{ env.REMOTE_APP_ENV }}/${{ env.REMOTE_SUB_FOLDER }}
+          port: ${{ secrets.SSH_PORT }}
+          user: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          
+      - name: SSH Start/Restart Application
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ env.REMOTE_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            pm2 restart ${{ env.REMOTE_APP_NAME }}_${{ env.REMOTE_APP_ENV }}

@@ -8,7 +8,7 @@
     <div *ngIf="extAuthenticationState" class="login-controls">
         <div class="form d-flex flex-column justify-content-center align-items-center">
             <div class="input-group input-group-sm">
-                <input id="password" type="password" placeholder="Enter Password" class="form-control" aria-label="Small" aria-describedby="inputGroup-sizing-sm" #password>
+                <input id="password" type="password" placeholder="Enter Password" class="form-control text-center" aria-label="Small" aria-describedby="inputGroup-sizing-sm" #password>
             </div>
             <button type="button" class="btn btn-primary btn-ok" (click)="login(password.value)">Login</button>
         </div>

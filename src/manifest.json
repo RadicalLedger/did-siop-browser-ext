@@ -1,6 +1,6 @@
 {
   "name": "DID-SIOP",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Self Issued OpenId Connect Provider for Decentralized Identity implemented as a browser add-on",
   "author": "Radical Ledger Technologies",
   "icons": {
@@ -8,8 +8,8 @@
   },
   "background": {
     "scripts": [
-      "background-es5.js",
-      "runtime-es5.js"
+      "background.js",
+      "runtime.js"
     ],
     "persistent": false
   },
@@ -20,7 +20,7 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["inject-es5.js", "runtime-es5.js"]
+      "js": ["inject.js", "runtime.js"]
     }
   ],
   "manifest_version": 2

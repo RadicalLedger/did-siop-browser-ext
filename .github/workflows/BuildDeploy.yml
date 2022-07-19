@@ -34,7 +34,7 @@ jobs:
 
       - uses: montudor/action-zip@v1
       - name: Compress build
-        run: zip -qq -r ${{ env.REMOTE_FILE_NAME }}.zip ${{ env.REMOTE_APP_BINARY }}/.
+        run: zip -qq -r ${{ env.REMOTE_FILE_NAME }}.zip ${{ env.REMOTE_APP_BINARY }}/
 
       - name: Copy build to server
         uses: nogsantos/scp-deploy@master

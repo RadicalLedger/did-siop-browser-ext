@@ -3,7 +3,7 @@ name: BuildDeploy
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   build:
@@ -19,7 +19,7 @@ jobs:
           echo "REMOTE_FILE_NAME=siop-did-extension" >> $GITHUB_ENV
           echo "REMOTE_APP_BINARY=dist" >> $GITHUB_ENV
       - name: Set env vars (prod)
-        if: endsWith(github.ref, '/main')
+        if: endsWith(github.ref, '/master')
         run: |
           echo "REMOTE_APP_ENV=prod" >> $GITHUB_ENV
           echo "REMOTE_HOST="${{ secrets.SSH_HOST_PROD }} >> $GITHUB_ENV

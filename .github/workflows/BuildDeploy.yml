@@ -3,7 +3,7 @@ name: BuildDeploy
 on:
   push:
     branches:
-      - siopv2_with_mfv2_terance_upgraded
+      - main
 
 jobs:
   build:
@@ -16,10 +16,10 @@ jobs:
           echo "REMOTE_APP_NAME=siopv2-demo" >> $GITHUB_ENV
           echo "REMOTE_APP_FOLDER=~/apps/siopv2-demo" >> $GITHUB_ENV
           echo "REMOTE_SUB_FOLDER=/public/other" >> $GITHUB_ENV
-          echo "REMOTE_FILE_NAME=siop-did-extension-1" >> $GITHUB_ENV
+          echo "REMOTE_FILE_NAME=siop-did-extension" >> $GITHUB_ENV
           echo "REMOTE_APP_BINARY=dist" >> $GITHUB_ENV
       - name: Set env vars (prod)
-        if: endsWith(github.ref, '/siopv2_with_mfv2_terance_upgraded')
+        if: endsWith(github.ref, '/main')
         run: |
           echo "REMOTE_APP_ENV=prod" >> $GITHUB_ENV
           echo "REMOTE_HOST="${{ secrets.SSH_HOST_PROD }} >> $GITHUB_ENV
@@ -34,7 +34,7 @@ jobs:
 
       - uses: montudor/action-zip@v1
       - name: Compress build
-        run: zip -qq -r ${{ env.REMOTE_FILE_NAME }}.zip ${{ env.REMOTE_APP_BINARY }}/
+        run: zip -qq -r ${{ env.REMOTE_FILE_NAME }}.zip ${{ env.REMOTE_APP_BINARY }}
 
       - name: Copy build to server
         uses: nogsantos/scp-deploy@master

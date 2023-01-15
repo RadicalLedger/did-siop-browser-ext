@@ -1,1 +1,7 @@
-{"ast":null,"code":"export const STORAGE_KEYS = {\n  salt: 'did_siop_authentication_salt',\n  password: 'did_siop_authetication_string',\n  userDID: 'did_siop_user_did',\n  signingInfoSet: 'did_siop_singing_info_set',\n  requests: 'did_siop_requests'\n};","map":null,"metadata":{},"sourceType":"module"}
+{
+    "ast": null,
+    "code": "export const STORAGE_KEYS = {\n  salt: 'did_siop_authentication_salt',\n  password: 'did_siop_authetication_string',\n  userDID: 'did_siop_user_did',\n  signingInfoSet: 'did_siop_singing_info_set',\n  requests: 'did_siop_requests'\n};",
+    "map": null,
+    "metadata": {},
+    "sourceType": "module"
+}

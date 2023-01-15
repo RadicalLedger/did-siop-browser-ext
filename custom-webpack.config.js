@@ -21,7 +21,7 @@ module.exports = {
             url: require.resolve('url'),
             os: require.resolve('os-browserify/browser'),
             util: require.resolve('util'),
-            buffer: require.resolve("buffer")
+            buffer: require.resolve('buffer')
         }
     },
     plugins: [
@@ -29,10 +29,10 @@ module.exports = {
             global: require.resolve('./global.js')
         }),
         new webpack.ProvidePlugin({
-            process: 'process/browser',
+            process: 'process/browser'
         }),
         new webpack.ProvidePlugin({
-            Buffer: ['buffer', 'Buffer'],
+            Buffer: ['buffer', 'Buffer']
         })
-    ],
-}
+    ]
+};

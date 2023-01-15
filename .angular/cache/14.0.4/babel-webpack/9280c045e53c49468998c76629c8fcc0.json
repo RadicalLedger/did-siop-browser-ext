@@ -1,1 +1,7 @@
-{"ast":null,"code":"import _asyncToGenerator from \"D:/Work/RadicalLedger_projects/SIOP/did-siop-browser-ext/node_modules/@babel/runtime/helpers/esm/asyncToGenerator.js\";\nimport { from } from './hasher.js';\n\nconst sha = name => /*#__PURE__*/function () {\n  var _ref = _asyncToGenerator(function* (data) {\n    return new Uint8Array(yield crypto.subtle.digest(name, data));\n  });\n\n  return function (_x) {\n    return _ref.apply(this, arguments);\n  };\n}();\n\nexport const sha256 = from({\n  name: 'sha2-256',\n  code: 18,\n  encode: sha('SHA-256')\n});\nexport const sha512 = from({\n  name: 'sha2-512',\n  code: 19,\n  encode: sha('SHA-512')\n});","map":null,"metadata":{},"sourceType":"module"}
+{
+    "ast": null,
+    "code": "import _asyncToGenerator from \"D:/Work/RadicalLedger_projects/SIOP/did-siop-browser-ext/node_modules/@babel/runtime/helpers/esm/asyncToGenerator.js\";\nimport { from } from './hasher.js';\n\nconst sha = name => /*#__PURE__*/function () {\n  var _ref = _asyncToGenerator(function* (data) {\n    return new Uint8Array(yield crypto.subtle.digest(name, data));\n  });\n\n  return function (_x) {\n    return _ref.apply(this, arguments);\n  };\n}();\n\nexport const sha256 = from({\n  name: 'sha2-256',\n  code: 18,\n  encode: sha('SHA-256')\n});\nexport const sha512 = from({\n  name: 'sha2-512',\n  code: 19,\n  encode: sha('SHA-512')\n});",
+    "map": null,
+    "metadata": {},
+    "sourceType": "module"
+}

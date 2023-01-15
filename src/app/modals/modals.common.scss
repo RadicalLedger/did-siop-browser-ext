@@ -1,66 +1,66 @@
-@import "../../colors";
+@import '../../colors';
 
-.input-group-sm{
+.input-group-sm {
     margin-bottom: 10px;
 }
 
-.input-group-text{
+.input-group-text {
     width: 100px;
 }
 
-.input-group-sm{
-    textarea{
+.input-group-sm {
+    textarea {
         resize: none;
     }
 }
 
-.warning{
+.warning {
     color: orangered;
 }
 
-.success{
+.success {
     color: green;
 }
 
-.error{
+.error {
     color: red;
 }
 
-.waiting{
+.waiting {
     color: $app-primary;
 }
 
-.modal-header{
+.modal-header {
     border-bottom: 1px solid $app-primary;
 }
 
-.modal-footer{
+.modal-footer {
     border: none;
 }
 
-.btn-ok{
+.btn-ok {
     background-color: $app-primary;
     border: 1px solid $app-primary;
     border-radius: 40px;
     min-width: 100px;
 }
 
-.btn-cancel{
+.btn-cancel {
     color: $app-primary;
 }
 
-.btn-link{
-    &:active{
-        &:focus{
+.btn-link {
+    &:active {
+        &:focus {
             background-color: transparent;
         }
     }
-    &:focus{
+    &:focus {
         outline: none !important;
         box-shadow: none;
     }
 }
 
-.modal-trigger{
+.modal-trigger {
     display: none;
 }

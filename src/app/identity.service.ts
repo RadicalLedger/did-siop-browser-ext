@@ -1,29 +1,27 @@
 import { Injectable } from '@angular/core';
 
 @Injectable({
-  providedIn: 'root'
+    providedIn: 'root'
 })
 export class IdentityService {
+    currentDID: string;
+    signingInfoSet: any[] = [];
 
-  currentDID: string;
-  signingInfoSet: any[] = [];
+    constructor() {}
 
-  constructor() { }
+    setCurrentDID(did: string) {
+        this.currentDID = did;
+    }
 
-  setCurrentDID(did: string){
-    this.currentDID = did;
-  }
+    getCurrentDID(): string {
+        return this.currentDID;
+    }
 
-  getCurrentDID(): string{
-    return this.currentDID;
-  }
+    setSigningInfoSet(signingInfoSet: any[]) {
+        this.signingInfoSet = signingInfoSet;
+    }
 
-  setSigningInfoSet(signingInfoSet: any[]){
-    this.signingInfoSet = signingInfoSet;
-  }
-
-  getSigningInfoSet(): any[]{
-    return this.signingInfoSet;
-  }
-
+    getSigningInfoSet(): any[] {
+        return this.signingInfoSet;
+    }
 }

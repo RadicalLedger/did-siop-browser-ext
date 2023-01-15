@@ -1,36 +1,25 @@
 {
-  "name": "DID-SIOP",
-  "version": "1.2.3",
-  "description": "Self Issued OpenId Connect Provider for Decentralized Identity implemented as a browser add-on",
-  "author": "Radical Ledger Technologies",
-  "icons": {
-    "16": "assets/did_siop_favicon.png"
-  },
-  "background": {
-    "scripts": [
-      "background.js",
-      "runtime.js"
+    "name": "DID-SIOP",
+    "version": "1.2.3",
+    "description": "Self Issued OpenId Connect Provider for Decentralized Identity implemented as a browser add-on",
+    "author": "Radical Ledger Technologies",
+    "icons": {
+        "16": "assets/did_siop_favicon.png"
+    },
+    "background": {
+        "scripts": ["background.js", "runtime.js"],
+        "persistent": false
+    },
+    "browser_action": {
+        "default_title": "DID-SIOP",
+        "default_popup": "index.html"
+    },
+    "content_scripts": [
+        {
+            "matches": ["<all_urls>"],
+            "js": ["inject.js", "runtime.js"]
+        }
     ],
-    "persistent": false
-  },
-  "browser_action": {
-    "default_title": "DID-SIOP",
-    "default_popup": "index.html"
-  },
-  "content_scripts": [
-    {
-      "matches": [
-        "<all_urls>"
-      ],
-      "js": [
-        "inject.js",
-        "runtime.js"
-      ]
-    }
-  ],
-  "permissions": [
-    "cookies",
-    "<all_urls>"
-  ],
-  "manifest_version": 2
+    "permissions": ["cookies", "<all_urls>"],
+    "manifest_version": 2
 }

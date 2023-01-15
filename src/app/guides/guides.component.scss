@@ -1,21 +1,21 @@
-@import "../../colors";
+@import '../../colors';
 
-.guides{
+.guides {
     width: 100%;
     padding-left: 26px;
     padding-right: 26px;
-    ul{
+    ul {
         width: 320px;
         padding-left: 20px;
-        li{
-            a{
+        li {
+            a {
                 color: $app-primary;
             }
         }
     }
 }
 
-.btn-back{
+.btn-back {
     color: $app-primary;
     font-size: 18px;
 }

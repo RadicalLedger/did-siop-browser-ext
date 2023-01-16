@@ -23,10 +23,12 @@ runtime.onMessage.addListener(function (request, sender, sendResponse) {
     tabs.query({ active: true, currentWindow: true }, function (_tabs) {
         tabs.sendMessage(
             _tabs[0].id,
-            { request, signingInfo: signingInfoSet, loggedIn: loggedInState },
+            { request, sender, signingInfo: signingInfoSet, loggedIn: loggedInState },
             function (response) {
-                signingInfoSet = response.signingInfoSet;
-                loggedInState = response.loggedInState;
+                if (response !== undefined) {
+                    signingInfoSet = response.signingInfoSet || [];
+                    loggedInState = response.loggedInState || false;
+                }
 
                 sendResponse(response?.data);
             }

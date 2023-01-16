@@ -63,12 +63,12 @@ async function checkSigning() {
     }
 }
 
-runtime.onMessage.addListener(function ({ request, signingInfo, loggedIn }, sender, res) {
-    if (signingInfo) signingInfoSet = signingInfo;
+runtime.onMessage.addListener(function ({ request, sender, signingInfo, loggedIn }, _sender, res) {
+    if (signingInfo) signingInfoSet = signingInfo || [];
     if (loggedIn) loggedInState = loggedIn;
 
     const sendResponse = (data: any) => {
-        return res({
+        res({
             signingInfoSet,
             loggedInState,
             data
@@ -203,6 +203,7 @@ runtime.onMessage.addListener(function ({ request, signingInfo, loggedIn }, send
             }
         }
     }
+
     return true;
 });
 

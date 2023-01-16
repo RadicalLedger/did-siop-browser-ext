@@ -39,7 +39,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
                 task: TASKS.CHECK_EXT_AUTHENTICATION
             },
             (response) => {
-                if (response.result) {
+                if (response?.result) {
                     this.extAuthenticationState = true;
                     this.changeDetector.detectChanges();
                     this.messageService.sendMessage(

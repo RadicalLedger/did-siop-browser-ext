@@ -33,7 +33,15 @@
                             "node_modules/jquery/dist/jquery.slim.min.js",
                             "node_modules/@popperjs/core/dist/umd/popper.min.js",
                             "node_modules/bootstrap/dist/js/bootstrap.min.js"
-                        ]
+                        ],
+                        "optimization": {
+                            "scripts": true,
+                            "styles": {
+                                "minify": true,
+                                "inlineCritical": false
+                            },
+                            "fonts": true
+                        }
                     },
                     "configurations": {
                         "production": {
@@ -43,7 +51,14 @@
                                     "with": "src/environments/environment.prod.ts"
                                 }
                             ],
-                            "optimization": true,
+                            "optimization": {
+                                "scripts": true,
+                                "styles": {
+                                    "minify": true,
+                                    "inlineCritical": false
+                                },
+                                "fonts": true
+                            },
                             "outputHashing": "none",
                             "sourceMap": false,
                             "extractCss": true,

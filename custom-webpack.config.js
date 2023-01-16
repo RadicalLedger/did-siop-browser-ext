@@ -4,8 +4,9 @@ var webpack = require('webpack');
 
 module.exports = {
     entry: {
-        background: 'src/core/background.ts',
-        inject: 'src/core/inject.ts'
+        background: { import: 'src/core/background.ts', runtime: false },
+        inject: 'src/core/inject.ts',
+        context: 'src/core/context.ts'
     },
     node: {
         global: false
@@ -34,5 +35,8 @@ module.exports = {
         new webpack.ProvidePlugin({
             Buffer: ['buffer', 'Buffer']
         })
-    ]
+    ],
+    optimization: {
+        minimize: false
+    }
 };

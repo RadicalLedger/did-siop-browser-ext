@@ -66,8 +66,10 @@ async function checkSigning() {
 runtime.onMessage.addListener(function ({ request, sender, signingInfo, loggedIn }, _sender, res) {
     if (signingInfo) signingInfoSet = signingInfo || [];
     if (loggedIn) loggedInState = loggedIn;
+    // console.log({ request });
 
     const sendResponse = (data: any) => {
+        // console.log(signingInfoSet);
         res({
             signingInfoSet,
             loggedInState,
@@ -269,11 +271,13 @@ async function changeDID(did: string): Promise<string> {
         provider = newProvider;
         let encryptedDID = encrypt(did, loggedInState);
         localStorage.setItem(STORAGE_KEYS.userDID, encryptedDID);
-        signingInfoSet = [];
+
+        if (!Array.isArray(signingInfoSet)) signingInfoSet = [];
         let encryptedSigningInfo = encrypt(JSON.stringify(signingInfoSet), loggedInState);
         localStorage.setItem(STORAGE_KEYS.signingInfoSet, encryptedSigningInfo);
         return 'Identity changed successfully';
     } catch (err) {
+        console.log({ err });
         return Promise.reject(err);
     }
 }
@@ -303,6 +307,7 @@ async function removeKey(kid: string): Promise<string> {
         signingInfoSet = signingInfoSet.filter((key) => {
             return key.kid !== kid;
         });
+
         let encryptedSigningInfo = encrypt(JSON.stringify(signingInfoSet), loggedInState);
         localStorage.setItem(STORAGE_KEYS.signingInfoSet, encryptedSigningInfo);
         return 'Key removed successfully';

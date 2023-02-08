@@ -1,18 +1,18 @@
-@import "../../colors";
+@import '../../colors';
 
-.settings{
+.settings {
     max-height: 400px;
     overflow-y: scroll;
 }
 
-.identity{
+.identity {
     padding-left: 25px;
     padding-right: 25px;
     font-size: 17px;
     margin-bottom: 30px;
 }
 
-.identity-inner{
+.identity-inner {
     background-color: $app-section-background;
     padding-top: 20px;
     padding-left: 25px;
@@ -20,12 +20,12 @@
     padding-bottom: 2px;
 }
 
-.identity-top{
+.identity-top {
     height: 38px;
 }
 
-.identity-actions{
-    button{
+.identity-actions {
+    button {
         color: $app-primary;
         padding-top: 0px;
         padding-right: 0px;
@@ -34,25 +34,25 @@
     }
 }
 
-.current-did{
-    p{
+.current-did {
+    p {
         word-break: break-all;
     }
 }
 
-.signing-keys{
+.signing-keys {
     padding-left: 25px;
     padding-right: 25px;
     font-size: 17px;
     margin-bottom: 28px;
 }
 
-.signing-keys-inner{
+.signing-keys-inner {
     background-color: $app-section-background;
     padding-bottom: 2px;
 }
 
-.signing-keys-top{
+.signing-keys-top {
     height: 65px;
     margin-left: 0px;
     margin-right: 0px;
@@ -62,8 +62,8 @@
     border-bottom: 1px solid #d6d4d4;
 }
 
-.new-key-btn{
-    button{
+.new-key-btn {
+    button {
         color: $app-primary;
         padding-top: 0px;
         padding-right: 0px;
@@ -72,25 +72,25 @@
     }
 }
 
-.signing-keys-bottom{
+.signing-keys-bottom {
     margin-left: 0px;
     margin-right: 0px;
     padding-left: 0px;
     padding-right: 0px;
-    .col{
+    .col {
         padding-left: 0px;
         padding-right: 0px;
     }
 }
 
-#keyAccordion{
-    .card{
-        .card-header{
+#keyAccordion {
+    .card {
+        .card-header {
             padding-top: 18px;
-            h5{
+            h5 {
                 padding-left: 4px;
                 padding-right: 4px;
-                a{
+                a {
                     font-size: 17px;
                     color: $app-primary !important;
                 }
@@ -99,23 +99,23 @@
     }
 }
 
-.remove-key-btn{
+.remove-key-btn {
     color: $app-primary !important;
 }
 
-.password{
+.password {
     padding-left: 25px;
     padding-right: 25px;
     font-size: 17px;
     margin-bottom: 28px;
 }
 
-.password-inner{
+.password-inner {
     background-color: $app-section-background;
     padding-bottom: 2px;
 }
 
-.password-top{
+.password-top {
     height: 65px;
     margin-left: 0px;
     margin-right: 0px;
@@ -125,8 +125,8 @@
     border-bottom: 1px solid #d6d4d4;
 }
 
-.new-password-btn{
-    button{
+.new-password-btn {
+    button {
         color: $app-primary;
         padding-top: 0px;
         padding-right: 0px;
@@ -135,19 +135,19 @@
     }
 }
 
-.btn-link{
-    &:active{
-        &:focus{
+.btn-link {
+    &:active {
+        &:focus {
             background-color: transparent;
         }
     }
-    &:focus{
+    &:focus {
         outline: none !important;
         box-shadow: none;
     }
 }
 
-.btn-back{
+.btn-back {
     color: $app-primary;
     font-size: 18px;
     margin-left: 25px;

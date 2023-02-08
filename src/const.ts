@@ -4,10 +4,10 @@ export const STORAGE_KEYS = {
     userDID: 'did_siop_user_did',
     signingInfoSet: 'did_siop_singing_info_set',
     requests: 'did_siop_requests',
+    crypto_suit: 'did_siop_crypto_suit'
+};
 
-}
-
-export const enum TASKS{
+export const enum TASKS {
     CHANGE_DID,
     ADD_KEY,
     REMOVE_KEY,
@@ -21,5 +21,6 @@ export const enum TASKS{
     GET_IDENTITY,
     GET_REQUESTS,
     MAKE_REQUEST,
-    CREATE_DID,
+    SET_SETTINGS,
+    CREATE_DID
 }

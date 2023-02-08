@@ -1,11 +1,7 @@
 {
     "vp_token": {
-        "@context": [
-            "https://www.w3.org/2018/credentials/v1"
-        ],
-        "type": [
-            "VerifiablePresentation"
-        ],
+        "@context": ["https://www.w3.org/2018/credentials/v1"],
+        "type": ["VerifiablePresentation"],
         "verifiableCredential": [
             {
                 "@context": [
@@ -13,10 +9,7 @@
                     "https://www.w3.org/2018/credentials/examples/v1"
                 ],
                 "id": "https://example.com/credentials/1872",
-                "type": [
-                    "VerifiableCredential",
-                    "IDCardCredential"
-                ],
+                "type": ["VerifiableCredential", "IDCardCredential"],
                 "issuer": {
                     "id": "did:example:issuer"
                 },

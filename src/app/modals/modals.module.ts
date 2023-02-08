@@ -7,22 +7,32 @@ import { NewKeyModalComponent } from './new-key-modal/new-key-modal.component';
 import { RemoveKeyModalComponent } from './remove-key-modal/remove-key-modal.component';
 import { ChangePasswordModalComponent } from './change-password-modal/change-password-modal.component';
 
-
-
 @NgModule({
-  declarations: [ChangeDIDModalComponent, TestDataModalComponent, CreateDIDModalComponent, NewKeyModalComponent, RemoveKeyModalComponent, ChangePasswordModalComponent],
-  imports: [
-    CommonModule
-  ],
-  exports: [
+    declarations: [
+        ChangeDIDModalComponent,
+        TestDataModalComponent,
+        CreateDIDModalComponent,
+        NewKeyModalComponent,
+        RemoveKeyModalComponent,
+        ChangePasswordModalComponent
+    ],
+    imports: [CommonModule],
+    exports: [
+        ChangeDIDModalComponent,
+        TestDataModalComponent,
+        CreateDIDModalComponent,
+        NewKeyModalComponent,
+        RemoveKeyModalComponent,
+        ChangePasswordModalComponent
+    ]
+})
+export class ModalsModule {}
+
+export {
     ChangeDIDModalComponent,
     TestDataModalComponent,
     CreateDIDModalComponent,
     NewKeyModalComponent,
     RemoveKeyModalComponent,
-    ChangePasswordModalComponent,
-  ]
-})
-export class ModalsModule { }
-
-export {ChangeDIDModalComponent, TestDataModalComponent, CreateDIDModalComponent, NewKeyModalComponent, RemoveKeyModalComponent, ChangePasswordModalComponent}
+    ChangePasswordModalComponent
+};

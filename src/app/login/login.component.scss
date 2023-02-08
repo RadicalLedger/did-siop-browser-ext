@@ -1,67 +1,65 @@
+@import '../../colors';
 
-@import "../../colors";
-
-.login-wrapper{
+.login-wrapper {
     width: 100%;
     height: 100%;
     padding-top: 150px;
 }
 
-.logo{
+.logo {
     width: 180px;
     height: 65px;
-    img{
+    img {
         max-width: 100%;
         max-height: 100%;
     }
 }
 
-.description{
+.description {
     text-align: center;
     margin-bottom: 35px;
 }
 
-.login-controls{
-    .form{
-        input{
+.login-controls {
+    .form {
+        input {
             margin-bottom: 20px;
         }
     }
 }
 
-.init-controls{
-    .form{
-        input{
+.init-controls {
+    .form {
+        input {
             margin-bottom: 20px;
         }
     }
 }
 
-
-.input-group-sm{
-    input{
+.input-group-sm {
+    input {
         font-size: 16px;
         background-color: transparent;
         border: none;
         border-bottom: 1px solid $app-primary;
-        &::placeholder{
+        &::placeholder {
             text-align: center;
         }
-        &:focus{
+        &:focus {
             outline: none !important;
             box-shadow: none;
         }
     }
 }
 
-.invalid-input{
-    &::placeholder{
+.invalid-input {
+    &::placeholder {
         color: red;
         font-size: 12px;
     }
 }
 
-.btn-ok{
+.btn-ok {
     background-color: $app-primary;
     border: 1px solid $app-primary;
     border-radius: 40px;

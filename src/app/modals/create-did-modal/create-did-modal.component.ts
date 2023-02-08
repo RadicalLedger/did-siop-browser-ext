@@ -5,60 +5,62 @@ import { IdentityService } from 'src/app/identity.service';
 import { TASKS } from 'src/const';
 
 @Component({
-  selector: 'create-did-modal',
-  templateUrl: './create-did-modal.component.html',
-  styleUrls: ['./create-did-modal.component.scss', '../modals.common.scss']
+    selector: 'create-did-modal',
+    templateUrl: './create-did-modal.component.html',
+    styleUrls: ['./create-did-modal.component.scss', '../modals.common.scss']
 })
 export class CreateDIDModalComponent implements OnInit {
-  
-  @ViewChild('modalInfo') modalInfo: ElementRef;
-  @ViewChild('modalClose') modalClose: ElementRef;
-  @ViewChild('modalOpen') modalOpen: ElementRef;
-  
-  @Output() didChanged = new EventEmitter<boolean>();
+    @ViewChild('modalInfo') modalInfo: ElementRef;
+    @ViewChild('modalClose') modalClose: ElementRef;
+    @ViewChild('modalOpen') modalOpen: ElementRef;
 
-  constructor(private toastrService: ToastrService, private messageService: BackgroundMessageService, private identityService: IdentityService) { }
+    @Output() didChanged = new EventEmitter<boolean>();
 
-  ngOnInit(): void {
-  }
+    constructor(
+        private toastrService: ToastrService,
+        private messageService: BackgroundMessageService,
+        private identityService: IdentityService
+    ) {}
 
-  open(){
-    this.modalInfo.nativeElement.innerText = '';
-    this.modalOpen.nativeElement.click();
-  }
+    ngOnInit(): void {}
 
-  async createNewDID(method: string, data: any){
-    this.modalInfo.nativeElement.classList.remove('error');
-    this.modalInfo.nativeElement.classList.add('waiting');
-    this.modalInfo.nativeElement.innerText = 'Please wait';
-    this.modalClose.nativeElement.disabled = true;
-
-    if(method){
-      this.messageService.sendMessage({
-        task: TASKS.CREATE_DID,
-        method,
-        data
-      },
-      (response)=>{
-        if(response.result){
-          this.identityService.setCurrentDID(response.result.did);
-          this.identityService.setSigningInfoSet([{kid: response.result.kid}]);
-          this.modalClose.nativeElement.disabled = false;
-          this.didChanged.emit(true);
-          this.modalClose.nativeElement.click();
-          this.toastrService.success('Successful', 'DID_SIOP', {
-            onActivateTick: true,
-            positionClass: 'toast-bottom-center',
-          });
-        }
-        else if(response.err){
-          this.modalInfo.nativeElement.innerText = response.err;
-          this.modalInfo.nativeElement.classList.remove('waiting');
-          this.modalInfo.nativeElement.classList.add('error');
-          this.modalClose.nativeElement.disabled = false;
-        }
-      }
-      );
+    open() {
+        this.modalInfo.nativeElement.innerText = '';
+        this.modalOpen.nativeElement.click();
     }
-  }
+
+    async createNewDID(method: string, data: any) {
+        this.modalInfo.nativeElement.classList.remove('error');
+        this.modalInfo.nativeElement.classList.add('waiting');
+        this.modalInfo.nativeElement.innerText = 'Please wait';
+        this.modalClose.nativeElement.disabled = true;
+
+        if (method) {
+            this.messageService.sendMessage(
+                {
+                    task: TASKS.CREATE_DID,
+                    method,
+                    data
+                },
+                (response) => {
+                    if (response.result) {
+                        this.identityService.setCurrentDID(response.result.did);
+                        this.identityService.setSigningInfoSet([{ kid: response.result.kid }]);
+                        this.modalClose.nativeElement.disabled = false;
+                        this.didChanged.emit(true);
+                        this.modalClose.nativeElement.click();
+                        this.toastrService.success('Successful', 'DID_SIOP', {
+                            onActivateTick: true,
+                            positionClass: 'toast-bottom-center'
+                        });
+                    } else if (response.err) {
+                        this.modalInfo.nativeElement.innerText = response.err;
+                        this.modalInfo.nativeElement.classList.remove('waiting');
+                        this.modalInfo.nativeElement.classList.add('error');
+                        this.modalClose.nativeElement.disabled = false;
+                    }
+                }
+            );
+        }
+    }
 }

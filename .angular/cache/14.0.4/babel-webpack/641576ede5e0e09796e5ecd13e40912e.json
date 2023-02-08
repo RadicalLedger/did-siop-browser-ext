@@ -1,1 +1,7 @@
-{"ast":null,"code":"import * as i0 from \"@angular/core\";\nexport let IdentityService = /*#__PURE__*/(() => {\n  class IdentityService {\n    constructor() {\n      this.signingInfoSet = [];\n    }\n\n    setCurrentDID(did) {\n      this.currentDID = did;\n    }\n\n    getCurrentDID() {\n      return this.currentDID;\n    }\n\n    setSigningInfoSet(signingInfoSet) {\n      this.signingInfoSet = signingInfoSet;\n    }\n\n    getSigningInfoSet() {\n      return this.signingInfoSet;\n    }\n\n  }\n\n  IdentityService.ɵfac = function IdentityService_Factory(t) {\n    return new (t || IdentityService)();\n  };\n\n  IdentityService.ɵprov = /*@__PURE__*/i0.ɵɵdefineInjectable({\n    token: IdentityService,\n    factory: IdentityService.ɵfac,\n    providedIn: 'root'\n  });\n  return IdentityService;\n})();","map":null,"metadata":{},"sourceType":"module"}
+{
+    "ast": null,
+    "code": "import * as i0 from \"@angular/core\";\nexport let IdentityService = /*#__PURE__*/(() => {\n  class IdentityService {\n    constructor() {\n      this.signingInfoSet = [];\n    }\n\n    setCurrentDID(did) {\n      this.currentDID = did;\n    }\n\n    getCurrentDID() {\n      return this.currentDID;\n    }\n\n    setSigningInfoSet(signingInfoSet) {\n      this.signingInfoSet = signingInfoSet;\n    }\n\n    getSigningInfoSet() {\n      return this.signingInfoSet;\n    }\n\n  }\n\n  IdentityService.ɵfac = function IdentityService_Factory(t) {\n    return new (t || IdentityService)();\n  };\n\n  IdentityService.ɵprov = /*@__PURE__*/i0.ɵɵdefineInjectable({\n    token: IdentityService,\n    factory: IdentityService.ɵfac,\n    providedIn: 'root'\n  });\n  return IdentityService;\n})();",
+    "map": null,
+    "metadata": {},
+    "sourceType": "module"
+}

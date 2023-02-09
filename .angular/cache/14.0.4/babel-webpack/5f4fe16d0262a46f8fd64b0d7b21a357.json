@@ -1,1 +1,7 @@
-{"ast":null,"code":"// NFKC (composed)             // (decomposed)\nexport const EtherSymbol = \"\\u039e\"; // \"\\uD835\\uDF63\";\n//# sourceMappingURL=strings.js.map","map":null,"metadata":{},"sourceType":"module"}
+{
+    "ast": null,
+    "code": "// NFKC (composed)             // (decomposed)\nexport const EtherSymbol = \"\\u039e\"; // \"\\uD835\\uDF63\";\n//# sourceMappingURL=strings.js.map",
+    "map": null,
+    "metadata": {},
+    "sourceType": "module"
+}

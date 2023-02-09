@@ -14,22 +14,16 @@ import { GuidesComponent } from './guides/guides.component';
 import { ModalsModule } from './modals/modals.module';
 
 @NgModule({
-  declarations: [
-    AppComponent,
-    LoginComponent,
-    MainComponent,
-    SettingsComponent,
-    GuidesComponent
-  ],
-  imports: [
-    BrowserModule,
-    AppRoutingModule,
-    BrowserAnimationsModule,
-    ToastrModule.forRoot(),
-    ModalsModule,
-    FormsModule
-  ],
-  providers: [],
-  bootstrap: [AppComponent]
+    declarations: [AppComponent, LoginComponent, MainComponent, SettingsComponent, GuidesComponent],
+    imports: [
+        BrowserModule,
+        AppRoutingModule,
+        BrowserAnimationsModule,
+        ToastrModule.forRoot(),
+        ModalsModule,
+        FormsModule
+    ],
+    providers: [],
+    bootstrap: [AppComponent]
 })
-export class AppModule { }
+export class AppModule {}

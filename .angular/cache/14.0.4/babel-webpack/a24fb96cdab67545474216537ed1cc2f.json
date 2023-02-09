@@ -1,1 +1,7 @@
-{"ast":null,"code":"'use strict';\n/** @typedef {import('./generated-types').ConstantNumberMap} ConstantNumberMap */\n\nconst {\n  baseTable\n} = require('./base-table');\n\nconst constants =\n/** @type {ConstantNumberMap} */\n{};\n\nfor (const [name, code] of Object.entries(baseTable)) {\n  const constant = name.toUpperCase().replace(/-/g, '_');\n  constants[constant] = code;\n}\n\nmodule.exports = Object.freeze(constants);","map":null,"metadata":{},"sourceType":"script"}
+{
+    "ast": null,
+    "code": "'use strict';\n/** @typedef {import('./generated-types').ConstantNumberMap} ConstantNumberMap */\n\nconst {\n  baseTable\n} = require('./base-table');\n\nconst constants =\n/** @type {ConstantNumberMap} */\n{};\n\nfor (const [name, code] of Object.entries(baseTable)) {\n  const constant = name.toUpperCase().replace(/-/g, '_');\n  constants[constant] = code;\n}\n\nmodule.exports = Object.freeze(constants);",
+    "map": null,
+    "metadata": {},
+    "sourceType": "script"
+}

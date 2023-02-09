@@ -156,6 +156,10 @@ runtime.onMessage.addListener(function ({ request, sender, signingInfo, loggedIn
                 sendResponse({ didSiopRequests: getRequests() });
                 break;
             }
+            case TASKS.GET_VCS: {
+                sendResponse({ vcs: getVCs() });
+                break;
+            }
             case TASKS.PROCESS_REQUEST: {
                 processRequest(request.did_siop_index, request.confirmation, request.vp_data)
                     .then((result) => {
@@ -188,6 +192,15 @@ runtime.onMessage.addListener(function ({ request, sender, signingInfo, loggedIn
             case TASKS.MAKE_REQUEST: {
                 try {
                     let result = addRequest(request.did_siop);
+                    sendResponse({ result });
+                } catch (err) {
+                    sendResponse({ err: err.message });
+                }
+                break;
+            }
+            case TASKS.ADD_VC: {
+                try {
+                    let result = addVC(request.vc);
                     sendResponse({ result });
                 } catch (err) {
                     sendResponse({ err: err.message });
@@ -442,6 +455,25 @@ function getRequests(): any[] {
     return JSON.parse(storedRequests);
 }
 
+function getVCs(): any[] {
+    let storedVCs: any = localStorage.getItem(STORAGE_KEYS.vcs);
+    if (!storedVCs) storedVCs = '[]';
+    let parsed = JSON.parse(storedVCs);
+    let data = [];
+
+    for (let i = 0; i < parsed.length; i++) {
+        const element = parsed[i];
+
+        try {
+            data.push(JSON.parse(atob(element?.vc)));
+        } catch (error) {
+            continue;
+        }
+    }
+
+    return data;
+}
+
 function getRequestByIndex(index: number): any {
     let storedRequests: any = localStorage.getItem(STORAGE_KEYS.requests);
     if (!storedRequests) storedRequests = '[]';
@@ -485,10 +517,43 @@ function removeRequest(index: number): string {
     return request.request;
 }
 
+function addVC(vc: any): boolean {
+    try {
+        if (!vc) throw new Error('Invalid visual credential');
+        let storedVcs: any = localStorage.getItem(STORAGE_KEYS.vcs);
+        if (!storedVcs) storedVcs = '[]';
+        storedVcs = JSON.parse(storedVcs);
+        let index = 0;
+        for (let i = 0; i < storedVcs.length; i++) {
+            if (storedVcs[i].index > index) index = storedVcs[i].index;
+        }
+        ++index;
+        storedVcs.push({ index, vc });
+        localStorage.setItem(STORAGE_KEYS.vcs, JSON.stringify(storedVcs));
+        return true;
+    } catch (err) {
+        throw err;
+    }
+}
+
+function removeVC(index: number): string {
+    let storedVcs: any = localStorage.getItem(STORAGE_KEYS.vcs);
+    if (!storedVcs) storedVcs = '[]';
+    storedVcs = JSON.parse(storedVcs);
+    let request = storedVcs.filter((sr) => {
+        return sr.index == index;
+    })[0];
+    storedVcs = storedVcs.filter((sr) => {
+        return sr.index != index;
+    });
+    localStorage.setItem(STORAGE_KEYS.vcs, JSON.stringify(storedVcs));
+    return request.request;
+}
+
 function setSettings(base64: string) {
     try {
         let settings = parseJwt(base64);
-        console.log({ settings });
+        //console.log({ settings });
 
         /* set key */
         if (Array.isArray(settings?.did_resolver)) {

@@ -4,7 +4,8 @@ export const STORAGE_KEYS = {
     userDID: 'did_siop_user_did',
     signingInfoSet: 'did_siop_singing_info_set',
     requests: 'did_siop_requests',
-    crypto_suit: 'did_siop_crypto_suit'
+    crypto_suit: 'did_siop_crypto_suit',
+    vcs: 'visual_credentials'
 };
 
 export const enum TASKS {
@@ -22,5 +23,7 @@ export const enum TASKS {
     GET_REQUESTS,
     MAKE_REQUEST,
     SET_SETTINGS,
-    CREATE_DID
+    CREATE_DID,
+    ADD_VC,
+    GET_VCS
 }

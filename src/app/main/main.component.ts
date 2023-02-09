@@ -51,6 +51,7 @@ export class MainComponent {
     displayMainContent: boolean = true;
     displaySettings: boolean = false;
     displayGuides: boolean = false;
+    displayCredentials: boolean = false;
 
     constructor(
         private changeDetector: ChangeDetectorRef,
@@ -78,6 +79,7 @@ export class MainComponent {
         this.displayMainContent = true;
         this.displayGuides = false;
         this.displaySettings = false;
+        this.displayCredentials = false;
         this.loadIdentity();
         this.changeDetector.detectChanges();
     }
@@ -86,11 +88,21 @@ export class MainComponent {
         this.displayGuides = true;
         this.displayMainContent = false;
         this.displaySettings = false;
+        this.displayCredentials = false;
         this.changeDetector.detectChanges();
     }
 
     showSettings() {
         this.displaySettings = true;
+        this.displayGuides = false;
+        this.displayMainContent = false;
+        this.displayCredentials = false;
+        this.changeDetector.detectChanges();
+    }
+
+    showCredentials() {
+        this.displayCredentials = true;
+        this.displaySettings = false;
         this.displayGuides = false;
         this.displayMainContent = false;
         this.changeDetector.detectChanges();

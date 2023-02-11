@@ -160,6 +160,11 @@ runtime.onMessage.addListener(function ({ request, sender, signingInfo, loggedIn
                 sendResponse({ vcs: getVCs() });
                 break;
             }
+            case TASKS.REMOVE_VC: {
+                removeVC(request.index);
+                sendResponse({ vcs: getVCs() });
+                break;
+            }
             case TASKS.PROCESS_REQUEST: {
                 processRequest(request.did_siop_index, request.confirmation, request.vp_data)
                     .then((result) => {
@@ -465,7 +470,10 @@ function getVCs(): any[] {
         const element = parsed[i];
 
         try {
-            data.push(JSON.parse(atob(element?.vc)));
+            data.push({
+                index: element.index,
+                vc: JSON.parse(atob(element?.vc))
+            });
         } catch (error) {
             continue;
         }

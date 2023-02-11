@@ -25,5 +25,6 @@ export const enum TASKS {
     SET_SETTINGS,
     CREATE_DID,
     ADD_VC,
+    REMOVE_VC,
     GET_VCS
 }

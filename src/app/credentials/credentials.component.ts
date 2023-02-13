@@ -10,6 +10,7 @@ import { TASKS } from 'src/const';
 import config from 'src/utils/config';
 import documentLoader from 'src/utils/documentLoader';
 import { BackgroundMessageService } from '../background-message.service';
+import { environment } from 'src/environments/environment';
 
 @Component({
     selector: 'app-credentials',
@@ -65,42 +66,14 @@ export class CredentialsComponent implements OnInit {
                 if (vc_data) verifiableCredentials.push(vc_data.vc);
             }
         });
-        const challenge = 'fcc8b78e-ecca-426a-a69f-8e7c927b845f';
-        const domain = 'www.mrview.zedeid.com';
 
-        const presentation = {
-            '@context': ['https://www.w3.org/2018/credentials/v1'],
-            type: ['VerifiablePresentation'],
-            verifiableCredential: verifiableCredentials,
-            holder: this.currentDID
-        };
-
-        const zedeid_doc: any = await axios({
-            method: 'GET',
-            url: `${config.zedeid_url}did/${this.currentDID}`
-        });
-
-        if (!zedeid_doc?.data?.didDocument) {
-            console.error('zedeid document not found');
-            return;
-        }
-
-        const keyPairIssuer = await Ed25519VerificationKey2018.from(
-            zedeid_doc?.didDocument?.verificationMethod?.[0]
-        );
-
-        const suite = new Ed25519Signature2018({
-            key: keyPairIssuer,
-            date: new Date().toISOString()
-        });
-
-        const vp = await verifiable.presentation.create({
-            presentation,
-            format: ['vp'],
-            documentLoader: documentLoader,
-            challenge,
-            domain,
-            suite
+        const vp: any = await axios({
+            method: 'POST',
+            url: `${environment.micro_api}reward/presentation/generate`,
+            data: {
+                did: this.currentDID,
+                rewards: verifiableCredentials
+            }
         });
 
         console.log(vp);

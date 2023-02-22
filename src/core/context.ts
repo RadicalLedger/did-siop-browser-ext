@@ -160,9 +160,28 @@ runtime.onMessage.addListener(function ({ request, sender, signingInfo, loggedIn
                 sendResponse({ vcs: getVCs() });
                 break;
             }
+            case TASKS.GET_VPS: {
+                sendResponse({ vps: getVPs() });
+                break;
+            }
             case TASKS.REMOVE_VC: {
                 removeVC(request.index);
                 sendResponse({ vcs: getVCs() });
+                break;
+            }
+            case TASKS.REMOVE_VP: {
+                removeVP(request.index);
+                sendResponse({ vps: getVPs() });
+                break;
+            }
+            case TASKS.ADD_VP: {
+                console.log(request);
+                try {
+                    let result = addVP(request.vp);
+                    sendResponse({ result });
+                } catch (err) {
+                    sendResponse({ err: err.message });
+                }
                 break;
             }
             case TASKS.PROCESS_REQUEST: {
@@ -465,28 +484,6 @@ function getRequests(): any[] {
     return JSON.parse(storedRequests);
 }
 
-function getVCs(): any[] {
-    let storedVCs: any = localStorage.getItem(STORAGE_KEYS.vcs);
-    if (!storedVCs) storedVCs = '[]';
-    let parsed = JSON.parse(storedVCs);
-    let data = [];
-
-    for (let i = 0; i < parsed.length; i++) {
-        const element = parsed[i];
-
-        try {
-            data.push({
-                index: element.index,
-                vc: JSON.parse(atob(element?.vc))
-            });
-        } catch (error) {
-            continue;
-        }
-    }
-
-    return data;
-}
-
 function getRequestByIndex(index: number): any {
     let storedRequests: any = localStorage.getItem(STORAGE_KEYS.requests);
     if (!storedRequests) storedRequests = '[]';
@@ -530,6 +527,8 @@ function removeRequest(index: number): string {
     return request.request;
 }
 
+/* Verifiable credentials */
+
 function addVC(vc: any): boolean {
     try {
         if (!vc) throw new Error('Invalid visual credential');
@@ -549,6 +548,28 @@ function addVC(vc: any): boolean {
     }
 }
 
+function getVCs(): any[] {
+    let storedVCs: any = localStorage.getItem(STORAGE_KEYS.vcs);
+    if (!storedVCs) storedVCs = '[]';
+    let parsed = JSON.parse(storedVCs);
+    let data = [];
+
+    for (let i = 0; i < parsed.length; i++) {
+        const element = parsed[i];
+
+        try {
+            data.push({
+                index: element.index,
+                vc: JSON.parse(atob(element?.vc))
+            });
+        } catch (error) {
+            continue;
+        }
+    }
+
+    return data;
+}
+
 function removeVC(index: number): string {
     let storedVcs: any = localStorage.getItem(STORAGE_KEYS.vcs);
     if (!storedVcs) storedVcs = '[]';
@@ -560,6 +581,63 @@ function removeVC(index: number): string {
         return sr.index != index;
     });
     localStorage.setItem(STORAGE_KEYS.vcs, JSON.stringify(storedVcs));
+    return request.request;
+}
+
+/* Verifiable presentations */
+
+function addVP(vp: any): boolean {
+    try {
+        if (!vp) throw new Error('Invalid visual presentation');
+        let storedVps: any = localStorage.getItem(STORAGE_KEYS.vps);
+        if (!storedVps) storedVps = '[]';
+        storedVps = JSON.parse(storedVps);
+        let index = 0;
+        for (let i = 0; i < storedVps.length; i++) {
+            if (storedVps[i].index > index) index = storedVps[i].index;
+        }
+        ++index;
+        storedVps.push({ index, vp });
+        localStorage.setItem(STORAGE_KEYS.vps, JSON.stringify(storedVps));
+        return true;
+    } catch (err) {
+        throw err;
+    }
+}
+
+function getVPs(): any[] {
+    let storedVps: any = localStorage.getItem(STORAGE_KEYS.vps);
+    if (!storedVps) storedVps = '[]';
+    let parsed = JSON.parse(storedVps);
+    let data = [];
+
+    for (let i = 0; i < parsed.length; i++) {
+        const element = parsed[i];
+
+        try {
+            data.push({
+                index: element.index,
+                vp: JSON.parse(atob(element?.vp))
+            });
+        } catch (error) {
+            continue;
+        }
+    }
+
+    return data;
+}
+
+function removeVP(index: number): string {
+    let storedVps: any = localStorage.getItem(STORAGE_KEYS.vps);
+    if (!storedVps) storedVps = '[]';
+    storedVps = JSON.parse(storedVps);
+    let request = storedVps.filter((sr) => {
+        return sr.index == index;
+    })[0];
+    storedVps = storedVps.filter((sr) => {
+        return sr.index != index;
+    });
+    localStorage.setItem(STORAGE_KEYS.vps, JSON.stringify(storedVps));
     return request.request;
 }
 

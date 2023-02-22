@@ -1,0 +1,28 @@
+<div class="presentations">
+    <div class="title-wrap d-flex flex-row justify-content-between align-items-center">
+        <p class="vps-title">Presentations</p>
+        <button #modalCreate (click)="shareVPs()" class="btn bg-primary btn-share icon-button">
+            <span class="material-symbols-rounded"> share </span>
+        </button>
+    </div>
+    <div class="d-flex flex-column align-items-center container-fluid vps">
+        <div class="input-group d-flex flex-row align-items-center vp-row"
+            *ngFor="let data of currentVPs; let i = index">
+            <div class="input-group-prepend">
+                <div class="input-group-text">
+                    <input type="checkbox" aria-label="Checkbox" [checked]="selected[data.index]"
+                        (change)="selected[data.index] = !selected[data.index]" />
+                </div>
+            </div>
+
+            <div class="d-flex flex-row justify-content-between align-items-center vp-data">
+                <span>{{ data.index }} - credentials: {{data.vp.verifiableCredential.length}}</span>
+                <button (click)="removePresentation(data.index)" class="btn btn-danger btn-remove icon-button">
+                    <span class="material-symbols-rounded"> delete_outline </span>
+                </button>
+            </div>
+        </div>
+    </div>
+    <p class="modal-info" #modalInfo></p>
+</div>
+<button class="btn btn-link btn-back" (click)="goBack()">Go Back</button>

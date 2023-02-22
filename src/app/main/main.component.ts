@@ -48,10 +48,13 @@ export class MainComponent {
 
     @Output() loggedOut = new EventEmitter<boolean>();
 
-    displayMainContent: boolean = true;
-    displaySettings: boolean = false;
-    displayGuides: boolean = false;
-    displayCredentials: boolean = false;
+    screens: any = {
+        main: true,
+        settings: false,
+        guides: false,
+        credentials: false,
+        presentations: false
+    };
 
     constructor(
         private changeDetector: ChangeDetectorRef,
@@ -75,36 +78,17 @@ export class MainComponent {
         );
     }
 
-    showMainContent() {
-        this.displayMainContent = true;
-        this.displayGuides = false;
-        this.displaySettings = false;
-        this.displayCredentials = false;
-        this.loadIdentity();
-        this.changeDetector.detectChanges();
-    }
+    showScreen(display: string) {
+        for (let screen in this.screens) {
+            if (screen === display) {
+                this.screens[screen] = true;
+            } else {
+                this.screens[screen] = false;
+            }
+        }
 
-    showGuides() {
-        this.displayGuides = true;
-        this.displayMainContent = false;
-        this.displaySettings = false;
-        this.displayCredentials = false;
-        this.changeDetector.detectChanges();
-    }
+        if (display === 'main') this.loadIdentity();
 
-    showSettings() {
-        this.displaySettings = true;
-        this.displayGuides = false;
-        this.displayMainContent = false;
-        this.displayCredentials = false;
-        this.changeDetector.detectChanges();
-    }
-
-    showCredentials() {
-        this.displayCredentials = true;
-        this.displaySettings = false;
-        this.displayGuides = false;
-        this.displayMainContent = false;
         this.changeDetector.detectChanges();
     }
 

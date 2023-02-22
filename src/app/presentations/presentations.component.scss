@@ -1,17 +1,17 @@
 @import '../../colors';
 
-.credentials {
+.presentations {
     .title-wrap {
         width: 100%;
         padding: 10px;
 
-        .vcs-title {
+        .vps-title {
             padding: 0 !important;
             font-weight: 600;
         }
     }
 
-    .vcs {
+    .vps {
         width: 360px;
         height: 350px;
         padding-top: 10px;
@@ -19,7 +19,7 @@
         overflow-y: auto;
         background-color: $app-section-background;
 
-        .vc-row {
+        .vp-row {
             gap: 10px;
             width: 100%;
             flex-wrap: nowrap !important;
@@ -27,12 +27,12 @@
             padding-bottom: 10px;
         }
 
-        .vc-data {
+        .vp-data {
             gap: 10px;
             width: 100%;
         }
 
-        .btn-vc {
+        .btn-vp {
             text-align: left;
             width: 100%;
         }

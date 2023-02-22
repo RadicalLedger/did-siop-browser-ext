@@ -1,9 +1,15 @@
-import { Component, OnInit, EventEmitter, Output, ChangeDetectorRef } from '@angular/core';
+import {
+    Component,
+    OnInit,
+    EventEmitter,
+    Output,
+    ChangeDetectorRef,
+    ViewChild,
+    ElementRef
+} from '@angular/core';
 import axios from 'axios';
 import { ToastrService } from 'ngx-toastr';
 import { TASKS } from 'src/const';
-import config from 'src/utils/config';
-import documentLoader from 'src/utils/documentLoader';
 import { BackgroundMessageService } from '../background-message.service';
 import { environment } from 'src/environments/environment';
 
@@ -13,6 +19,9 @@ import { environment } from 'src/environments/environment';
     styleUrls: ['./credentials.component.scss']
 })
 export class CredentialsComponent implements OnInit {
+    @ViewChild('modalInfo') modalInfo: ElementRef;
+    @ViewChild('modalCreate') modalCreate: ElementRef;
+
     currentDID: any;
     currentVCs: any[];
     selected: any = {};
@@ -52,26 +61,62 @@ export class CredentialsComponent implements OnInit {
     }
 
     async createVP() {
-        // create a vp
-
         let verifiableCredentials = [];
         Object.entries(this.selected).forEach(([key, value]) => {
             if (value) {
-                const vc_data = this.currentVCs.find((item: any) => item.index === key);
+                const vc_data = this.currentVCs.find((item: any) => item.index == key);
                 if (vc_data) verifiableCredentials.push(vc_data.vc);
             }
         });
 
-        const vp: any = await axios({
-            method: 'POST',
-            url: `${environment.micro_api}reward/presentation/generate`,
-            data: {
-                did: this.currentDID,
-                rewards: verifiableCredentials
-            }
-        });
+        this.modalInfo.nativeElement.classList.remove('error');
+        this.modalInfo.nativeElement.classList.add('waiting');
+        this.modalInfo.nativeElement.innerText = 'Please wait';
+        this.modalCreate.nativeElement.disabled = true;
 
-        console.log(vp);
+        try {
+            const vp: any = await axios({
+                method: 'POST',
+                url: `${environment.micro_api}reward/presentation/generate`,
+                data: {
+                    did: this.currentDID,
+                    rewards: verifiableCredentials
+                }
+            });
+
+            this.modalInfo.nativeElement.innerText = '';
+            this.modalInfo.nativeElement.classList.remove('waiting');
+            this.modalCreate.nativeElement.disabled = false;
+
+            if (!vp?.data?.verifiablePresentation) {
+                this.modalInfo.nativeElement.innerText = 'Failed  to create VP';
+                this.modalInfo.nativeElement.classList.add('error');
+                return;
+            }
+
+            this.messageService.sendMessage(
+                {
+                    task: TASKS.ADD_VP,
+                    vp: btoa(JSON.stringify(vp?.data?.verifiablePresentation))
+                },
+                (response) => {
+                    if (response.result) {
+                        this.toastrService.success('VP created', 'DID_SIOP', {
+                            onActivateTick: true,
+                            positionClass: 'toast-bottom-center'
+                        });
+                    } else if (response.err) {
+                        this.modalInfo.nativeElement.innerText = 'Failed to save VP';
+                        this.modalInfo.nativeElement.classList.add('error');
+                    }
+                }
+            );
+        } catch (error) {
+            this.modalInfo.nativeElement.innerText = error.message;
+            this.modalInfo.nativeElement.classList.remove('waiting');
+            this.modalInfo.nativeElement.classList.add('error');
+            this.modalCreate.nativeElement.disabled = false;
+        }
     }
 
     private loadVCs() {

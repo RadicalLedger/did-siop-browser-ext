@@ -23,7 +23,7 @@ try {
 
 runtime.onMessage.addListener(function (request, sender, sendResponse) {
     tabs.query({ active: true, currentWindow: true }, function (_tabs) {
-        //console.log({ request, tabs });
+        // console.log({ request, tabs, _tabs });
         tabs.sendMessage(
             _tabs[0].id,
             { request, sender, signingInfo: signingInfoSet, loggedIn: loggedInState },

@@ -4,8 +4,12 @@ const nacl = require('tweetnacl');
 import { encode as multibaseEncode } from 'multibase';
 import { addPrefix as mutlicodeAddPrefix } from 'multicodec';
 import * as base58 from 'bs58';
+import Wallet, { Types, generateMnemonic } from 'did-hd-wallet';
+import { publicKeyCreate, ecdsaSign } from 'secp256k1';
+import axios from 'axios';
+import jwt from 'jsonwebtoken';
 
-const createEthrDid = async function (network: string) {
+/* const createEthrDid = async function (network: string) {
     const networks = {
         mainnet: 'https://mainnet.infura.io/v3/e0a6ac9a2c4a4722970325c36b728415',
         rinkeby: 'https://rinkeby.infura.io/v3/e0a6ac9a2c4a4722970325c36b728415',
@@ -26,6 +30,54 @@ const createEthrDid = async function (network: string) {
     return {
         did: ethrDid.did,
         privateKey: acc.privateKey.replace('0x', '')
+    };
+}; */
+
+const createEthrDid = async function (network: string) {
+    const resolver_url = 'https://www.offchaindids.zedeid.com/v2/did/';
+    const mnemonic = generateMnemonic(128);
+
+    const wallet = new Wallet(Types.MNEMONIC, mnemonic);
+
+    const { privateKey: issuerPrivateKey, did: issuerDID } = wallet.getChildKeys('m/256/256/1');
+
+    const issuerChallengeResponse = await axios.post(`${resolver_url}`, {
+        did: issuerDID
+    });
+    const { challenge: issuerChallenge } = jwt.decode(
+        issuerChallengeResponse.data.challengeToken
+    ) as any;
+
+    const issuerResponse = await axios.post(`${resolver_url}`, {
+        did: issuerDID,
+        seed: issuerPrivateKey,
+        challengeResponse: {
+            publicKey: Buffer.from(
+                publicKeyCreate(Buffer.from(issuerPrivateKey as string, 'hex'))
+            ).toString('hex'),
+            cipherText: Buffer.from(
+                ecdsaSign(
+                    Buffer.from(issuerChallenge, 'hex'),
+                    Buffer.from(issuerPrivateKey as string, 'hex')
+                ).signature
+            ).toString('hex'),
+            jwt: issuerChallengeResponse.data.challengeToken
+        }
+    });
+
+    if (issuerResponse?.data?.status !== 'success') {
+        console.error({
+            open: true,
+            title: 'Error',
+            content: 'Issuer DID document creation failed'
+        });
+
+        return {};
+    }
+
+    return {
+        did: issuerDID,
+        privateKey: issuerPrivateKey
     };
 };
 

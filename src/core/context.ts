@@ -1,11 +1,13 @@
 /// <reference types="chrome"/>
 /// <reference types="firefox-webext-browser"/>
 
+import axios from 'axios';
 import { Provider, ERROR_RESPONSES, VPData, Resolvers } from 'did-siop';
 import * as queryString from 'query-string';
 import { STORAGE_KEYS, TASKS } from '../const';
 import { authenticate, checkExtAuthenticationState, initExtAuthentication } from './AuthUtils';
 import { encrypt, decrypt } from './CryptoUtils';
+import { CustomDidResolver } from './custom-did-resolver';
 import { DidCreators } from './DidUtils';
 
 let provider: Provider;
@@ -29,17 +31,15 @@ try {
 
 async function checkSigning() {
     try {
-        let crypto_suite = '@digitalbazaar/ed25519-verification-key-2018';
-        if (localStorage.getItem(STORAGE_KEYS.crypto_suit)) {
-            crypto_suite = localStorage.getItem(STORAGE_KEYS.crypto_suit);
-        }
-
         if (!provider) {
-            let keyResolve = new Resolvers.KeyDidResolver('key', crypto_suite);
-
             let did = decrypt(localStorage.getItem(STORAGE_KEYS.userDID), loggedInState);
 
-            provider = await Provider.getProvider(did, undefined, [keyResolve]);
+            const resolver = new Resolvers.CombinedDidResolver('eth');
+            const customResolver = new CustomDidResolver();
+            resolver.removeAllResolvers();
+            resolver.addResolver(customResolver);
+
+            provider = await Provider.getProvider(did, undefined, [resolver]);
         }
 
         if (signingInfoSet.length < 1) {
@@ -278,19 +278,17 @@ function changePassword(oldPassword: string, newPassword: string): boolean {
 
 async function changeDID(did: string): Promise<string> {
     try {
-        let crypto_suite = '@digitalbazaar/ed25519-verification-key-2018';
-        if (localStorage.getItem(STORAGE_KEYS.crypto_suit)) {
-            crypto_suite = localStorage.getItem(STORAGE_KEYS.crypto_suit);
-        }
+        const resolver = new Resolvers.CombinedDidResolver('eth');
+        const customResolver = new CustomDidResolver();
+        resolver.removeAllResolvers();
+        resolver.addResolver(customResolver);
 
-        let keyResolve2018 = new Resolvers.KeyDidResolver('key', crypto_suite);
+        provider = await Provider.getProvider(did, undefined, [resolver]);
 
-        let newProvider = await Provider.getProvider(did, undefined, [keyResolve2018]);
-        provider = newProvider;
         let encryptedDID = encrypt(did, loggedInState);
         localStorage.setItem(STORAGE_KEYS.userDID, encryptedDID);
 
-        if (!Array.isArray(signingInfoSet)) signingInfoSet = [];
+        signingInfoSet = [];
         let encryptedSigningInfo = encrypt(JSON.stringify(signingInfoSet), loggedInState);
         localStorage.setItem(STORAGE_KEYS.signingInfoSet, encryptedSigningInfo);
         return 'Identity changed successfully';
@@ -304,6 +302,7 @@ async function addKey(key: string): Promise<string> {
     try {
         await checkSigning();
         let kid = provider.addSigningParams(key);
+
         signingInfoSet.push({
             key: key,
             kid: kid
@@ -344,8 +343,10 @@ async function processRequest(request_index: number, confirmation: any, vp_data:
             try {
                 if (confirmation) {
                     try {
+                        console.log({ request });
+                        console.log({ parsed: queryString.parseUrl(request) });
                         let decodedRequest = await provider.validateRequest(request);
-
+                        console.log({ decodedRequest });
                         try {
                             //let response = await provider.generateResponse(decodedRequest.payload);
                             let response = {};
@@ -394,7 +395,7 @@ async function processRequest(request_index: number, confirmation: any, vp_data:
                             processError = err;
                         }
                     } catch (err) {
-                        console.log({ err });
+                        console.log({ error1: err });
 
                         let uri = queryString.parseUrl(request).query.redirect_uri;
                         if (uri) {
@@ -416,15 +417,19 @@ async function processRequest(request_index: number, confirmation: any, vp_data:
                             provider.generateErrorResponse(
                                 ERROR_RESPONSES.access_denied.err.message
                             );
-                        tabs.create({
-                            url: uri
-                        });
+
+                        if (tabs?.create) {
+                            tabs.create({
+                                url: uri
+                            });
+                        }
                         removeRequest(request_index);
                     } else {
                         processError = new Error('invalid redirect url');
                     }
                 }
             } catch (err) {
+                console.log({ error2: err });
                 processError = err;
             }
         } catch (err) {

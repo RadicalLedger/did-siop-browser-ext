@@ -1,9 +1,4 @@
 import { Component, OnInit, EventEmitter, Output, ChangeDetectorRef } from '@angular/core';
-import {
-    Ed25519VerificationKey2018,
-    Ed25519Signature2018
-} from '@transmute/ed25519-signature-2018';
-import { verifiable } from '@transmute/vc.js';
 import axios from 'axios';
 import { ToastrService } from 'ngx-toastr';
 import { TASKS } from 'src/const';

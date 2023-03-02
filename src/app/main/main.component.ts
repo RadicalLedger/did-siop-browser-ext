@@ -21,12 +21,14 @@ export class MainComponent {
 
     currentDID: string;
     currentRequests: any[];
+    currentVPs: any[];
     requestVpData: any[];
     responseVpTokenData: any;
     response_VpTokenData: any;
 
     selectedRequest: any;
     selectedRequestClientID: string;
+    selectVpState: boolean = false;
 
     @ViewChild('requestModalClose') requestModalClose: ElementRef;
     @ViewChild('requestModalInfo') requestModalInfo: ElementRef;
@@ -63,6 +65,7 @@ export class MainComponent {
     ) {
         this.loadIdentity();
         this.loadRequests();
+        this.loadVPs();
     }
 
     logout() {
@@ -183,6 +186,13 @@ export class MainComponent {
         }
     }
 
+    onSelectVpState(state: boolean) {
+        this.selectVpState = state;
+        this.changeDetector.detectChanges();
+    }
+
+    onSelectVp(data: any) {}
+
     parseJwt(token: string) {
         return JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
     }
@@ -219,6 +229,23 @@ export class MainComponent {
                         'Error returned from background - response.result & response.err are null'
                     );
                 }
+            }
+        );
+    }
+
+    private loadVPs() {
+        this.messageService.sendMessage(
+            {
+                task: TASKS.GET_VPS
+            },
+            (response) => {
+                console.log(response);
+                if (response.vps) {
+                    this.currentVPs = response.vps;
+                } else {
+                    this.currentVPs = [];
+                }
+                this.changeDetector.detectChanges();
             }
         );
     }

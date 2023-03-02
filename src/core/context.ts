@@ -16,14 +16,17 @@ let loggedInState: string = undefined;
 
 let runtime: any;
 let tabs: any;
+let storage: any;
 
 try {
     runtime = browser.runtime;
     tabs = browser.tabs;
+    storage = browser.storage.local;
 } catch (err) {
     try {
         runtime = chrome.runtime;
         tabs = chrome.tabs;
+        storage = chrome.storage.local;
     } catch (err) {
         console.log('DID-SIOP ERROR: No runtime detected');
     }
@@ -157,7 +160,9 @@ runtime.onMessage.addListener(function ({ request, sender, signingInfo, loggedIn
                 break;
             }
             case TASKS.GET_VCS: {
-                sendResponse({ vcs: getVCs() });
+                getVCs((data) => {
+                    sendResponse({ vcs: data });
+                });
                 break;
             }
             case TASKS.GET_VPS: {
@@ -166,7 +171,9 @@ runtime.onMessage.addListener(function ({ request, sender, signingInfo, loggedIn
             }
             case TASKS.REMOVE_VC: {
                 removeVC(request.index);
-                sendResponse({ vcs: getVCs() });
+                getVCs((data) => {
+                    sendResponse({ vcs: data });
+                });
                 break;
             }
             case TASKS.REMOVE_VP: {
@@ -175,9 +182,8 @@ runtime.onMessage.addListener(function ({ request, sender, signingInfo, loggedIn
                 break;
             }
             case TASKS.ADD_VP: {
-                console.log(request);
                 try {
-                    let result = addVP(request.vp);
+                    let result = addVP(request.name, request.vp);
                     sendResponse({ result });
                 } catch (err) {
                     sendResponse({ err: err.message });
@@ -527,50 +533,55 @@ function removeRequest(index: number): string {
     return request.request;
 }
 
-/* Verifiable credentials */
+/* clear local storage */
+//storage.clear();
 
+/* view local storage */
+storage.get(function (result) {
+    console.log({ storage: result });
+});
+
+/* Verifiable credentials */
 function addVC(vc: any): boolean {
     try {
         if (!vc) throw new Error('Invalid visual credential');
-        let storedVcs: any = localStorage.getItem(STORAGE_KEYS.vcs);
-        if (!storedVcs) storedVcs = '[]';
-        storedVcs = JSON.parse(storedVcs);
-        let index = 0;
-        for (let i = 0; i < storedVcs.length; i++) {
-            if (storedVcs[i].index > index) index = storedVcs[i].index;
-        }
-        ++index;
-        storedVcs.push({ index, vc });
-        localStorage.setItem(STORAGE_KEYS.vcs, JSON.stringify(storedVcs));
-        return true;
+
+        return storage.get([STORAGE_KEYS.vcs], function (result) {
+            let store = result[STORAGE_KEYS.vcs] || [];
+
+            let index = (Math.max(...store.map((o) => o.index)) || 0) + 1;
+            store.push({ index, vc: JSON.parse(atob(vc)) });
+            storage.set({ [STORAGE_KEYS.vcs]: store });
+
+            return true;
+        });
     } catch (err) {
         throw err;
     }
 }
 
-function getVCs(): any[] {
-    let storedVCs: any = localStorage.getItem(STORAGE_KEYS.vcs);
-    if (!storedVCs) storedVCs = '[]';
-    let parsed = JSON.parse(storedVCs);
-    let data = [];
+function getVCs(callback: any) {
+    storage.get([STORAGE_KEYS.vcs], function (result) {
+        let store = result[STORAGE_KEYS.vcs] || [];
 
-    for (let i = 0; i < parsed.length; i++) {
-        const element = parsed[i];
-
-        try {
-            data.push({
-                index: element.index,
-                vc: JSON.parse(atob(element?.vc))
-            });
-        } catch (error) {
-            continue;
-        }
-    }
-
-    return data;
+        callback(store);
+    });
 }
 
 function removeVC(index: number): string {
+    let store: any = storage.get(STORAGE_KEYS.vcs) || [];
+
+    let request = store.filter((sr) => {
+        return sr.index == index;
+    })[0];
+
+    store = store.filter((sr) => {
+        return sr.index != index;
+    });
+    store.set({ [STORAGE_KEYS.vcs]: store });
+    return request.request;
+}
+/* function removeVC(index: number): string {
     let storedVcs: any = localStorage.getItem(STORAGE_KEYS.vcs);
     if (!storedVcs) storedVcs = '[]';
     storedVcs = JSON.parse(storedVcs);
@@ -582,22 +593,25 @@ function removeVC(index: number): string {
     });
     localStorage.setItem(STORAGE_KEYS.vcs, JSON.stringify(storedVcs));
     return request.request;
-}
+} */
 
 /* Verifiable presentations */
 
-function addVP(vp: any): boolean {
+function addVP(name: string, vp: any): boolean {
     try {
+        if (!name) throw new Error('Visual presentation name is required');
         if (!vp) throw new Error('Invalid visual presentation');
+
         let storedVps: any = localStorage.getItem(STORAGE_KEYS.vps);
         if (!storedVps) storedVps = '[]';
         storedVps = JSON.parse(storedVps);
+
         let index = 0;
         for (let i = 0; i < storedVps.length; i++) {
             if (storedVps[i].index > index) index = storedVps[i].index;
         }
         ++index;
-        storedVps.push({ index, vp });
+        storedVps.push({ index, vp, name });
         localStorage.setItem(STORAGE_KEYS.vps, JSON.stringify(storedVps));
         return true;
     } catch (err) {
@@ -617,6 +631,7 @@ function getVPs(): any[] {
         try {
             data.push({
                 index: element.index,
+                name: element.name,
                 vp: JSON.parse(atob(element?.vp))
             });
         } catch (error) {

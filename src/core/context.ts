@@ -32,10 +32,19 @@ try {
     }
 }
 
+const getStorage = async (key: string) => {
+    return new Promise((resolve) => {
+        storage.get([key], async (result) => {
+            resolve(result[key]);
+        });
+    });
+};
+
 async function checkSigning() {
     try {
         if (!provider) {
-            let did = decrypt(localStorage.getItem(STORAGE_KEYS.userDID), loggedInState);
+            let did: any = await getStorage(STORAGE_KEYS.userDID);
+            did = decrypt(did, loggedInState);
 
             const resolver = new Resolvers.CombinedDidResolver('eth');
             const customResolver = new CustomDidResolver();
@@ -46,9 +55,8 @@ async function checkSigning() {
         }
 
         if (signingInfoSet.length < 1) {
-            signingInfoSet = JSON.parse(
-                decrypt(localStorage.getItem(STORAGE_KEYS.signingInfoSet), loggedInState)
-            );
+            let result: any = await getStorage(STORAGE_KEYS.signingInfoSet);
+            signingInfoSet = JSON.parse(decrypt(result, loggedInState));
 
             if (!signingInfoSet) {
                 signingInfoSet = [];
@@ -117,7 +125,9 @@ runtime.onMessage.addListener(function ({ request, sender, signingInfo, loggedIn
                 break;
             }
             case TASKS.LOGIN: {
-                sendResponse({ result: login(request.password) });
+                login(request.password, (result: boolean) => {
+                    sendResponse({ result });
+                });
                 break;
             }
             case TASKS.LOGOUT: {
@@ -125,8 +135,9 @@ runtime.onMessage.addListener(function ({ request, sender, signingInfo, loggedIn
                 break;
             }
             case TASKS.CHECK_EXT_AUTHENTICATION: {
-                let result = checkExtAuthenticationState();
-                sendResponse({ result: result });
+                checkExtAuthenticationState((result: boolean) => {
+                    sendResponse({ result });
+                });
                 break;
             }
             case TASKS.INIT_EXT_AUTHENTICATION: {
@@ -134,8 +145,8 @@ runtime.onMessage.addListener(function ({ request, sender, signingInfo, loggedIn
                 break;
             }
             case TASKS.CHANGE_EXT_AUTHENTICATION: {
-                sendResponse({
-                    result: changePassword(request.oldPassword, request.newPassword)
+                changePassword(request.oldPassword, request.newPassword, (result: boolean) => {
+                    sendResponse({ result });
                 });
                 break;
             }
@@ -143,20 +154,30 @@ runtime.onMessage.addListener(function ({ request, sender, signingInfo, loggedIn
                 let did = '';
                 let keys = '';
 
-                try {
-                    let encryptedDID = localStorage.getItem(STORAGE_KEYS.userDID);
-                    let encryptedSigningInfo = localStorage.getItem(STORAGE_KEYS.signingInfoSet);
-                    if (encryptedDID) {
-                        did = decrypt(encryptedDID, loggedInState);
-                        keys = decrypt(encryptedSigningInfo, loggedInState);
-                    }
-                } catch (err) {}
+                storage.get([STORAGE_KEYS.userDID], (didResult) => {
+                    storage.get([STORAGE_KEYS.signingInfoSet], (signingInfoSetResult) => {
+                        try {
+                            let encryptedDID = didResult[STORAGE_KEYS.userDID];
+                            let encryptedSigningInfo =
+                                signingInfoSetResult[STORAGE_KEYS.signingInfoSet];
 
-                sendResponse({ did, keys });
+                            if (encryptedDID) {
+                                did = decrypt(encryptedDID, loggedInState);
+                                keys = decrypt(encryptedSigningInfo, loggedInState);
+                            }
+                        } catch (err) {
+                            sendResponse({ did: '', keys: [] });
+                        }
+
+                        sendResponse({ did, keys });
+                    });
+                });
                 break;
             }
             case TASKS.GET_REQUESTS: {
-                sendResponse({ didSiopRequests: getRequests() });
+                getRequests((didSiopRequests) => {
+                    sendResponse({ didSiopRequests });
+                });
                 break;
             }
             case TASKS.GET_VCS: {
@@ -166,19 +187,21 @@ runtime.onMessage.addListener(function ({ request, sender, signingInfo, loggedIn
                 break;
             }
             case TASKS.GET_VPS: {
-                sendResponse({ vps: getVPs() });
+                getVPs((data) => {
+                    sendResponse({ vps: data });
+                });
                 break;
             }
             case TASKS.REMOVE_VC: {
-                removeVC(request.index);
-                getVCs((data) => {
+                removeVC(request.index, (data) => {
                     sendResponse({ vcs: data });
                 });
                 break;
             }
             case TASKS.REMOVE_VP: {
-                removeVP(request.index);
-                sendResponse({ vps: getVPs() });
+                removeVP(request.index, (data) => {
+                    sendResponse({ vps: data });
+                });
                 break;
             }
             case TASKS.ADD_VP: {
@@ -221,8 +244,9 @@ runtime.onMessage.addListener(function ({ request, sender, signingInfo, loggedIn
         switch (request.task) {
             case TASKS.MAKE_REQUEST: {
                 try {
-                    let result = addRequest(request.did_siop);
-                    sendResponse({ result });
+                    addRequest(request.did_siop, (result) => {
+                        sendResponse({ result });
+                    });
                 } catch (err) {
                     sendResponse({ err: err.message });
                 }
@@ -259,12 +283,15 @@ function checkLoggedInState(): boolean {
     return false;
 }
 
-function login(password: string): boolean {
-    if (authenticate(password)) {
-        loggedInState = password;
-        return true;
-    }
-    return false;
+function login(password: string, callback: any) {
+    authenticate(password, (state: boolean) => {
+        if (state) {
+            loggedInState = password;
+            return callback(true);
+        }
+
+        callback(false);
+    });
 }
 
 function logout(): boolean {
@@ -275,30 +302,36 @@ function logout(): boolean {
     return false;
 }
 
-function changePassword(oldPassword: string, newPassword: string): boolean {
-    if (login(oldPassword)) {
-        let changed = initExtAuthentication(newPassword);
-        if (changed) {
-            let encryptedDID = localStorage.getItem(STORAGE_KEYS.userDID);
-            let encryptedSigningInfo = localStorage.getItem(STORAGE_KEYS.signingInfoSet);
-            if (encryptedDID) {
-                let didRecrypted = encrypt(decrypt(encryptedDID, oldPassword), newPassword);
-                localStorage.setItem(STORAGE_KEYS.userDID, didRecrypted);
+function changePassword(oldPassword: string, newPassword: string, callback: any) {
+    login(oldPassword, async (state: any) => {
+        if (state) {
+            let changed = initExtAuthentication(newPassword);
+            if (changed) {
+                let encryptedDID: any = await getStorage(STORAGE_KEYS.userDID);
+                let encryptedSigningInfo: any = await getStorage(STORAGE_KEYS.signingInfoSet);
+
+                if (encryptedDID) {
+                    let didRecrypted = encrypt(decrypt(encryptedDID, oldPassword), newPassword);
+                    storage.set({ [STORAGE_KEYS.userDID]: didRecrypted });
+                }
+                if (encryptedSigningInfo) {
+                    let keysRecrypted = encrypt(
+                        decrypt(encryptedSigningInfo, oldPassword),
+                        newPassword
+                    );
+                    storage.set({ [STORAGE_KEYS.signingInfoSet]: keysRecrypted });
+                }
+
+                loggedInState = newPassword;
+
+                return callback(true);
+            } else {
+                return callback(false);
             }
-            if (encryptedSigningInfo) {
-                let keysRecrypted = encrypt(
-                    decrypt(encryptedSigningInfo, oldPassword),
-                    newPassword
-                );
-                localStorage.setItem(STORAGE_KEYS.signingInfoSet, keysRecrypted);
-            }
-            loggedInState = newPassword;
-            return true;
-        } else {
-            return false;
         }
-    }
-    return false;
+
+        callback(false);
+    });
 }
 
 async function changeDID(did: string): Promise<string> {
@@ -311,11 +344,12 @@ async function changeDID(did: string): Promise<string> {
         provider = await Provider.getProvider(did, undefined, [resolver]);
 
         let encryptedDID = encrypt(did, loggedInState);
-        localStorage.setItem(STORAGE_KEYS.userDID, encryptedDID);
+        storage.set({ [STORAGE_KEYS.userDID]: encryptedDID });
 
         signingInfoSet = [];
         let encryptedSigningInfo = encrypt(JSON.stringify(signingInfoSet), loggedInState);
-        localStorage.setItem(STORAGE_KEYS.signingInfoSet, encryptedSigningInfo);
+        storage.set({ [STORAGE_KEYS.signingInfoSet]: encryptedSigningInfo });
+
         return 'Identity changed successfully';
     } catch (err) {
         console.log({ err });
@@ -334,7 +368,7 @@ async function addKey(key: string): Promise<string> {
         });
 
         let encryptedSigningInfo = encrypt(JSON.stringify(signingInfoSet), loggedInState);
-        localStorage.setItem(STORAGE_KEYS.signingInfoSet, encryptedSigningInfo);
+        storage.set({ [STORAGE_KEYS.signingInfoSet]: encryptedSigningInfo });
         return kid;
     } catch (err) {
         console.log({ err });
@@ -351,7 +385,7 @@ async function removeKey(kid: string): Promise<string> {
         });
 
         let encryptedSigningInfo = encrypt(JSON.stringify(signingInfoSet), loggedInState);
-        localStorage.setItem(STORAGE_KEYS.signingInfoSet, encryptedSigningInfo);
+        storage.set({ [STORAGE_KEYS.signingInfoSet]: encryptedSigningInfo });
         return 'Key removed successfully';
     } catch (err) {
         return Promise.reject(err);
@@ -360,7 +394,7 @@ async function removeKey(kid: string): Promise<string> {
 
 async function processRequest(request_index: number, confirmation: any, vp_data: any) {
     let processError: Error;
-    let request = getRequestByIndex(request_index).request;
+    let request = await getRequestByIndex(request_index).request;
 
     if (queryString.parseUrl(request).url === 'openid://') {
         try {
@@ -412,7 +446,7 @@ async function processRequest(request_index: number, confirmation: any, vp_data:
                                     ' with token: ',
                                 response
                             );
-                            removeRequest(request_index);
+                            removeRequest(request_index, () => {});
                             return (
                                 'Successfully logged into ' + decodedRequest.payload.redirect_uri
                             );
@@ -428,7 +462,8 @@ async function processRequest(request_index: number, confirmation: any, vp_data:
                             tabs.create({
                                 url: uri
                             });
-                            removeRequest(request_index);
+
+                            removeRequest(request_index, () => {});
                         } else {
                             processError = new Error('invalid redirect url');
                         }
@@ -448,7 +483,7 @@ async function processRequest(request_index: number, confirmation: any, vp_data:
                                 url: uri
                             });
                         }
-                        removeRequest(request_index);
+                        removeRequest(request_index, () => {});
                     } else {
                         processError = new Error('invalid redirect url');
                     }
@@ -484,57 +519,74 @@ async function postToRP(redirectUri: string, response: any) {
     }
 }
 
-function getRequests(): any[] {
-    let storedRequests: any = localStorage.getItem(STORAGE_KEYS.requests);
-    if (!storedRequests) storedRequests = '[]';
-    return JSON.parse(storedRequests);
+function getRequests(callback: any) {
+    storage.get([STORAGE_KEYS.requests], (result) => {
+        let storedRequests = result[STORAGE_KEYS.requests] || [];
+
+        callback(storedRequests);
+    });
 }
 
 function getRequestByIndex(index: number): any {
-    let storedRequests: any = localStorage.getItem(STORAGE_KEYS.requests);
-    if (!storedRequests) storedRequests = '[]';
-    storedRequests = JSON.parse(storedRequests);
-    return storedRequests.filter((sr) => {
-        return sr.index == index;
-    })[0];
+    return new Promise((resolve) => {
+        storage.get([STORAGE_KEYS.requests], (result) => {
+            let storedRequests = result[STORAGE_KEYS.requests] || [];
+
+            resolve(
+                storedRequests.filter((sr) => {
+                    return sr.index == index;
+                })[0]
+            );
+        });
+    });
 }
 
-function addRequest(request: string): boolean {
+function addRequest(request: string, callback: any) {
     try {
         if (queryString.parseUrl(request).url != 'openid://') throw new Error('Invalid request');
-        let storedRequests: any = localStorage.getItem(STORAGE_KEYS.requests);
-        if (!storedRequests) storedRequests = '[]';
-        storedRequests = JSON.parse(storedRequests);
-        let index = 0;
-        for (let i = 0; i < storedRequests.length; i++) {
-            if (storedRequests[i].index > index) index = storedRequests[i].index;
-        }
-        ++index;
-        let client_id = queryString.parseUrl(request).query.client_id;
-        storedRequests.push({ index, client_id, request });
-        localStorage.setItem(STORAGE_KEYS.requests, JSON.stringify(storedRequests));
-        return true;
+
+        storage.get([STORAGE_KEYS.requests], (result) => {
+            let storedRequests: any = result[STORAGE_KEYS.requests] || [];
+
+            let index = 0;
+            for (let i = 0; i < storedRequests.length; i++) {
+                if (storedRequests[i].index > index) index = storedRequests[i].index;
+            }
+            ++index;
+
+            let client_id = queryString.parseUrl(request).query.client_id;
+            storedRequests.push({ index, client_id, request });
+
+            storage.set({ [STORAGE_KEYS.requests]: storedRequests });
+
+            callback(true);
+        });
     } catch (err) {
+        callback(false);
         throw err;
     }
 }
 
-function removeRequest(index: number): string {
-    let storedRequests: any = localStorage.getItem(STORAGE_KEYS.requests);
-    if (!storedRequests) storedRequests = '[]';
-    storedRequests = JSON.parse(storedRequests);
-    let request = storedRequests.filter((sr) => {
-        return sr.index == index;
-    })[0];
-    storedRequests = storedRequests.filter((sr) => {
-        return sr.index != index;
+function removeRequest(index: number, callback: any) {
+    storage.get([STORAGE_KEYS.requests], (result) => {
+        let storedRequests: any = result[STORAGE_KEYS.requests] || [];
+
+        let request = storedRequests.filter((sr) => {
+            return sr.index == index;
+        })[0];
+
+        storedRequests = storedRequests.filter((sr) => {
+            return sr.index != index;
+        });
+
+        storage.set({ [STORAGE_KEYS.requests]: storedRequests });
+
+        callback(request.request);
     });
-    localStorage.setItem(STORAGE_KEYS.requests, JSON.stringify(storedRequests));
-    return request.request;
 }
 
 /* clear local storage */
-//storage.clear();
+// storage.clear();
 
 /* view local storage */
 storage.get(function (result) {
@@ -549,7 +601,9 @@ function addVC(vc: any): boolean {
         return storage.get([STORAGE_KEYS.vcs], function (result) {
             let store = result[STORAGE_KEYS.vcs] || [];
 
-            let index = (Math.max(...store.map((o) => o.index)) || 0) + 1;
+            let index = 1;
+            if (store.length > 0) index = Math.max(...store.map((o) => o.index)) + 1;
+
             store.push({ index, vc: JSON.parse(atob(vc)) });
             storage.set({ [STORAGE_KEYS.vcs]: store });
 
@@ -568,92 +622,62 @@ function getVCs(callback: any) {
     });
 }
 
-function removeVC(index: number): string {
-    let store: any = storage.get(STORAGE_KEYS.vcs) || [];
+function removeVC(index: number, callback: any) {
+    storage.get([STORAGE_KEYS.vcs], function (result) {
+        let store = result[STORAGE_KEYS.vcs] || [];
 
-    let request = store.filter((sr) => {
-        return sr.index == index;
-    })[0];
+        store = store.filter((sr) => {
+            return sr.index != index;
+        });
 
-    store = store.filter((sr) => {
-        return sr.index != index;
+        storage.set({ [STORAGE_KEYS.vcs]: store });
+
+        callback(store);
     });
-    store.set({ [STORAGE_KEYS.vcs]: store });
-    return request.request;
 }
-/* function removeVC(index: number): string {
-    let storedVcs: any = localStorage.getItem(STORAGE_KEYS.vcs);
-    if (!storedVcs) storedVcs = '[]';
-    storedVcs = JSON.parse(storedVcs);
-    let request = storedVcs.filter((sr) => {
-        return sr.index == index;
-    })[0];
-    storedVcs = storedVcs.filter((sr) => {
-        return sr.index != index;
-    });
-    localStorage.setItem(STORAGE_KEYS.vcs, JSON.stringify(storedVcs));
-    return request.request;
-} */
 
 /* Verifiable presentations */
-
 function addVP(name: string, vp: any): boolean {
     try {
         if (!name) throw new Error('Visual presentation name is required');
         if (!vp) throw new Error('Invalid visual presentation');
 
-        let storedVps: any = localStorage.getItem(STORAGE_KEYS.vps);
-        if (!storedVps) storedVps = '[]';
-        storedVps = JSON.parse(storedVps);
+        return storage.get([STORAGE_KEYS.vps], function (result) {
+            let store = result[STORAGE_KEYS.vps] || [];
 
-        let index = 0;
-        for (let i = 0; i < storedVps.length; i++) {
-            if (storedVps[i].index > index) index = storedVps[i].index;
-        }
-        ++index;
-        storedVps.push({ index, vp, name });
-        localStorage.setItem(STORAGE_KEYS.vps, JSON.stringify(storedVps));
-        return true;
+            let index = 1;
+            if (store.length > 0) index = Math.max(...store.map((o) => o.index)) + 1;
+
+            store.push({ index, name, vp: JSON.parse(atob(vp)) });
+            storage.set({ [STORAGE_KEYS.vps]: store });
+
+            return true;
+        });
     } catch (err) {
         throw err;
     }
 }
 
-function getVPs(): any[] {
-    let storedVps: any = localStorage.getItem(STORAGE_KEYS.vps);
-    if (!storedVps) storedVps = '[]';
-    let parsed = JSON.parse(storedVps);
-    let data = [];
+function getVPs(callback: any) {
+    storage.get([STORAGE_KEYS.vps], function (result) {
+        let store = result[STORAGE_KEYS.vps] || [];
 
-    for (let i = 0; i < parsed.length; i++) {
-        const element = parsed[i];
-
-        try {
-            data.push({
-                index: element.index,
-                name: element.name,
-                vp: JSON.parse(atob(element?.vp))
-            });
-        } catch (error) {
-            continue;
-        }
-    }
-
-    return data;
+        callback(store);
+    });
 }
 
-function removeVP(index: number): string {
-    let storedVps: any = localStorage.getItem(STORAGE_KEYS.vps);
-    if (!storedVps) storedVps = '[]';
-    storedVps = JSON.parse(storedVps);
-    let request = storedVps.filter((sr) => {
-        return sr.index == index;
-    })[0];
-    storedVps = storedVps.filter((sr) => {
-        return sr.index != index;
+function removeVP(index: number, callback) {
+    storage.get([STORAGE_KEYS.vps], function (result) {
+        let store = result[STORAGE_KEYS.vps] || [];
+
+        store = store.filter((sr) => {
+            return sr.index != index;
+        });
+
+        storage.set({ [STORAGE_KEYS.vps]: store });
+
+        callback(store);
     });
-    localStorage.setItem(STORAGE_KEYS.vps, JSON.stringify(storedVps));
-    return request.request;
 }
 
 function setSettings(base64: string) {
@@ -663,7 +687,7 @@ function setSettings(base64: string) {
 
         /* set key */
         if (Array.isArray(settings?.did_resolver)) {
-            localStorage.setItem(STORAGE_KEYS.crypto_suit, settings?.did_resolver[0]?.cryptoSuite);
+            storage.set({ [STORAGE_KEYS.crypto_suit]: settings?.did_resolver[0]?.cryptoSuite });
         }
 
         /* set signing key */

@@ -191,7 +191,10 @@ export class MainComponent {
         this.changeDetector.detectChanges();
     }
 
-    onSelectVp(data: any) {}
+    onSelectVp(vp: any) {
+        this.responseVpTokenData = vp;
+        this.onSelectVpState(false);
+    }
 
     parseJwt(token: string) {
         return JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());

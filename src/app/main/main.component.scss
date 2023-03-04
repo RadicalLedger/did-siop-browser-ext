@@ -189,15 +189,35 @@
     display: none !important;
 
     &[data-active='true'] {
-        display: block;
+        display: block !important;
     }
 }
 
 .vp-container {
-    display: flex;
     flex-direction: column;
     gap: 10px;
     overflow-y: auto;
     width: 100%;
     height: 250px;
+    border-radius: 5px;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    padding: 5px;
+
+    &[data-active='true'] {
+        display: flex !important;
+    }
+
+    .vp-group {
+        width: 100%;
+        background-color: $app-primary;
+        margin-bottom: 10px;
+        padding: 5px;
+        border-radius: 5px;
+        transition: all 0.3s ease;
+        border-color: #28a745 !important;
+
+        &:hover {
+            background-color: #1e7e34;
+        }
+    }
 }

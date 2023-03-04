@@ -216,7 +216,7 @@ runtime.onMessage.addListener(function ({ request, sender, signingInfo, loggedIn
             case TASKS.PROCESS_REQUEST: {
                 processRequest(request.did_siop_index, request.confirmation, request.vp_data)
                     .then((result) => {
-                        sendResponse({ result: result });
+                        sendResponse({ result });
                     })
                     .catch((err) => {
                         console.log('Error in processing request : ', err.message);
@@ -394,7 +394,8 @@ async function removeKey(kid: string): Promise<string> {
 
 async function processRequest(request_index: number, confirmation: any, vp_data: any) {
     let processError: Error;
-    let request = await getRequestByIndex(request_index).request;
+    let request_result: any = await getRequestByIndex(request_index);
+    let request = request_result?.request;
 
     if (queryString.parseUrl(request).url === 'openid://') {
         try {
@@ -405,7 +406,7 @@ async function processRequest(request_index: number, confirmation: any, vp_data:
                         console.log({ request });
                         console.log({ parsed: queryString.parseUrl(request) });
                         let decodedRequest = await provider.validateRequest(request);
-                        console.log({ decodedRequest });
+
                         try {
                             //let response = await provider.generateResponse(decodedRequest.payload);
                             let response = {};
@@ -446,6 +447,7 @@ async function processRequest(request_index: number, confirmation: any, vp_data:
                                     ' with token: ',
                                 response
                             );
+
                             removeRequest(request_index, () => {});
                             return (
                                 'Successfully logged into ' + decodedRequest.payload.redirect_uri
@@ -527,7 +529,7 @@ function getRequests(callback: any) {
     });
 }
 
-function getRequestByIndex(index: number): any {
+async function getRequestByIndex(index: number) {
     return new Promise((resolve) => {
         storage.get([STORAGE_KEYS.requests], (result) => {
             let storedRequests = result[STORAGE_KEYS.requests] || [];

@@ -35,24 +35,29 @@ for (let i = 0; i < didSIOPLogins.length; i++) {
     });
 }
 
-const didSiopVC = document.querySelectorAll('[data-did-siop-vc]');
-for (let i = 0; i < didSiopVC.length; i++) {
-    didSiopVC[i].addEventListener('click', function () {
-        let vc = this.getAttribute('data-did-siop-vc');
-        runtime.sendMessage(
-            {
-                task: TASKS.ADD_VC,
-                vc: vc
-            },
-            (response) => {
-                if (response.result) {
-                    console.log('Request sent to DID-SIOP');
-                } else if (response.err) {
-                    throw new Error('DID_SIOP_VC_ERROR: ' + response.err);
+function didSiopVcBtn() {
+    const didSiopVC = document.querySelectorAll('[data-did-siop-vc]');
+    for (let i = 0; i < didSiopVC.length; i++) {
+        const element = <HTMLButtonElement>didSiopVC[i];
+
+        element.dataset.active = 'true';
+        element.addEventListener('click', function () {
+            let vc = this.getAttribute('data-did-siop-vc');
+            runtime.sendMessage(
+                {
+                    task: TASKS.ADD_VC,
+                    vc: vc
+                },
+                (response) => {
+                    if (response.result) {
+                        console.log('Request sent to DID-SIOP');
+                    } else if (response.err) {
+                        throw new Error('DID_SIOP_VC_ERROR: ' + response.err);
+                    }
                 }
-            }
-        );
-    });
+            );
+        });
+    }
 }
 
 function didSiopSettingsBtn() {
@@ -81,6 +86,7 @@ function didSiopSettingsBtn() {
 setInterval(() => {
     if (localStorage.getItem('new-content')) {
         didSiopSettingsBtn();
+        didSiopVcBtn();
 
         localStorage.removeItem('new-content');
     }

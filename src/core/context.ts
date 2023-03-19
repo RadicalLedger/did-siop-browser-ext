@@ -270,6 +270,15 @@ runtime.onMessage.addListener(function ({ request, sender, signingInfo, loggedIn
                 }
                 break;
             }
+            case TASKS.GET_LOGIN_STATE: {
+                try {
+                    let result = getLoggedInState();
+                    sendResponse({ result });
+                } catch (err) {
+                    sendResponse({ err: err.message });
+                }
+                break;
+            }
         }
     }
 
@@ -283,18 +292,27 @@ function checkLoggedInState(): boolean {
     return false;
 }
 
+function getLoggedInState(): any {
+    return loggedInState;
+}
+
 function login(password: string, callback: any) {
     authenticate(password, (state: boolean) => {
+        localStorage.setItem('new-content', 'true');
+
         if (state) {
             loggedInState = password;
             return callback(true);
         }
 
+        storage.set({ [STORAGE_KEYS.loginState]: undefined });
         callback(false);
     });
 }
 
 function logout(): boolean {
+    localStorage.setItem('new-content', 'true');
+
     if (loggedInState) {
         loggedInState = undefined;
         return true;
@@ -324,6 +342,7 @@ function changePassword(oldPassword: string, newPassword: string, callback: any)
 
                 loggedInState = newPassword;
 
+                localStorage.setItem('new-content', 'true');
                 return callback(true);
             } else {
                 return callback(false);
@@ -350,6 +369,7 @@ async function changeDID(did: string): Promise<string> {
         let encryptedSigningInfo = encrypt(JSON.stringify(signingInfoSet), loggedInState);
         storage.set({ [STORAGE_KEYS.signingInfoSet]: encryptedSigningInfo });
 
+        localStorage.setItem('new-content', 'true');
         return 'Identity changed successfully';
     } catch (err) {
         console.log({ err });
@@ -369,6 +389,8 @@ async function addKey(key: string): Promise<string> {
 
         let encryptedSigningInfo = encrypt(JSON.stringify(signingInfoSet), loggedInState);
         storage.set({ [STORAGE_KEYS.signingInfoSet]: encryptedSigningInfo });
+
+        localStorage.setItem('new-content', 'true');
         return kid;
     } catch (err) {
         console.log({ err });
@@ -386,6 +408,8 @@ async function removeKey(kid: string): Promise<string> {
 
         let encryptedSigningInfo = encrypt(JSON.stringify(signingInfoSet), loggedInState);
         storage.set({ [STORAGE_KEYS.signingInfoSet]: encryptedSigningInfo });
+
+        localStorage.setItem('new-content', 'true');
         return 'Key removed successfully';
     } catch (err) {
         return Promise.reject(err);
@@ -591,9 +615,9 @@ function removeRequest(index: number, callback: any) {
 // storage.clear();
 
 /* view local storage */
-storage.get(function (result) {
+/* storage.get(function (result) {
     console.log({ storage: result });
-});
+}); */
 
 /* Verifiable credentials */
 function addVC(vc: any): boolean {

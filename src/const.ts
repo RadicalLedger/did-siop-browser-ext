@@ -6,7 +6,8 @@ export const STORAGE_KEYS = {
     requests: 'did_siop_requests',
     crypto_suit: 'did_siop_crypto_suit',
     vcs: 'visual_credentials',
-    vps: 'visual_presentations'
+    vps: 'visual_presentations',
+    loginState: 'did_siop_login_state'
 };
 
 export const enum TASKS {
@@ -30,5 +31,6 @@ export const enum TASKS {
     GET_VCS,
     ADD_VP,
     REMOVE_VP,
-    GET_VPS
+    GET_VPS,
+    GET_LOGIN_STATE
 }

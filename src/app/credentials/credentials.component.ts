@@ -12,6 +12,8 @@ import { ToastrService } from 'ngx-toastr';
 import { TASKS } from 'src/const';
 import { BackgroundMessageService } from '../background-message.service';
 import { environment } from 'src/environments/environment';
+import vcUtils from 'src/utils/vc';
+import credentials from 'src/utils/credentials';
 
 @Component({
     selector: 'app-credentials',
@@ -92,39 +94,66 @@ export class CredentialsComponent implements OnInit {
         this.modalCreate.nativeElement.disabled = true;
 
         try {
-            const vp: any = await axios({
-                method: 'POST',
-                url: `${environment.micro_api}reward/presentation/generate`,
-                data: {
-                    did: this.currentDID,
-                    rewards: verifiableCredentials
-                }
-            });
+            this.messageService.tabQuery(
+                { active: true, windowId: chrome.windows.WINDOW_ID_CURRENT },
+                async (tabs: any) => {
+                    if (tabs[0].url) {
+                        const url = new URL(tabs[0].url);
 
-            this.modalInfo.nativeElement.innerText = '';
-            this.modalInfo.nativeElement.classList.remove('waiting');
-            this.modalCreate.nativeElement.disabled = false;
+                        let hostname = url.hostname;
 
-            if (!vp?.data?.verifiablePresentation) {
-                this.modalInfo.nativeElement.innerText = 'Failed  to create VP';
-                this.modalInfo.nativeElement.classList.add('error');
-                return;
-            }
+                        if (!hostname) hostname = 'localhost';
 
-            this.messageService.sendMessage(
-                {
-                    task: TASKS.ADD_VP,
-                    name: this.vpName,
-                    vp: btoa(JSON.stringify(vp?.data?.verifiablePresentation))
-                },
-                (response) => {
-                    if (response.result) {
-                        this.toastrService.success('VP created', 'DID_SIOP', {
-                            onActivateTick: true,
-                            positionClass: 'toast-bottom-center'
+                        const end_point = environment.micro_api[hostname];
+
+                        console.log({ end_point });
+                        if (!end_point) {
+                            this.modalInfo.nativeElement.innerText =
+                                'Failed to reach the api end point';
+                            this.modalInfo.nativeElement.classList.add('error');
+                            return;
+                        }
+
+                        const vp: any = await axios({
+                            method: 'POST',
+                            url: `${end_point}reward/presentation/generate`,
+                            data: {
+                                did: this.currentDID,
+                                rewards: verifiableCredentials,
+                                hostname: hostname
+                            }
                         });
-                    } else if (response.err) {
-                        this.modalInfo.nativeElement.innerText = 'Failed to save VP';
+
+                        this.modalInfo.nativeElement.innerText = '';
+                        this.modalInfo.nativeElement.classList.remove('waiting');
+                        this.modalCreate.nativeElement.disabled = false;
+
+                        if (!vp?.data?.verifiablePresentation) {
+                            this.modalInfo.nativeElement.innerText = 'Failed  to create VP';
+                            this.modalInfo.nativeElement.classList.add('error');
+                            return;
+                        }
+
+                        this.messageService.sendMessage(
+                            {
+                                task: TASKS.ADD_VP,
+                                name: this.vpName,
+                                vp: btoa(JSON.stringify(vp?.data?.verifiablePresentation))
+                            },
+                            (response) => {
+                                if (response.result) {
+                                    this.toastrService.success('VP created', 'DID_SIOP', {
+                                        onActivateTick: true,
+                                        positionClass: 'toast-bottom-center'
+                                    });
+                                } else if (response.err) {
+                                    this.modalInfo.nativeElement.innerText = 'Failed to save VP';
+                                    this.modalInfo.nativeElement.classList.add('error');
+                                }
+                            }
+                        );
+                    } else {
+                        this.modalInfo.nativeElement.innerText = 'Failed to fetch site url';
                         this.modalInfo.nativeElement.classList.add('error');
                     }
                 }
@@ -135,6 +164,14 @@ export class CredentialsComponent implements OnInit {
             this.modalInfo.nativeElement.classList.add('error');
             this.modalCreate.nativeElement.disabled = false;
         }
+    }
+
+    formatVC(vc: any) {
+        const localTypes: any = vcUtils.local;
+        const type = localTypes[vc?.credentialSubject?.type[0]];
+        const vc_formatted = credentials.get(type, vc);
+        console.log(vc);
+        return vc_formatted;
     }
 
     private loadVCs() {

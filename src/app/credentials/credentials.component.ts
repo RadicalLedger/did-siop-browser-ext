@@ -103,10 +103,10 @@ export class CredentialsComponent implements OnInit {
                         let hostname = url.hostname;
 
                         if (!hostname) hostname = 'localhost';
+                        hostname = 'localhost';
 
                         const end_point = environment.micro_api[hostname];
 
-                        console.log({ end_point });
                         if (!end_point) {
                             this.modalInfo.nativeElement.innerText =
                                 'Failed to reach the api end point';

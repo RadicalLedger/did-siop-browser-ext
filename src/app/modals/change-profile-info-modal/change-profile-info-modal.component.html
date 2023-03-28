@@ -1,0 +1,30 @@
+<button #modalOpen data-toggle="modal" data-target="#changeProfileInfoModal" class="modal-trigger"></button>
+<div #modal class="modal" id="changeProfileInfoModal" tabindex="-1" role="dialog"
+    aria-labelledby="changeProfileInfoModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="changeProfileInfoModalLabel">Enter New Value</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p id="titleValue" #titleValue>Change value</p>
+                <div class="input-group input-group-sm">
+                    <textarea id="newValue" #newValue class="form-control" aria-label="Small"
+                        aria-describedby="inputGroup-sizing-sm"></textarea>
+                </div>
+                <p #modalInfo></p>
+            </div>
+            <div class="modal-footer d-flex justify-content-start">
+                <button #modalYes type="button" class="btn btn-primary btn-ok" (click)="changeValue(newValue.value)">
+                    Change
+                </button>
+                <button #modalClose type="button" class="btn btn-link btn-cancel" data-dismiss="modal">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

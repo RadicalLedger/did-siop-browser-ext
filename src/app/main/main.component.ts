@@ -20,8 +20,11 @@ export class MainComponent {
     title = 'did-siop-ext';
 
     currentDID: string;
+    currentProfileInfo: any;
     currentRequests: any[];
     currentVPs: any[];
+    requestIdData: any;
+    responseIdTokenData: any;
     requestVpData: any[];
     responseVpTokenData: any;
     response_VpTokenData: any;
@@ -107,7 +110,8 @@ export class MainComponent {
         this.selectedRequest = request;
         this.selectedRequestClientID = this.selectedRequest.client_id;
 
-        this.requestVpData = null;
+        this.requestIdData = {};
+        this.responseIdTokenData = {};
         this.responseVpTokenData = null;
         this.response_VpTokenData = null;
 
@@ -116,10 +120,19 @@ export class MainComponent {
                 let token = request.request.split('request=');
                 let decode_request = this.parseJwt(token[1]);
 
+                this.requestIdData = decode_request.claims.id_token;
+
+                for (const key in this.requestIdData) {
+                    if (this.currentProfileInfo?.[key])
+                        this.responseIdTokenData[key] = this.currentProfileInfo?.[key];
+                }
+
                 if (decode_request.claims?.vp_token) {
                     this.requestVpData = decode_request.claims.vp_token;
-                    this.responseVpTokenData = SampleResponseVpData.vp_token;
-                    this.response_VpTokenData = SampleResponseVpData._vp_token;
+                    if (decode_request.claims?.vp_token) {
+                        this.responseVpTokenData = SampleResponseVpData.vp_token;
+                        this.response_VpTokenData = SampleResponseVpData._vp_token;
+                    }
 
                     this.requestVPData.nativeElement.classList.add('active');
                     this.responseVPData.nativeElement.classList.add('active');
@@ -212,6 +225,7 @@ export class MainComponent {
                 task: TASKS.PROCESS_REQUEST,
                 did_siop_index: this.selectedRequest.index,
                 confirmation: confirmation,
+                id_token: this.responseIdTokenData,
                 vp_data: {
                     vp_token: this.responseVpTokenData,
                     _vp_token: this.response_VpTokenData
@@ -261,6 +275,10 @@ export class MainComponent {
             (response) => {
                 if (response.did) {
                     this.currentDID = response.did;
+                    this.currentProfileInfo = {
+                        name: response.name,
+                        email: response.email
+                    };
                 } else {
                     this.currentDID = 'No DID provided';
                 }

@@ -100,6 +100,16 @@ runtime.onMessage.addListener(function ({ request, sender, signingInfo, loggedIn
                     });
                 break;
             }
+            case TASKS.CHANGE_PROFILE_INFO: {
+                changeProfileInfo(request?.data?.type, request?.data?.value)
+                    .then((result) => {
+                        sendResponse({ result: result });
+                    })
+                    .catch((err) => {
+                        sendResponse({ err: err.message });
+                    });
+                break;
+            }
             case TASKS.ADD_KEY: {
                 addKey(request.keyInfo)
                     .then((result) => {
@@ -151,26 +161,8 @@ runtime.onMessage.addListener(function ({ request, sender, signingInfo, loggedIn
                 break;
             }
             case TASKS.GET_IDENTITY: {
-                let did = '';
-                let keys = '';
-
-                storage.get([STORAGE_KEYS.userDID], (didResult) => {
-                    storage.get([STORAGE_KEYS.signingInfoSet], (signingInfoSetResult) => {
-                        try {
-                            let encryptedDID = didResult[STORAGE_KEYS.userDID];
-                            let encryptedSigningInfo =
-                                signingInfoSetResult[STORAGE_KEYS.signingInfoSet];
-
-                            if (encryptedDID) {
-                                did = decrypt(encryptedDID, loggedInState);
-                                keys = decrypt(encryptedSigningInfo, loggedInState);
-                            }
-                        } catch (err) {
-                            sendResponse({ did: '', keys: [] });
-                        }
-
-                        sendResponse({ did, keys });
-                    });
+                getIdentity((data: any) => {
+                    sendResponse(data);
                 });
                 break;
             }
@@ -214,7 +206,12 @@ runtime.onMessage.addListener(function ({ request, sender, signingInfo, loggedIn
                 break;
             }
             case TASKS.PROCESS_REQUEST: {
-                processRequest(request.did_siop_index, request.confirmation, request.vp_data)
+                processRequest(
+                    request.did_siop_index,
+                    request.confirmation,
+                    request.id_token,
+                    request.vp_data
+                )
                     .then((result) => {
                         sendResponse({ result });
                     })
@@ -284,6 +281,27 @@ runtime.onMessage.addListener(function ({ request, sender, signingInfo, loggedIn
 
     return true;
 });
+
+async function getIdentity(callback: any) {
+    let name: any = '';
+    let email: any = '';
+    let did = '';
+    let keys = '';
+
+    name = await getStorage(STORAGE_KEYS.name);
+    email = await getStorage(STORAGE_KEYS.email);
+    let encryptedDID: any = await getStorage(STORAGE_KEYS.userDID);
+    let encryptedSigningInfo: any = await getStorage(STORAGE_KEYS.signingInfoSet);
+
+    try {
+        if (encryptedDID) did = decrypt(encryptedDID, loggedInState);
+        if (encryptedSigningInfo) keys = decrypt(encryptedSigningInfo, loggedInState);
+    } catch (err) {
+        return callback({ name, email, did: '', keys: [] });
+    }
+
+    return callback({ name, email, did, keys });
+}
 
 function checkLoggedInState(): boolean {
     if (loggedInState) {
@@ -377,6 +395,23 @@ async function changeDID(did: string): Promise<string> {
     }
 }
 
+async function changeProfileInfo(type: string, value: string): Promise<string> {
+    try {
+        let storage_type = STORAGE_KEYS[type];
+
+        if (storage_type) {
+            storage.set({ [storage_type]: value });
+
+            return `Profile ${type} changed successfully`;
+        } else {
+            return `Failed to change profile ${type}`;
+        }
+    } catch (err) {
+        console.log({ err });
+        return Promise.reject(err);
+    }
+}
+
 async function addKey(key: string): Promise<string> {
     try {
         await checkSigning();
@@ -416,7 +451,12 @@ async function removeKey(kid: string): Promise<string> {
     }
 }
 
-async function processRequest(request_index: number, confirmation: any, vp_data: any) {
+async function processRequest(
+    request_index: number,
+    confirmation: any,
+    id_token: any,
+    vp_data: any
+) {
     let processError: Error;
     let request_result: any = await getRequestByIndex(request_index);
     let request = request_result?.request;
@@ -427,15 +467,17 @@ async function processRequest(request_index: number, confirmation: any, vp_data:
             try {
                 if (confirmation) {
                     try {
-                        console.log({ request });
-                        console.log({ parsed: queryString.parseUrl(request) });
+                        // console.log({ request });
+                        // console.log({ parsed: queryString.parseUrl(request) });
                         let decodedRequest = await provider.validateRequest(request);
 
                         try {
                             //let response = await provider.generateResponse(decodedRequest.payload);
+                            if (id_token) decodedRequest.payload.claims['id_token'] = id_token;
+
                             let response = {};
 
-                            if (vp_data.vp_token && vp_data._vp_token) {
+                            if (vp_data?.vp_token && vp_data?._vp_token) {
                                 let vps: VPData = {
                                     vp_token: vp_data.vp_token,
                                     _vp_token: vp_data._vp_token
@@ -461,9 +503,10 @@ async function processRequest(request_index: number, confirmation: any, vp_data:
                                 }
                             } else {
                                 let uri = decodedRequest.payload.redirect_uri + '#' + response;
-                                tabs.create({
-                                    url: uri
-                                });
+                                if (tabs?.create)
+                                    tabs.create({
+                                        url: uri
+                                    });
                             }
                             console.log(
                                 'Sent response to ' +
@@ -485,9 +528,10 @@ async function processRequest(request_index: number, confirmation: any, vp_data:
                         let uri = queryString.parseUrl(request).query.redirect_uri;
                         if (uri) {
                             uri = uri + '#' + provider.generateErrorResponse(err.message);
-                            tabs.create({
-                                url: uri
-                            });
+                            if (tabs?.create)
+                                tabs.create({
+                                    url: uri
+                                });
 
                             removeRequest(request_index, () => {});
                         } else {

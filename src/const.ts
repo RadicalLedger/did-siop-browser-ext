@@ -7,7 +7,9 @@ export const STORAGE_KEYS = {
     crypto_suit: 'did_siop_crypto_suit',
     vcs: 'visual_credentials',
     vps: 'visual_presentations',
-    loginState: 'did_siop_login_state'
+    loginState: 'did_siop_login_state',
+    name: 'did_siop_name',
+    email: 'did_siop_email'
 };
 
 export const enum TASKS {
@@ -32,5 +34,6 @@ export const enum TASKS {
     ADD_VP,
     REMOVE_VP,
     GET_VPS,
-    GET_LOGIN_STATE
+    GET_LOGIN_STATE,
+    CHANGE_PROFILE_INFO
 }

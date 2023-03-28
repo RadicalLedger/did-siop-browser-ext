@@ -89,6 +89,7 @@ function didSiopVcBtn() {
         element.dataset.active = 'true';
         element.addEventListener('click', function () {
             let vc = this.getAttribute('data-did-siop-vc');
+
             runtime.sendMessage(
                 {
                     task: TASKS.ADD_VC,

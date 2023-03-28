@@ -16,7 +16,8 @@ import {
     ChangeDIDModalComponent,
     TestDataModalComponent,
     CreateDIDModalComponent,
-    NewKeyModalComponent
+    NewKeyModalComponent,
+    ChangeProfileInfoModalComponent
 } from '../modals/modals.module';
 
 @Component({
@@ -26,6 +27,8 @@ import {
 })
 export class SettingsComponent implements OnInit {
     currentDID: string;
+    currentName: string;
+    currentEmail: string;
     signingInfoSet: any[] = [];
 
     @ViewChild('newKeyButton') newKeyButton: ElementRef;
@@ -36,6 +39,7 @@ export class SettingsComponent implements OnInit {
     @ViewChild('createDIDModal') createDIDModal: CreateDIDModalComponent;
     @ViewChild('newKeyModal') newKeyModal: NewKeyModalComponent;
     @ViewChild('changePasswordModal') changePasswordModal: ChangeDIDModalComponent;
+    @ViewChild('changeProfileInfoModal') changeProfileInfoModal: ChangeProfileInfoModalComponent;
 
     @Output() clickedBack = new EventEmitter<boolean>();
 
@@ -51,8 +55,13 @@ export class SettingsComponent implements OnInit {
             },
             (response) => {
                 if (response.did) {
+                    this.currentName = response.name;
+                    this.currentEmail = response.email;
                     this.currentDID = response.did;
                     this.signingInfoSet = JSON.parse(response.keys);
+
+                    this.identityService.setCurrentName(this.currentName);
+                    this.identityService.setCurrentEmail(this.currentEmail);
                     this.identityService.setCurrentDID(this.currentDID);
                     this.identityService.setSigningInfoSet(this.signingInfoSet);
                 } else {
@@ -71,6 +80,15 @@ export class SettingsComponent implements OnInit {
             this.newKeyButton.nativeElement.disabled = false;
             this.currentDID = this.identityService.getCurrentDID();
             this.signingInfoSet = this.identityService.getSigningInfoSet();
+            this.changeDetector.detectChanges();
+        }
+    }
+
+    profileInfoChanged(changed: boolean) {
+        if (changed) {
+            this.newKeyButton.nativeElement.disabled = false;
+            this.currentEmail = this.identityService.getCurrentEmail();
+            this.currentName = this.identityService.getCurrentName();
             this.changeDetector.detectChanges();
         }
     }
@@ -97,6 +115,10 @@ export class SettingsComponent implements OnInit {
 
     openChangePasswordModal() {
         this.changePasswordModal.open();
+    }
+
+    openChangeProfileInfoModal(type: string) {
+        this.changeProfileInfoModal.open(type);
     }
 
     goBack() {

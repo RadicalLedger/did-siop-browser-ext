@@ -467,8 +467,8 @@ async function processRequest(
             try {
                 if (confirmation) {
                     try {
-                        // console.log({ request });
-                        // console.log({ parsed: queryString.parseUrl(request) });
+                        console.log({ request });
+                        console.log({ parsed: queryString.parseUrl(request) });
                         let decodedRequest = await provider.validateRequest(request);
 
                         try {
@@ -554,6 +554,8 @@ async function processRequest(
                             });
                         }
                         removeRequest(request_index, () => {});
+
+                        return 'Successfully declined logging request';
                     } else {
                         processError = new Error('invalid redirect url');
                     }

@@ -283,13 +283,11 @@ runtime.onMessage.addListener(function ({ request, sender, signingInfo, loggedIn
 });
 
 async function getIdentity(callback: any) {
-    let name: any = '';
-    let email: any = '';
+    let profile: any = {};
     let did = '';
     let keys = '';
 
-    name = await getStorage(STORAGE_KEYS.name);
-    email = await getStorage(STORAGE_KEYS.email);
+    profile = await getStorage(STORAGE_KEYS.profile);
     let encryptedDID: any = await getStorage(STORAGE_KEYS.userDID);
     let encryptedSigningInfo: any = await getStorage(STORAGE_KEYS.signingInfoSet);
 
@@ -297,10 +295,10 @@ async function getIdentity(callback: any) {
         if (encryptedDID) did = decrypt(encryptedDID, loggedInState);
         if (encryptedSigningInfo) keys = decrypt(encryptedSigningInfo, loggedInState);
     } catch (err) {
-        return callback({ name, email, did: '', keys: [] });
+        return callback({ profile: {}, did: '', keys: [] });
     }
 
-    return callback({ name, email, did, keys });
+    return callback({ profile, did, keys });
 }
 
 function checkLoggedInState(): boolean {
@@ -397,15 +395,13 @@ async function changeDID(did: string): Promise<string> {
 
 async function changeProfileInfo(type: string, value: string): Promise<string> {
     try {
-        let storage_type = STORAGE_KEYS[type];
+        let profile: any = (await getStorage(STORAGE_KEYS.profile)) || {};
 
-        if (storage_type) {
-            storage.set({ [storage_type]: value });
+        profile[type] = value;
 
-            return `Profile ${type} changed successfully`;
-        } else {
-            return `Failed to change profile ${type}`;
-        }
+        storage.set({ [STORAGE_KEYS.profile]: profile });
+
+        return `Profile ${type} changed successfully`;
     } catch (err) {
         console.log({ err });
         return Promise.reject(err);
@@ -467,12 +463,13 @@ async function processRequest(
             try {
                 if (confirmation) {
                     try {
-                        console.log({ request });
-                        console.log({ parsed: queryString.parseUrl(request) });
+                        // console.log({ request });
+                        // console.log({ parsed: queryString.parseUrl(request) });
                         let decodedRequest = await provider.validateRequest(request);
 
                         try {
                             //let response = await provider.generateResponse(decodedRequest.payload);
+                            console.log({ id_token });
                             if (id_token) decodedRequest.payload.claims['id_token'] = id_token;
 
                             let response = {};

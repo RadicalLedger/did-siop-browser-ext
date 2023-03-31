@@ -58,7 +58,8 @@ export class MainComponent {
         settings: false,
         guides: false,
         credentials: false,
-        presentations: false
+        presentations: false,
+        profile: false
     };
 
     constructor(
@@ -273,12 +274,10 @@ export class MainComponent {
                 task: TASKS.GET_IDENTITY
             },
             (response) => {
+                console.log({ response });
                 if (response.did) {
                     this.currentDID = response.did;
-                    this.currentProfileInfo = {
-                        name: response.name,
-                        email: response.email
-                    };
+                    this.currentProfileInfo = response?.profile || {};
                 } else {
                     this.currentDID = 'No DID provided';
                 }

@@ -1,0 +1,30 @@
+<div class="profile">
+    <div class="setting">
+        <div class="container-fluid identity">
+            <div *ngFor="let item of profileData;" class="identity-inner">
+                <div class="row identity-top">
+                    <div class="col">
+                        <p>{{item.title}}</p>
+                    </div>
+                    <div class="col d-flex justify-content-end identity-actions">
+                        <button class="btn btn-link" (click)="openChangeProfileInfoModal(item.key)">
+                            <small>Change</small>
+                        </button>
+                    </div>
+                </div>
+                <div class="row identity-bottom">
+                    <div class="col current-did">
+                        <p>
+                            <span class="text-muted">{{ currentProfile[item.key] || '-' }}</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <change-profile-info-modal #changeProfileInfoModal
+            (dataChanged)="profileInfoChanged($event)"></change-profile-info-modal>
+    </div>
+
+</div>
+<button class="btn btn-link btn-back" (click)="goBack()">Go Back</button>

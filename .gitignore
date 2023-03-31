@@ -46,3 +46,6 @@ testem.log
 .DS_Store
 Thumbs.db
 .env
+
+# temp
+src/local_libs/did-siop-lib

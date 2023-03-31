@@ -8,8 +8,7 @@ export const STORAGE_KEYS = {
     vcs: 'visual_credentials',
     vps: 'visual_presentations',
     loginState: 'did_siop_login_state',
-    name: 'did_siop_name',
-    email: 'did_siop_email'
+    profile: 'did_siop_profile'
 };
 
 export const enum TASKS {

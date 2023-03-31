@@ -31,17 +31,7 @@ export class ChangeProfileInfoModalComponent implements OnInit {
     ngOnInit(): void {}
 
     open(type: string) {
-        switch (type) {
-            case 'email':
-                this.titleValue.nativeElement.innerText = 'Change Email Value';
-                break;
-            case 'name':
-                this.titleValue.nativeElement.innerText = 'Change Name Value';
-                break;
-
-            default:
-                break;
-        }
+        this.titleValue.nativeElement.innerText = `Change ${type} value`;
 
         this.changeType = type;
         this.modalInfo.nativeElement.innerText = '';
@@ -72,11 +62,12 @@ export class ChangeProfileInfoModalComponent implements OnInit {
                 (response) => {
                     if (response.result) {
                         /* set the current values to the identity object */
-                        if (this.changeType === 'email') {
-                            this.identityService.setCurrentEmail(value);
-                        }
-                        if (this.changeType === 'name') {
-                            this.identityService.setCurrentName(value);
+                        if (this.changeType) {
+                            let profile = this.identityService.getCurrentProfile();
+                            this.identityService.setCurrentProfile({
+                                ...profile,
+                                [this.changeType]: value
+                            });
                         }
 
                         this.newValue.nativeElement.value = '';

@@ -14,6 +14,7 @@ import { GuidesComponent } from './guides/guides.component';
 import { ModalsModule } from './modals/modals.module';
 import { CredentialsComponent } from './credentials/credentials.component';
 import { PresentationsComponent } from './presentations/presentations.component';
+import { ProfileComponent } from './profile/profile.component';
 
 @NgModule({
     declarations: [
@@ -23,7 +24,8 @@ import { PresentationsComponent } from './presentations/presentations.component'
         SettingsComponent,
         GuidesComponent,
         CredentialsComponent,
-        PresentationsComponent
+        PresentationsComponent,
+        ProfileComponent
     ],
     imports: [
         BrowserModule,

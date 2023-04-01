@@ -486,7 +486,10 @@ async function processRequest(
                                     vps
                                 );
                             } else {
-                                response = await provider.generateResponse(decodedRequest.payload);
+                                response = await provider.generateResponse(
+                                    decodedRequest.payload,
+                                    5000
+                                );
                             }
 
                             if (
@@ -496,15 +499,36 @@ async function processRequest(
                                 try {
                                     await postToRP(decodedRequest.payload.redirect_uri, response);
                                 } catch (e) {
-                                    console.log('PostToRP failed', e);
+                                    console.log('Failed to post request the response failed', e);
+                                }
+                            } else if (
+                                decodedRequest.payload.response_mode &&
+                                decodedRequest.payload.response_mode === 'get'
+                            ) {
+                                try {
+                                    await getToRP(decodedRequest.payload.redirect_uri, response);
+                                } catch (e) {
+                                    console.log('Failed to get request the response', e);
                                 }
                             } else {
-                                let uri = decodedRequest.payload.redirect_uri + '#' + response;
-                                if (tabs?.create)
-                                    tabs.create({
-                                        url: uri
-                                    });
+                                let uri = decodedRequest.payload.redirect_uri;
+
+                                if (uri) {
+                                    let url = new URL(uri);
+                                    url.search = new URLSearchParams({
+                                        code: response as string
+                                    }).toString();
+
+                                    if (tabs?.create) {
+                                        tabs.create({
+                                            url: url
+                                        });
+                                    } else if (window.open) {
+                                        window.open(url);
+                                    }
+                                }
                             }
+
                             console.log(
                                 'Sent response to ' +
                                     decodedRequest.payload.redirect_uri +
@@ -522,13 +546,21 @@ async function processRequest(
                     } catch (err) {
                         console.log({ error1: err });
 
-                        let uri = queryString.parseUrl(request).query.redirect_uri;
+                        let uri: any = queryString.parseUrl(request).query.redirect_uri;
+
                         if (uri) {
-                            uri = uri + '#' + provider.generateErrorResponse(err.message);
-                            if (tabs?.create)
+                            let url = new URL(uri);
+                            url.search = new URLSearchParams({
+                                error: provider.generateErrorResponse(err.message) as string
+                            }).toString();
+
+                            if (tabs?.create) {
                                 tabs.create({
-                                    url: uri
+                                    url: url
                                 });
+                            } else if (window.open) {
+                                window.open(url);
+                            }
 
                             removeRequest(request_index, () => {});
                         } else {
@@ -536,20 +568,24 @@ async function processRequest(
                         }
                     }
                 } else {
-                    let uri = queryString.parseUrl(request).query.redirect_uri;
+                    let uri: any = queryString.parseUrl(request).query.redirect_uri;
+
                     if (uri) {
-                        uri =
-                            uri +
-                            '#' +
-                            provider.generateErrorResponse(
+                        let url = new URL(uri);
+                        url.search = new URLSearchParams({
+                            error: provider.generateErrorResponse(
                                 ERROR_RESPONSES.access_denied.err.message
-                            );
+                            ) as string
+                        }).toString();
 
                         if (tabs?.create) {
                             tabs.create({
-                                url: uri
+                                url: url
                             });
+                        } else if (window.open) {
+                            window.open(url);
                         }
+
                         removeRequest(request_index, () => {});
 
                         return 'Successfully declined logging request';
@@ -579,6 +615,20 @@ async function postToRP(redirectUri: string, response: any) {
         },
         body: JSON.stringify({ token: response })
     });
+
+    try {
+        const content = await rawResponse.json();
+        console.log(content);
+    } catch (e) {
+        console.log(e);
+    }
+}
+
+async function getToRP(redirectUri: string, response: any) {
+    let url = new URL(redirectUri);
+    url.search = new URLSearchParams({ code: response }).toString();
+
+    const rawResponse = await fetch(url);
 
     try {
         const content = await rawResponse.json();

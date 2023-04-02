@@ -78,7 +78,7 @@ export class PresentationsComponent implements OnInit {
                 task: TASKS.GET_VPS
             },
             (response) => {
-                console.log(response);
+                // console.log(response);
                 if (response.vps) {
                     this.currentVPs = response.vps;
                 } else {

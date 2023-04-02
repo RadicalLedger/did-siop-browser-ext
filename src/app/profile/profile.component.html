@@ -13,7 +13,7 @@
                     </div>
                 </div>
                 <div class="row identity-bottom">
-                    <div class="col current-did">
+                    <div class="col limit-height">
                         <p>
                             <span class="text-muted">{{ currentProfile[item.key] || '-' }}</span>
                         </p>
@@ -22,8 +22,7 @@
             </div>
         </div>
 
-        <change-profile-info-modal
-            #changeProfileInfoModal
+        <change-profile-info-modal #changeProfileInfoModal
             (dataChanged)="profileInfoChanged($event)"></change-profile-info-modal>
     </div>
 </div>

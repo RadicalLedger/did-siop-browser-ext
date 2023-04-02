@@ -398,7 +398,6 @@ async function changeProfileInfo(type: string, value: string): Promise<string> {
         let profile: any = (await getStorage(STORAGE_KEYS.profile)) || {};
 
         profile[type] = value;
-
         storage.set({ [STORAGE_KEYS.profile]: profile });
 
         return `Profile ${type} changed successfully`;
@@ -469,7 +468,7 @@ async function processRequest(
 
                         try {
                             //let response = await provider.generateResponse(decodedRequest.payload);
-                            console.log({ id_token });
+                            // console.log({ id_token });
                             if (id_token) decodedRequest.payload.claims['id_token'] = id_token;
 
                             let response = {};
@@ -524,17 +523,20 @@ async function processRequest(
                                             url: url
                                         });
                                     } else if (window.open) {
-                                        window.open(url);
+                                        window.open(url, '_self');
                                     }
                                 }
                             }
 
                             console.log(
+                                'Successfully logged into ' + decodedRequest.payload.redirect_uri
+                            );
+                            /* console.log(
                                 'Sent response to ' +
                                     decodedRequest.payload.redirect_uri +
                                     ' with token: ',
                                 response
-                            );
+                            ); */
 
                             removeRequest(request_index, () => {});
                             return (
@@ -559,7 +561,7 @@ async function processRequest(
                                     url: url
                                 });
                             } else if (window.open) {
-                                window.open(url);
+                                window.open(url, '_self');
                             }
 
                             removeRequest(request_index, () => {});
@@ -583,7 +585,7 @@ async function processRequest(
                                 url: url
                             });
                         } else if (window.open) {
-                            window.open(url);
+                            window.open(url, '_self');
                         }
 
                         removeRequest(request_index, () => {});
@@ -632,7 +634,7 @@ async function getToRP(redirectUri: string, response: any) {
 
     try {
         const content = await rawResponse.json();
-        console.log(content);
+        // console.log(content);
     } catch (e) {
         console.log(e);
     }

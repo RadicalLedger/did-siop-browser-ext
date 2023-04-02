@@ -52,19 +52,19 @@ export class SettingsComponent implements OnInit {
             },
             (response) => {
                 if (response.did) {
-                    this.currentProfile = {
-                        ...this.currentProfile,
-                        name: response.name,
-                        email: response.email
-                    };
+                    if (response?.profile) {
+                        this.currentProfile = {
+                            ...this.currentProfile,
+                            ...response?.profile
+                        };
+                    }
                     this.currentDID = response.did;
                     this.signingInfoSet = JSON.parse(response.keys);
 
                     let profile = this.identityService.getCurrentProfile() || {};
                     this.identityService.setCurrentProfile({
                         ...profile,
-                        name: this.currentProfile?.name,
-                        email: this.currentProfile?.email
+                        ...this.currentProfile
                     });
                     this.identityService.setCurrentDID(this.currentDID);
                     this.identityService.setSigningInfoSet(this.signingInfoSet);

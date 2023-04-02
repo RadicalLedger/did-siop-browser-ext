@@ -170,7 +170,7 @@ export class CredentialsComponent implements OnInit {
         const localTypes: any = vcUtils.local;
         const type = localTypes[vc?.credentialSubject?.type[0]];
         const vc_formatted = credentials.get(type, vc);
-        console.log(vc);
+        // console.log(vc);
         return vc_formatted;
     }
 

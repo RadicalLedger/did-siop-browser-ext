@@ -39,45 +39,45 @@ const createEthrDid = async function (network: string) {
 
     const wallet = new Wallet(Types.MNEMONIC, mnemonic);
 
-    const { privateKey: issuerPrivateKey, did: issuerDID } = wallet.getChildKeys('m/256/256/1');
+    const { privateKey: holderPrivateKey, did: holderDID } = wallet.getChildKeys('m/256/256/2');
 
-    const issuerChallengeResponse = await axios.post(`${resolver_url}`, {
-        did: issuerDID
+    const holderChallengeResponse = await axios.post(`${resolver_url}`, {
+        did: holderDID
     });
-    const { challenge: issuerChallenge } = jwt.decode(
-        issuerChallengeResponse.data.challengeToken
+    const { challenge: holderChallenge } = jwt.decode(
+        holderChallengeResponse.data.challengeToken
     ) as any;
 
-    const issuerResponse = await axios.post(`${resolver_url}`, {
-        did: issuerDID,
-        seed: issuerPrivateKey,
+    const holderResponse = await axios.post(`${resolver_url}`, {
+        did: holderDID,
+        seed: holderPrivateKey,
         challengeResponse: {
             publicKey: Buffer.from(
-                publicKeyCreate(Buffer.from(issuerPrivateKey as string, 'hex'))
+                publicKeyCreate(Buffer.from(holderPrivateKey as string, 'hex'))
             ).toString('hex'),
             cipherText: Buffer.from(
                 ecdsaSign(
-                    Buffer.from(issuerChallenge, 'hex'),
-                    Buffer.from(issuerPrivateKey as string, 'hex')
+                    Buffer.from(holderChallenge, 'hex'),
+                    Buffer.from(holderPrivateKey as string, 'hex')
                 ).signature
             ).toString('hex'),
-            jwt: issuerChallengeResponse.data.challengeToken
+            jwt: holderChallengeResponse.data.challengeToken
         }
     });
 
-    if (issuerResponse?.data?.status !== 'success') {
+    if (holderResponse?.data?.status !== 'success') {
         console.error({
             open: true,
             title: 'Error',
-            content: 'Issuer DID document creation failed'
+            content: 'Holder DID document creation failed'
         });
 
         return {};
     }
 
     return {
-        did: issuerDID,
-        privateKey: issuerPrivateKey
+        did: holderDID,
+        privateKey: holderPrivateKey
     };
 };
 

@@ -257,7 +257,7 @@ export class MainComponent {
                 task: TASKS.GET_VPS
             },
             (response) => {
-                console.log(response);
+                // console.log(response);
                 if (response.vps) {
                     this.currentVPs = response.vps;
                 } else {
@@ -274,7 +274,7 @@ export class MainComponent {
                 task: TASKS.GET_IDENTITY
             },
             (response) => {
-                console.log({ response });
+                // console.log({ response });
                 if (response.did) {
                     this.currentDID = response.did;
                     this.currentProfileInfo = response?.profile || {};

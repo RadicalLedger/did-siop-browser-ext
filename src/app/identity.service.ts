@@ -5,6 +5,7 @@ import { Injectable } from '@angular/core';
 })
 export class IdentityService {
     currentDID: string;
+    currentProfile: any = {};
     signingInfoSet: any[] = [];
 
     constructor() {}
@@ -23,5 +24,12 @@ export class IdentityService {
 
     getSigningInfoSet(): any[] {
         return this.signingInfoSet;
+    }
+    getCurrentProfile(): any {
+        return this.currentProfile;
+    }
+
+    setCurrentProfile(profile: any) {
+        this.currentProfile = profile;
     }
 }

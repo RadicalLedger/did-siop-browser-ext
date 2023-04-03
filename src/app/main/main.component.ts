@@ -20,13 +20,18 @@ export class MainComponent {
     title = 'did-siop-ext';
 
     currentDID: string;
+    currentProfileInfo: any;
     currentRequests: any[];
+    currentVPs: any[];
+    requestIdData: any;
+    responseIdTokenData: any;
     requestVpData: any[];
     responseVpTokenData: any;
     response_VpTokenData: any;
 
     selectedRequest: any;
     selectedRequestClientID: string;
+    selectVpState: boolean = false;
 
     @ViewChild('requestModalClose') requestModalClose: ElementRef;
     @ViewChild('requestModalInfo') requestModalInfo: ElementRef;
@@ -48,9 +53,14 @@ export class MainComponent {
 
     @Output() loggedOut = new EventEmitter<boolean>();
 
-    displayMainContent: boolean = true;
-    displaySettings: boolean = false;
-    displayGuides: boolean = false;
+    screens: any = {
+        main: true,
+        settings: false,
+        guides: false,
+        credentials: false,
+        presentations: false,
+        profile: false
+    };
 
     constructor(
         private changeDetector: ChangeDetectorRef,
@@ -59,6 +69,7 @@ export class MainComponent {
     ) {
         this.loadIdentity();
         this.loadRequests();
+        this.loadVPs();
     }
 
     logout() {
@@ -74,25 +85,17 @@ export class MainComponent {
         );
     }
 
-    showMainContent() {
-        this.displayMainContent = true;
-        this.displayGuides = false;
-        this.displaySettings = false;
-        this.loadIdentity();
-        this.changeDetector.detectChanges();
-    }
+    showScreen(display: string) {
+        for (let screen in this.screens) {
+            if (screen === display) {
+                this.screens[screen] = true;
+            } else {
+                this.screens[screen] = false;
+            }
+        }
 
-    showGuides() {
-        this.displayGuides = true;
-        this.displayMainContent = false;
-        this.displaySettings = false;
-        this.changeDetector.detectChanges();
-    }
+        if (display === 'main') this.loadIdentity();
 
-    showSettings() {
-        this.displaySettings = true;
-        this.displayGuides = false;
-        this.displayMainContent = false;
         this.changeDetector.detectChanges();
     }
 
@@ -108,7 +111,8 @@ export class MainComponent {
         this.selectedRequest = request;
         this.selectedRequestClientID = this.selectedRequest.client_id;
 
-        this.requestVpData = null;
+        this.requestIdData = {};
+        this.responseIdTokenData = {};
         this.responseVpTokenData = null;
         this.response_VpTokenData = null;
 
@@ -117,10 +121,19 @@ export class MainComponent {
                 let token = request.request.split('request=');
                 let decode_request = this.parseJwt(token[1]);
 
+                this.requestIdData = decode_request.claims.id_token;
+
+                for (const key in this.requestIdData) {
+                    if (this.currentProfileInfo?.[key])
+                        this.responseIdTokenData[key] = this.currentProfileInfo?.[key];
+                }
+
                 if (decode_request.claims?.vp_token) {
                     this.requestVpData = decode_request.claims.vp_token;
-                    this.responseVpTokenData = SampleResponseVpData.vp_token;
-                    this.response_VpTokenData = SampleResponseVpData._vp_token;
+                    if (decode_request.claims?.vp_token) {
+                        this.responseVpTokenData = SampleResponseVpData.vp_token;
+                        this.response_VpTokenData = SampleResponseVpData._vp_token;
+                    }
 
                     this.requestVPData.nativeElement.classList.add('active');
                     this.responseVPData.nativeElement.classList.add('active');
@@ -187,6 +200,16 @@ export class MainComponent {
         }
     }
 
+    onSelectVpState(state: boolean) {
+        this.selectVpState = state;
+        this.changeDetector.detectChanges();
+    }
+
+    onSelectVp(vp: any) {
+        this.responseVpTokenData = vp;
+        this.onSelectVpState(false);
+    }
+
     parseJwt(token: string) {
         return JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
     }
@@ -203,6 +226,7 @@ export class MainComponent {
                 task: TASKS.PROCESS_REQUEST,
                 did_siop_index: this.selectedRequest.index,
                 confirmation: confirmation,
+                id_token: this.responseIdTokenData,
                 vp_data: {
                     vp_token: this.responseVpTokenData,
                     _vp_token: this.response_VpTokenData
@@ -227,14 +251,33 @@ export class MainComponent {
         );
     }
 
+    private loadVPs() {
+        this.messageService.sendMessage(
+            {
+                task: TASKS.GET_VPS
+            },
+            (response) => {
+                // console.log(response);
+                if (response.vps) {
+                    this.currentVPs = response.vps;
+                } else {
+                    this.currentVPs = [];
+                }
+                this.changeDetector.detectChanges();
+            }
+        );
+    }
+
     private loadIdentity() {
         this.messageService.sendMessage(
             {
                 task: TASKS.GET_IDENTITY
             },
             (response) => {
+                // console.log({ response });
                 if (response.did) {
                     this.currentDID = response.did;
+                    this.currentProfileInfo = response?.profile || {};
                 } else {
                     this.currentDID = 'No DID provided';
                 }

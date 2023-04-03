@@ -10,10 +10,10 @@ export class BackgroundMessageService {
 
     constructor() {
         try {
-            this.runtime = browser.runtime;
+            this.runtime = browser;
         } catch (err) {
             try {
-                this.runtime = chrome.runtime;
+                this.runtime = chrome;
             } catch (err) {
                 console.log('DID-SIOP ERROR: No runtime detected');
             }
@@ -21,6 +21,10 @@ export class BackgroundMessageService {
     }
 
     sendMessage(message, callback) {
-        this.runtime.sendMessage(message, callback);
+        this.runtime.runtime.sendMessage(message, callback);
+    }
+
+    tabQuery(query, callback) {
+        this.runtime.tabs.query(query, callback);
     }
 }

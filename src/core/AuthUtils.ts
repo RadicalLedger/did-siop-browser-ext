@@ -1,30 +1,49 @@
 import { STORAGE_KEYS } from '../const';
 import { hash } from './CryptoUtils';
 
+let storage: any;
+
+try {
+    storage = browser.storage.local;
+} catch (err) {
+    try {
+        storage = chrome.storage.local;
+    } catch (err) {
+        console.log('DID-SIOP ERROR: No storage detected');
+    }
+}
+
 export function initExtAuthentication(password: string): boolean {
     try {
         let salt = randomString(32);
         let hashed = hash(password, salt);
-        localStorage.setItem(STORAGE_KEYS.password, hashed);
-        localStorage.setItem(STORAGE_KEYS.salt, salt);
+
+        storage.set({ [STORAGE_KEYS.password]: hashed });
+        storage.set({ [STORAGE_KEYS.salt]: salt });
         return true;
     } catch (err) {
         return false;
     }
 }
 
-export function authenticate(password: string): boolean {
-    let salt = localStorage.getItem(STORAGE_KEYS.salt);
-    let hashed = hash(password, salt);
-    let storedHash = localStorage.getItem(STORAGE_KEYS.password);
-    return hashed === storedHash;
+export function authenticate(password: string, callback: any) {
+    storage.get([STORAGE_KEYS.salt], function (result) {
+        let salt = result[STORAGE_KEYS.salt] || '';
+        let hashed = hash(password, salt);
+
+        storage.get([STORAGE_KEYS.password], function (result) {
+            let storedHash = result[STORAGE_KEYS.password] || '';
+            callback(hashed === storedHash);
+        });
+    });
 }
 
-export function checkExtAuthenticationState(): boolean {
-    if (localStorage.getItem(STORAGE_KEYS.password) != null) {
-        return true;
-    }
-    return false;
+export function checkExtAuthenticationState(callback: any) {
+    storage.get([STORAGE_KEYS.password], function (result) {
+        let storedHash = result[STORAGE_KEYS.password];
+
+        callback(storedHash != undefined);
+    });
 }
 
 function randomString(length: number): string {

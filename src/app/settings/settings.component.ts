@@ -26,6 +26,7 @@ import {
 })
 export class SettingsComponent implements OnInit {
     currentDID: string;
+    currentProfile: any = {};
     signingInfoSet: any[] = [];
 
     @ViewChild('newKeyButton') newKeyButton: ElementRef;
@@ -51,8 +52,20 @@ export class SettingsComponent implements OnInit {
             },
             (response) => {
                 if (response.did) {
+                    if (response?.profile) {
+                        this.currentProfile = {
+                            ...this.currentProfile,
+                            ...response?.profile
+                        };
+                    }
                     this.currentDID = response.did;
                     this.signingInfoSet = JSON.parse(response.keys);
+
+                    let profile = this.identityService.getCurrentProfile() || {};
+                    this.identityService.setCurrentProfile({
+                        ...profile,
+                        ...this.currentProfile
+                    });
                     this.identityService.setCurrentDID(this.currentDID);
                     this.identityService.setSigningInfoSet(this.signingInfoSet);
                 } else {
@@ -98,7 +111,6 @@ export class SettingsComponent implements OnInit {
     openChangePasswordModal() {
         this.changePasswordModal.open();
     }
-
     goBack() {
         this.clickedBack.emit(true);
     }

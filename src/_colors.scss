@@ -1,2 +1,11 @@
 $app-primary: #24c1b6;
 $app-section-background: #f0f0f0;
+
+.bg-primary {
+    color: #fff !important;
+    background-color: $app-primary !important;
+}
+
+.txt-primary {
+    color: $app-primary !important;
+}

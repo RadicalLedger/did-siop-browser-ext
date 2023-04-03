@@ -54,18 +54,18 @@ async function checkSigning() {
             provider = await Provider.getProvider(did, undefined, [resolver]);
         }
 
-        if (signingInfoSet.length < 1) {
+        if (!signingInfoSet || signingInfoSet.length < 1) {
             let result: any = await getStorage(STORAGE_KEYS.signingInfoSet);
             signingInfoSet = JSON.parse(decrypt(result, loggedInState));
 
             if (!signingInfoSet) {
                 signingInfoSet = [];
-            } else {
-                signingInfoSet.forEach((info) => {
-                    provider.addSigningParams(info.key);
-                });
             }
         }
+
+        signingInfoSet.forEach((info) => {
+            provider.addSigningParams(info.key);
+        });
     } catch (err) {
         console.log({ err });
         provider = undefined;
@@ -472,7 +472,6 @@ async function processRequest(
                             if (id_token) decodedRequest.payload.claims['id_token'] = id_token;
 
                             let response = {};
-
                             if (vp_data?.vp_token && vp_data?._vp_token) {
                                 let vps: VPData = {
                                     vp_token: vp_data.vp_token,
@@ -543,10 +542,11 @@ async function processRequest(
                                 'Successfully logged into ' + decodedRequest.payload.redirect_uri
                             );
                         } catch (err) {
+                            console.log({ error1: err });
                             processError = err;
                         }
                     } catch (err) {
-                        console.log({ error1: err });
+                        console.log({ error2: err });
 
                         let uri: any = queryString.parseUrl(request).query.redirect_uri;
 
@@ -596,7 +596,7 @@ async function processRequest(
                     }
                 }
             } catch (err) {
-                console.log({ error2: err });
+                console.log({ error3: err });
                 processError = err;
             }
         } catch (err) {

@@ -5,7 +5,9 @@
     "description": "Self Issued OpenId Connect Provider for Decentralized Identity implemented as a browser add-on",
     "author": "Radical Ledger Technologies",
     "icons": {
-        "16": "assets/did_siop_favicon.png"
+        "16": "assets/did_siop_favicon.png",
+        "32": "assets/did_siop_favicon.png",
+        "64": "assets/did_siop_favicon.png"
     },
     "background": {
         "service_worker": "background.js"

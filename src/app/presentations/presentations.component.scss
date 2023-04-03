@@ -1,0 +1,53 @@
+@import '../../colors';
+
+.presentations {
+    .title-wrap {
+        width: 100%;
+        padding: 10px;
+
+        .vps-title {
+            padding: 0 !important;
+            font-weight: 600;
+        }
+    }
+
+    .vps {
+        width: 360px;
+        height: 350px;
+        padding-top: 10px;
+        padding-bottom: 25px;
+        overflow-y: auto;
+        background-color: $app-section-background;
+
+        .vp-row {
+            gap: 10px;
+            width: 100%;
+            flex-wrap: nowrap !important;
+            border-bottom: 1px solid #dddddd;
+            padding-bottom: 10px;
+        }
+
+        .vp-data {
+            gap: 10px;
+            width: 100%;
+        }
+
+        .btn-vp {
+            text-align: left;
+            width: 100%;
+        }
+    }
+
+    .modal-info {
+        padding: 10px 0;
+        font-weight: 600;
+    }
+
+    .error {
+        color: red;
+    }
+
+    .waiting {
+        color: $app-primary;
+    }
+}

@@ -1,6 +1,8 @@
 /// <reference types="chrome"/>
 /// <reference types="firefox-webext-browser"/>
 
+// new did - did:ethr:0x3c275Ba45BB0C5A0Dc7ef5274438eBcAa050d57D
+
 let runtime: any;
 let tabs: any;
 
@@ -21,7 +23,7 @@ try {
 
 runtime.onMessage.addListener(function (request, sender, sendResponse) {
     tabs.query({ active: true, currentWindow: true }, function (_tabs) {
-        //console.log({ request, tabs });
+        // console.log({ request, tabs, _tabs });
         tabs.sendMessage(
             _tabs[0].id,
             { request, sender, signingInfo: signingInfoSet, loggedIn: loggedInState },

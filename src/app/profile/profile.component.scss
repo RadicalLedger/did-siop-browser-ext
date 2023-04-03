@@ -1,0 +1,85 @@
+@import '../../colors';
+
+.profile {
+    // max-height: 400px;
+    // overflow-y: scroll;
+}
+
+.setting {
+    width: 90vw;
+}
+
+.identity {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding-left: 25px;
+    padding-right: 25px;
+    font-size: 17px;
+    margin-bottom: 30px;
+}
+
+.identity-inner {
+    background-color: $app-section-background;
+    padding-top: 20px;
+    padding-left: 25px;
+    padding-right: 25px;
+    padding-bottom: 10px;
+}
+
+.identity-top {
+    height: 38px;
+}
+
+.identity-actions {
+    button {
+        color: $app-primary;
+        padding-top: 0px;
+        padding-right: 0px;
+        font-size: 18px;
+        margin-top: -12px;
+    }
+}
+
+.limit-height {
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+#keyAccordion {
+    .card {
+        .card-header {
+            padding-top: 18px;
+            h5 {
+                padding-left: 4px;
+                padding-right: 4px;
+                a {
+                    font-size: 17px;
+                    color: $app-primary !important;
+                }
+            }
+        }
+    }
+}
+
+.remove-key-btn {
+    color: $app-primary !important;
+}
+
+.btn-link {
+    &:active {
+        &:focus {
+            background-color: transparent;
+        }
+    }
+    &:focus {
+        outline: none !important;
+        box-shadow: none;
+    }
+}
+
+.btn-back {
+    color: $app-primary;
+    font-size: 18px;
+    margin-left: 25px;
+}

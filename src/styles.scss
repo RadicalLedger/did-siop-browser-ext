@@ -8,3 +8,32 @@ body {
     word-wrap: break-word;
     white-space: normal;
 }
+
+.material-symbols-rounded {
+    line-height: inherit !important;
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 48;
+
+    &.contained {
+        font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 48;
+    }
+
+    &.contained-w-700 {
+        font-variation-settings: 'FILL' 1, 'wght' 700, 'GRAD' 0, 'opsz' 48;
+    }
+
+    &.w-500 {
+        font-variation-settings: 'wght' 500;
+    }
+    &.w-600 {
+        font-variation-settings: 'wght' 600;
+    }
+    &.w-700 {
+        font-variation-settings: 'wght' 700;
+    }
+}
+
+.icon-button {
+    height: max-content;
+    width: max-content;
+    padding: 0 10px;
+}

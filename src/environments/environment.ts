@@ -3,7 +3,13 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-    production: false
+    production: false,
+    micro_api: {
+        localhost: 'http://localhost:4000/',
+        'www.dev.mrwalletapp.zedeid.com': 'https://www.dev.mrwalletapi.zedeid.com/',
+        'www.stg.mrwalletapp.zedeid.com': 'https://www.stg.mrwalletapi.zedeid.com/',
+        'www.mrwalletapp.zedeid.com': 'https://www.mrwalletapi.zedeid.com/'
+    }
 };
 
 /*

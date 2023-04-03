@@ -37,8 +37,8 @@ export class TestDataModalComponent implements OnInit {
         this.modalClose.nativeElement.disabled = true;
         this.modalYes.nativeElement.disabled = true;
 
-        // let did = 'did:ethr:0xB07Ead9717b44B6cF439c474362b9B0877CBBF83';
-        let did = 'did:key:z6MkvEoFWxZ9B5RDGSTLo2MqE3YJTxrDfLLZyZKjFRtcUSyw';
+        // let did = 'did:key:z6MkvEoFWxZ9B5RDGSTLo2MqE3YJTxrDfLLZyZKjFRtcUSyw';
+        let did = 'did:ethr:0xc8e79464833A7D5cf050A82FfAde54A3c6F982D9';
         if (did) {
             this.messageService.sendMessage(
                 {
@@ -48,9 +48,9 @@ export class TestDataModalComponent implements OnInit {
                 (response) => {
                     if (response.result) {
                         this.identityService.setCurrentDID(did);
-                        // let keyString = 'CE438802C1F0B6F12BC6E686F372D7D495BC5AA634134B4A7EA4603CB25F0964';
+                        // let keyString = 'zrv1xdp8ZsfXSDh4fQp8sE2VYPmLiCL3RssjKeXW7fYrRkxyWpWR5ugcC36WrCx9FizbJvxdwFmYcq7YxRVC2nVPFp5';
                         let keyString =
-                            'zrv1xdp8ZsfXSDh4fQp8sE2VYPmLiCL3RssjKeXW7fYrRkxyWpWR5ugcC36WrCx9FizbJvxdwFmYcq7YxRVC2nVPFp5';
+                            '2d59f69e38ae89bed0e6321cd62b29dd89c37d06748ee9f5a7084e31767d8887';
 
                         this.messageService.sendMessage(
                             {

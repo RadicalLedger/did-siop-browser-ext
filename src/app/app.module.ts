@@ -12,9 +12,21 @@ import { MainComponent } from './main/main.component';
 import { SettingsComponent } from './settings/settings.component';
 import { GuidesComponent } from './guides/guides.component';
 import { ModalsModule } from './modals/modals.module';
+import { CredentialsComponent } from './credentials/credentials.component';
+import { PresentationsComponent } from './presentations/presentations.component';
+import { ProfileComponent } from './profile/profile.component';
 
 @NgModule({
-    declarations: [AppComponent, LoginComponent, MainComponent, SettingsComponent, GuidesComponent],
+    declarations: [
+        AppComponent,
+        LoginComponent,
+        MainComponent,
+        SettingsComponent,
+        GuidesComponent,
+        CredentialsComponent,
+        PresentationsComponent,
+        ProfileComponent
+    ],
     imports: [
         BrowserModule,
         AppRoutingModule,

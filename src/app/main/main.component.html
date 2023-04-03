@@ -12,7 +12,9 @@
 
     <div *ngIf="screens.main" class="d-flex flex-column align-items-center main-content">
         <div class="d-flex flex-column align-items-center identity">
-            <img src="{{currentProfileInfo.picture || 'assets/avatar.png'}}" alt="identity avatar" />
+            <img
+                src="{{ currentProfileInfo.picture || 'assets/avatar.png' }}"
+                alt="identity avatar" />
             <div class="d-flex justify-content-center navigation">
                 <button class="btn btn-link flex-fill" (click)="showScreen('guides')">
                     Guides
@@ -37,13 +39,22 @@
         </div>
         <p class="requests-title">Pending Requests</p>
         <div class="d-flex flex-column align-items-center container-fluid requests">
-            <button *ngFor="let request of currentRequests" class="btn btn-success btn-request"
-                style="white-space: normal" (click)="selectRequest(request)" data-toggle="modal"
+            <button
+                *ngFor="let request of currentRequests"
+                class="btn btn-success btn-request"
+                style="white-space: normal"
+                (click)="selectRequest(request)"
+                data-toggle="modal"
                 data-target="#requestModal">
                 {{ request.client_id }}
             </button>
 
-            <div class="modal" id="requestModal" tabindex="-1" role="dialog" aria-labelledby="requestModalLabel"
+            <div
+                class="modal"
+                id="requestModal"
+                tabindex="-1"
+                role="dialog"
+                aria-labelledby="requestModalLabel"
                 aria-hidden="true">
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
@@ -51,7 +62,11 @@
                             <h5 class="modal-title" id="requestModalLabel">
                                 Confirm login request
                             </h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <button
+                                type="button"
+                                class="close"
+                                data-dismiss="modal"
+                                aria-label="Close">
                                 <span aria-hidden="true">&times;</span>
                             </button>
                         </div>
@@ -65,7 +80,11 @@
 
                             <div class="text-wrap">
                                 <p class="sub-title">vp_token :</p>
-                                <textarea readonly #requestVPDataTxT [(ngModel)]="vpRequestTextAreaValue" cols="30"
+                                <textarea
+                                    readonly
+                                    #requestVPDataTxT
+                                    [(ngModel)]="vpRequestTextAreaValue"
+                                    cols="30"
                                     rows="10"></textarea>
                             </div>
                         </div>
@@ -78,18 +97,28 @@
                                 <p #responseVPTokenWarningDataTxT class="json_warning warning">
                                     Invalid JSON format
                                 </p>
-                                <textarea [attr.data-active]="selectVpState == false" #responseVPTokenDataTxT
-                                    [(ngModel)]="vpTokenResponseTextAreaValue" cols="30" rows="10"
+                                <textarea
+                                    [attr.data-active]="selectVpState == false"
+                                    #responseVPTokenDataTxT
+                                    [(ngModel)]="vpTokenResponseTextAreaValue"
+                                    cols="30"
+                                    rows="10"
                                     class="display"></textarea>
 
-                                <div [attr.data-active]="selectVpState == true" class="display vp-container">
-                                    <button *ngFor="let data of currentVPs; let i = index" class="vp-group"
+                                <div
+                                    [attr.data-active]="selectVpState == true"
+                                    class="display vp-container">
+                                    <button
+                                        *ngFor="let data of currentVPs; let i = index"
+                                        class="vp-group"
                                         (click)="onSelectVp(data.vp)">
                                         {{ data.name }}
                                     </button>
                                 </div>
 
-                                <button (click)="onSelectVpState(!selectVpState)" type="button"
+                                <button
+                                    (click)="onSelectVpState(!selectVpState)"
+                                    type="button"
                                     class="btn btn-primary btn-ok select-vp-btn">
                                     {{ selectVpState ? 'Close' : 'Select VP token' }}
                                 </button>
@@ -99,21 +128,33 @@
                                 <p #response_VPTokenWarningDataTxT class="json_warning warning">
                                     Invalid JSON format
                                 </p>
-                                <textarea #response_VPTokenDataTxT [(ngModel)]="_vpTokenResponseTextAreaValue" cols="30"
+                                <textarea
+                                    #response_VPTokenDataTxT
+                                    [(ngModel)]="_vpTokenResponseTextAreaValue"
+                                    cols="30"
                                     rows="10"></textarea>
                             </div>
                         </div>
 
                         <div class="modal-footer d-flex justify-content-start">
-                            <button #requestModalYes type="button" class="btn btn-primary btn-ok"
+                            <button
+                                #requestModalYes
+                                type="button"
+                                class="btn btn-primary btn-ok"
                                 (click)="processRequest(true)">
                                 Yes
                             </button>
-                            <button #requestModalNo type="button" class="btn btn-link btn-cancel"
+                            <button
+                                #requestModalNo
+                                type="button"
+                                class="btn btn-link btn-cancel"
                                 (click)="processRequest(false)">
                                 No
                             </button>
-                            <button #requestModalClose type="button" class="btn btn-link ml-auto btn-cancel"
+                            <button
+                                #requestModalClose
+                                type="button"
+                                class="btn btn-link ml-auto btn-cancel"
                                 data-dismiss="modal">
                                 Cancel
                             </button>
@@ -125,7 +166,11 @@
     </div>
     <app-guides *ngIf="screens.guides" (clickedBack)="showScreen('main')"></app-guides>
     <app-settings *ngIf="screens.settings" (clickedBack)="showScreen('main')"></app-settings>
-    <app-credentials *ngIf="screens.credentials" (clickedBack)="showScreen('main')"></app-credentials>
-    <app-presentations *ngIf="screens.presentations" (clickedBack)="showScreen('main')"></app-presentations>
+    <app-credentials
+        *ngIf="screens.credentials"
+        (clickedBack)="showScreen('main')"></app-credentials>
+    <app-presentations
+        *ngIf="screens.presentations"
+        (clickedBack)="showScreen('main')"></app-presentations>
     <app-profile *ngIf="screens.profile" (clickedBack)="showScreen('main')"></app-profile>
 </div>

@@ -14,6 +14,7 @@ import { BackgroundMessageService } from '../background-message.service';
 import { environment } from 'src/environments/environment';
 import vcUtils from 'src/utils/vc';
 import credentials from 'src/utils/credentials';
+import { decrypt } from 'src/core/CryptoUtils';
 
 @Component({
     selector: 'app-credentials',
@@ -27,7 +28,6 @@ export class CredentialsComponent implements OnInit {
     currentDID: any;
     currentVCs: any[];
     selected: any = {};
-    vpName: string = '';
 
     constructor(
         private changeDetector: ChangeDetectorRef,
@@ -64,14 +64,6 @@ export class CredentialsComponent implements OnInit {
     }
 
     async createVP() {
-        if (!this.vpName) {
-            this.modalInfo.nativeElement.innerText = 'Name is required';
-            this.modalInfo.nativeElement.classList.remove('waiting');
-            this.modalInfo.nativeElement.classList.add('error');
-            this.modalCreate.nativeElement.disabled = false;
-            return;
-        }
-
         let verifiableCredentials = [];
         Object.entries(this.selected).forEach(([key, value]) => {
             if (value) {
@@ -79,7 +71,7 @@ export class CredentialsComponent implements OnInit {
                 if (vc_data) verifiableCredentials.push(vc_data.vc);
             }
         });
-
+        console.log({ verifiableCredentials });
         if (verifiableCredentials.length === 0) {
             this.modalInfo.nativeElement.innerText = 'At least one reward credential is required';
             this.modalInfo.nativeElement.classList.remove('waiting');
@@ -88,72 +80,37 @@ export class CredentialsComponent implements OnInit {
             return;
         }
 
+        let title = this.formatVC(verifiableCredentials[0])?.title || 'unknown';
+
         this.modalInfo.nativeElement.classList.remove('error');
         this.modalInfo.nativeElement.classList.add('waiting');
         this.modalInfo.nativeElement.innerText = 'Please wait';
         this.modalCreate.nativeElement.disabled = true;
 
         try {
-            this.messageService.tabQuery(
-                { active: true, windowId: chrome.windows.WINDOW_ID_CURRENT },
-                async (tabs: any) => {
-                    if (tabs[0].url) {
-                        const url = new URL(tabs[0].url);
-
-                        let hostname = url.hostname;
-
-                        if (!hostname) hostname = 'localhost';
-                        hostname = 'localhost';
-
-                        const end_point = environment.micro_api[hostname];
-
-                        if (!end_point) {
-                            this.modalInfo.nativeElement.innerText =
-                                'Failed to reach the api end point';
-                            this.modalInfo.nativeElement.classList.add('error');
-                            return;
-                        }
-
-                        const vp: any = await axios({
-                            method: 'POST',
-                            url: `${end_point}reward/presentation/generate`,
-                            data: {
-                                did: this.currentDID,
-                                rewards: verifiableCredentials,
-                                hostname: hostname
-                            }
+            this.modalInfo.nativeElement.innerText = '';
+            this.modalInfo.nativeElement.classList.remove('waiting');
+            this.modalCreate.nativeElement.disabled = false;
+            console.log({
+                task: TASKS.CREATE_VP,
+                name: title,
+                vcs: verifiableCredentials
+            });
+            this.messageService.sendMessage(
+                {
+                    task: TASKS.CREATE_VP,
+                    did: this.currentDID,
+                    name: title,
+                    vcs: verifiableCredentials
+                },
+                (response) => {
+                    if (response.result) {
+                        this.toastrService.success('VP created', 'DID_SIOP', {
+                            onActivateTick: true,
+                            positionClass: 'toast-bottom-center'
                         });
-
-                        this.modalInfo.nativeElement.innerText = '';
-                        this.modalInfo.nativeElement.classList.remove('waiting');
-                        this.modalCreate.nativeElement.disabled = false;
-
-                        if (!vp?.data?.verifiablePresentation) {
-                            this.modalInfo.nativeElement.innerText = 'Failed  to create VP';
-                            this.modalInfo.nativeElement.classList.add('error');
-                            return;
-                        }
-
-                        this.messageService.sendMessage(
-                            {
-                                task: TASKS.ADD_VP,
-                                name: this.vpName,
-                                vp: btoa(JSON.stringify(vp?.data?.verifiablePresentation))
-                            },
-                            (response) => {
-                                if (response.result) {
-                                    this.toastrService.success('VP created', 'DID_SIOP', {
-                                        onActivateTick: true,
-                                        positionClass: 'toast-bottom-center'
-                                    });
-                                } else if (response.err) {
-                                    this.modalInfo.nativeElement.innerText = 'Failed to save VP';
-                                    this.modalInfo.nativeElement.classList.add('error');
-                                }
-                            }
-                        );
-                    } else {
-                        this.modalInfo.nativeElement.innerText = 'Failed to fetch site url';
+                    } else if (response.err) {
+                        this.modalInfo.nativeElement.innerText = 'Failed to save VP';
                         this.modalInfo.nativeElement.classList.add('error');
                     }
                 }
@@ -165,6 +122,19 @@ export class CredentialsComponent implements OnInit {
             this.modalCreate.nativeElement.disabled = false;
         }
     }
+
+    private sendMessage = async (key: any) => {
+        return new Promise((resolve) => {
+            this.messageService.sendMessage(
+                {
+                    task: key
+                },
+                (response) => {
+                    resolve(response.result);
+                }
+            );
+        });
+    };
 
     formatVC(vc: any) {
         const localTypes: any = vcUtils.local;

@@ -9,6 +9,7 @@ import { authenticate, checkExtAuthenticationState, initExtAuthentication } from
 import { encrypt, decrypt } from './CryptoUtils';
 import { CustomDidResolver } from './custom-did-resolver';
 import { DidCreators } from './DidUtils';
+import createStandardVP from '../utils/createVp';
 
 let provider: Provider;
 let signingInfoSet: any[] = [];
@@ -196,10 +197,28 @@ runtime.onMessage.addListener(function ({ request, sender, signingInfo, loggedIn
                 });
                 break;
             }
+            case TASKS.CREATE_VP: {
+                try {
+                    createVP(
+                        {
+                            did: request.did,
+                            name: request.name,
+                            vcs: request.vcs
+                        },
+                        (result: boolean) => {
+                            sendResponse({ result });
+                        }
+                    );
+                } catch (err) {
+                    sendResponse({ err: err.message });
+                }
+                break;
+            }
             case TASKS.ADD_VP: {
                 try {
-                    let result = addVP(request.name, request.vp);
-                    sendResponse({ result });
+                    addVP(request.name, request.vp, (result: boolean) => {
+                        sendResponse({ result });
+                    });
                 } catch (err) {
                     sendResponse({ err: err.message });
                 }
@@ -236,6 +255,15 @@ runtime.onMessage.addListener(function ({ request, sender, signingInfo, loggedIn
                         sendResponse({ err: err.message });
                     });
             }
+            case TASKS.GET_LOGIN_STATE: {
+                try {
+                    let result = getLoggedInState();
+                    sendResponse({ result });
+                } catch (err) {
+                    sendResponse({ err: err.message });
+                }
+                break;
+            }
         }
     } else {
         switch (request.task) {
@@ -251,8 +279,9 @@ runtime.onMessage.addListener(function ({ request, sender, signingInfo, loggedIn
             }
             case TASKS.ADD_VC: {
                 try {
-                    let result = addVC(request.vc);
-                    sendResponse({ result });
+                    addVC(request.vc, (result: boolean) => {
+                        sendResponse({ result });
+                    });
                 } catch (err) {
                     sendResponse({ err: err.message });
                 }
@@ -715,7 +744,7 @@ function removeRequest(index: number, callback: any) {
 }); */
 
 /* Verifiable credentials */
-function addVC(vc: any): boolean {
+function addVC(vc: any, callback: any): boolean {
     try {
         if (!vc) throw new Error('Invalid visual credential');
 
@@ -728,9 +757,10 @@ function addVC(vc: any): boolean {
             store.push({ index, vc: JSON.parse(atob(vc)) });
             storage.set({ [STORAGE_KEYS.vcs]: store });
 
-            return true;
+            if (callback) callback(true);
         });
     } catch (err) {
+        if (callback) callback(false);
         throw err;
     }
 }
@@ -757,8 +787,40 @@ function removeVC(index: number, callback: any) {
     });
 }
 
+interface CreateVPProps {
+    name: string;
+    did: string;
+
+    vcs: any[];
+}
+
+/* Create verifiable presentations */
+async function createVP({ name, did, vcs }: CreateVPProps, callback: any) {
+    await checkSigning();
+    let private_key = '';
+
+    if (loggedInState) {
+        if (signingInfoSet?.length > 0) private_key = signingInfoSet[0]?.key;
+    }
+
+    try {
+        if (!name) throw new Error('Visual presentation name is required');
+        if (vcs?.length === 0) throw new Error('Atleast one visual credential is required');
+
+        const vp: any = await createStandardVP({ did, private_key, vcs });
+
+        if (!vp?.items?.[0]) return callback(false);
+
+        return addVP(name, btoa(JSON.stringify(vp.items[0])), callback);
+    } catch (err) {
+        console.log(err);
+        if (callback) callback(false);
+        throw err;
+    }
+}
+
 /* Verifiable presentations */
-function addVP(name: string, vp: any): boolean {
+function addVP(name: string, vp: any, callback: any): boolean {
     try {
         if (!name) throw new Error('Visual presentation name is required');
         if (!vp) throw new Error('Invalid visual presentation');
@@ -772,9 +834,10 @@ function addVP(name: string, vp: any): boolean {
             store.push({ index, name, vp: JSON.parse(atob(vp)) });
             storage.set({ [STORAGE_KEYS.vps]: store });
 
-            return true;
+            if (callback) callback(true);
         });
     } catch (err) {
+        if (callback) callback(false);
         throw err;
     }
 }

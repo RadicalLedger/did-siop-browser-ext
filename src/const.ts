@@ -30,6 +30,7 @@ export const enum TASKS {
     ADD_VC,
     REMOVE_VC,
     GET_VCS,
+    CREATE_VP,
     ADD_VP,
     REMOVE_VP,
     GET_VPS,

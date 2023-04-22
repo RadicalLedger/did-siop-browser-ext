@@ -42,24 +42,9 @@ const sendMessage = async (key: any) => {
 
 async function didSiopLoginBtn() {
     const didSIOPLogins = document.querySelectorAll('[data-did-siop]');
-    let loggedInState: any = await sendMessage(TASKS.GET_LOGIN_STATE);
-    let did: any = await getStorage(STORAGE_KEYS.userDID);
-    let signingInfo: any = await getStorage(STORAGE_KEYS.signingInfoSet);
-    let encodedUserData: any = '';
-
-    if (loggedInState) {
-        did = decrypt(did, loggedInState);
-        signingInfo = JSON.parse(decrypt(signingInfo, loggedInState));
-
-        if (signingInfo?.length > 0) signingInfo = signingInfo[0]?.key;
-
-        encodedUserData = Buffer.from(JSON.stringify({ did, key: signingInfo })).toString('base64');
-    }
 
     for (let i = 0; i < didSIOPLogins.length; i++) {
         const element = <HTMLButtonElement>didSIOPLogins[i];
-
-        element.dataset.user = encodedUserData;
 
         element.dataset.active = 'true';
         element.addEventListener('click', function () {

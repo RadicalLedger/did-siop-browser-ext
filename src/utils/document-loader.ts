@@ -3,16 +3,21 @@ import config from './config';
 
 const documentLoader = async (iri: string): Promise<any> => {
     let doc: any;
+    let url = iri.split('#')[0];
 
-    doc = await fetchDoc(iri);
+    if (url.startsWith('did:')) {
+        url = `${config.zedeid_url}${url}`;
 
-    if (!iri.split('#')[0]) doc = await fetchDoc(`${config.zedeid_url}did/${iri.split('#')[0]}`);
+        doc = await fetchDoc(url);
+        doc = doc?.didDocument;
+    } else {
+        doc = await fetchDoc(url);
+    }
 
     if (doc) {
         // console.log('document ==>> ', JSON.stringify(doc, null, 4));
-        return { document: doc };
+        return { document: doc, documentUrl: url };
     }
-
     throw new Error(`iri ${iri} not supported`);
 };
 

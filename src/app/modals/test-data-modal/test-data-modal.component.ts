@@ -38,7 +38,7 @@ export class TestDataModalComponent implements OnInit {
         this.modalYes.nativeElement.disabled = true;
 
         // let did = 'did:key:z6MkvEoFWxZ9B5RDGSTLo2MqE3YJTxrDfLLZyZKjFRtcUSyw';
-        let did = 'did:ethr:0xc8e79464833A7D5cf050A82FfAde54A3c6F982D9';
+        let did = 'did:key:z6MkswmCzzSLJEq5AM2EU9zDaoi7fLq7nLQVTX3qWj77ymJe';
         if (did) {
             this.messageService.sendMessage(
                 {
@@ -50,7 +50,7 @@ export class TestDataModalComponent implements OnInit {
                         this.identityService.setCurrentDID(did);
                         // let keyString = 'zrv1xdp8ZsfXSDh4fQp8sE2VYPmLiCL3RssjKeXW7fYrRkxyWpWR5ugcC36WrCx9FizbJvxdwFmYcq7YxRVC2nVPFp5';
                         let keyString =
-                            '2d59f69e38ae89bed0e6321cd62b29dd89c37d06748ee9f5a7084e31767d8887';
+                            '861dc015d9edb888e6d9981b7e9c0dd86748efbe539e4a065ffb59f8cdbb096c';
 
                         this.messageService.sendMessage(
                             {

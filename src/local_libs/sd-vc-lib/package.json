@@ -1,12 +1,13 @@
 {
-    "name": "did-hd-wallet",
-    "version": "2.0.0",
-    "description": "Package to generate decentralized IDs deterministically",
+    "name": "sd-vc-lib",
+    "version": "3.0.0",
+    "description": "Issue, present and verify selectively disclosure credentials",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "scripts": {
         "prebuild": "tsc",
-        "build": "npm run obf",
+        "build:obf": "npm run obf",
+        "build": "npm run prebuild",
         "obf": "node obfuscate.js",
         "test": "jest",
         "coverage": "jest --coverage",
@@ -15,7 +16,7 @@
         "configure-husky": "npx husky install && npx husky add .husky/pre-commit \"npx --no-install lint-staged\""
     },
     "lint-staged": {
-        "**/*.{ts,js,json}": [
+        "**/*.{ts,tsx,js,jsx,json,scss,css}": [
             "prettier --write ."
         ]
     },
@@ -24,30 +25,38 @@
             "pre-commit": "lint-staged"
         }
     },
-    "author": "Radical Ledger Technologies",
+    "author": "RTL",
     "license": "ISC",
     "devDependencies": {
-        "@types/jest": "^26.0.20",
+        "@types/jest": "^29.5.1",
         "@typescript-eslint/eslint-plugin": "^4.15.1",
         "@typescript-eslint/parser": "^4.15.1",
         "eslint": "^7.20.0",
         "husky": "^8.0.3",
         "javascript-obfuscator": "^2.10.7",
         "jest": "^26.6.3",
-        "lint-staged": "^13.2.2",
-        "prettier": "^2.8.8",
+        "lint-staged": "^13.2.0",
+        "prettier": "^2.8.4",
         "ts-jest": "^26.5.0",
         "ts-node": "^9.1.1",
         "typescript": "^4.1.3"
     },
     "dependencies": {
         "@transmute/ed25519-signature-2018": "^0.7.0-unstable.80",
+        "@transmute/vc.js": "^0.7.0-unstable.80",
+        "@types/lodash": "^4.14.194",
+        "@types/node": "^18.16.3",
+        "@types/secp256k1": "^4.0.1",
+        "@types/sha.js": "^2.4.0",
+        "add": "^2.0.6",
+        "axios": "^0.21.1",
         "base-58": "^0.0.1",
-        "bip32": "2.0.6",
-        "bip39": "^3.0.2",
         "buffer": "^6.0.3",
-        "tiny-secp256k1": "^2.2.1",
-        "web3": "^1.3.3"
+        "elliptic": "^6.5.4",
+        "hash.js": "^1.1.7",
+        "lodash": "^4.17.21",
+        "sha.js": "^2.4.11",
+        "yarn": "^1.22.19"
     },
     "files": [
         "dist",

@@ -1,13 +1,6 @@
-import {
-    Ed25519VerificationKey2018,
-    Ed25519Signature2018
-} from '@transmute/ed25519-signature-2018';
-import { verifiable } from '@transmute/vc.js';
+import VCSD from 'sd-vc-lib';
 import axios from 'axios';
-import documentLoader from './documentLoader';
-// @ts-ignore
-import { binary_to_base58 } from 'base58-js';
-import config from './config';
+import documentLoader from './document-loader';
 
 const view_app_domains: any = {
     localhost: 'localhost',
@@ -23,7 +16,7 @@ const createVP = ({ did, vcs, private_key }: { did: string; vcs: any[]; private_
 
         const zedeid_doc: any = await axios({
             method: 'GET',
-            url: `${config.zedeid_url}did/${did}`
+            url: `${process.env.REACT_APP_RESOLVER}${did}`
         });
 
         if (!zedeid_doc?.data?.didDocument) {
@@ -32,36 +25,15 @@ const createVP = ({ did, vcs, private_key }: { did: string; vcs: any[]; private_
             return;
         }
 
-        let privateKeyBase58 = binary_to_base58(Buffer.from(private_key));
-        let verificationMethod = {
-            ...zedeid_doc?.data?.didDocument?.verificationMethod?.[0],
-            privateKeyBase58
-        };
-
-        const keyPairIssuer = await Ed25519VerificationKey2018.from(verificationMethod);
-
-        const suite = new Ed25519Signature2018({
-            key: keyPairIssuer,
-            date: new Date().toISOString()
-        });
-
-        const presentation = {
-            '@context': ['https://www.w3.org/2018/credentials/v1'],
-            type: ['VerifiablePresentation'],
+        const vp = await VCSD.verifiable.presentation.create({
+            holderPrivateKey: private_key,
             verifiableCredential: vcs,
-            holder: did
-        };
-
-        const vp = await verifiable.presentation.create({
-            presentation,
-            format: ['vp'],
-            documentLoader: documentLoader,
-            challenge,
+            documentLoader,
             domain,
-            suite
+            challenge
         });
 
-        if (vp?.items?.length > 0) {
+        if (vp) {
             return resolve(vp);
         }
 

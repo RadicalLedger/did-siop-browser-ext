@@ -1,45 +1,27 @@
-import EthrDID from 'ethr-did';
-import W3 from 'web3';
 const nacl = require('tweetnacl');
 import { encode as multibaseEncode } from 'multibase';
 import { addPrefix as mutlicodeAddPrefix } from 'multicodec';
 import * as base58 from 'bs58';
 import Wallet, { Types, generateMnemonic } from 'did-hd-wallet';
-import { publicKeyCreate, ecdsaSign } from 'secp256k1';
 import axios from 'axios';
 import jwt from 'jsonwebtoken';
+import VCSD from 'sd-vc-lib';
 
-/* const createEthrDid = async function (network: string) {
-    const networks = {
-        mainnet: 'https://mainnet.infura.io/v3/e0a6ac9a2c4a4722970325c36b728415',
-        rinkeby: 'https://rinkeby.infura.io/v3/e0a6ac9a2c4a4722970325c36b728415',
-        ropsten: 'https://ropsten.infura.io/v3/e0a6ac9a2c4a4722970325c36b728415',
-        goerli: 'https://goerli.infura.io/v3/e0a6ac9a2c4a4722970325c36b728415',
-        kovan: 'https://kovan.infura.io/v3/e0a6ac9a2c4a4722970325c36b728415'
-    };
-
-    const ethrProvider = new W3.providers.HttpProvider(networks[network]);
-    const w3 = new W3();
-    const acc = w3.eth.accounts.create();
-    const ethrDid = new EthrDID({
-        address: acc.address,
-        privateKey: acc.privateKey,
-        provider: ethrProvider
-    });
-
-    return {
-        did: ethrDid.did,
-        privateKey: acc.privateKey.replace('0x', '')
-    };
-}; */
-
-const createEthrDid = async function (network: string) {
+const createKeyDid = async function (network: string) {
     const resolver_url = 'https://www.offchaindids.zedeid.com/v2/did/';
     const mnemonic = generateMnemonic(128);
 
     const wallet = new Wallet(Types.MNEMONIC, mnemonic);
+    const ed = new VCSD.utils.ed25519();
 
-    const { privateKey: holderPrivateKey, did: holderDID } = wallet.getChildKeys('m/256/256/2');
+    const {
+        publicKey: holderPublicKey,
+        privateKey: holderPrivateKey,
+        did: holderDID,
+        verificationKey: holderVerificationKey
+    }: any = await wallet.getChildKeys(
+        process.env.REACT_APP_HOLDER_DERIVATION_PATH || 'm/256/256/2'
+    );
 
     const holderChallengeResponse = await axios.post(`${resolver_url}`, {
         did: holderDID
@@ -50,17 +32,15 @@ const createEthrDid = async function (network: string) {
 
     const holderResponse = await axios.post(`${resolver_url}`, {
         did: holderDID,
-        seed: holderPrivateKey,
+        verificationKey: holderVerificationKey,
         challengeResponse: {
-            publicKey: Buffer.from(
-                publicKeyCreate(Buffer.from(holderPrivateKey as string, 'hex'))
-            ).toString('hex'),
-            cipherText: Buffer.from(
-                ecdsaSign(
+            publicKey: holderPublicKey,
+            cipherText: ed
+                .sign(
                     Buffer.from(holderChallenge, 'hex'),
                     Buffer.from(holderPrivateKey as string, 'hex')
-                ).signature
-            ).toString('hex'),
+                )
+                .toHex(),
             jwt: holderChallengeResponse.data.challengeToken
         }
     });
@@ -81,7 +61,7 @@ const createEthrDid = async function (network: string) {
     };
 };
 
-const createKeyDid = async function () {
+const createKeyDidOld = async function () {
     let keyPair = nacl.sign.keyPair();
     let methodSpecificBytes = Buffer.from(
         multibaseEncode('base58btc', mutlicodeAddPrefix('ed25519-pub', keyPair.publicKey))
@@ -96,6 +76,6 @@ const createKeyDid = async function () {
 };
 
 export const DidCreators = {
-    ethr: createEthrDid,
     key: createKeyDid
+    // key: createKeyDid
 };

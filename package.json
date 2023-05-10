@@ -5,8 +5,7 @@
     "scripts": {
         "ng": "ng",
         "start": "ng serve",
-        "build": "ng build --prod",
-        "build:dev": "ng build",
+        "build": "ng build",
         "dev": "ng build --watch",
         "test": "ng test",
         "lint": "ng lint",
@@ -59,6 +58,7 @@
         "crypto-browserify": "^3.12.0",
         "css-loader": "^6.7.1",
         "did-hd-wallet": "file:src/local_libs/did-hd-wallet",
+        "sd-vc-lib": "file:src/local_libs/sd-vc-lib",
         "did-siop": "^2.0.8",
         "ethr-did": "^1.1.0",
         "hash.js": "^1.1.7",

@@ -550,7 +550,7 @@ async function processRequest(
                                         tabs.create({
                                             url: url
                                         });
-                                    } else if (window.open) {
+                                    } else if (window.open && url) {
                                         window.open(url, '_self');
                                     }
                                 }
@@ -589,7 +589,7 @@ async function processRequest(
                                 tabs.create({
                                     url: url
                                 });
-                            } else if (window.open) {
+                            } else if (window.open && url) {
                                 window.open(url, '_self');
                             }
 
@@ -602,25 +602,30 @@ async function processRequest(
                     let uri: any = queryString.parseUrl(request).query.redirect_uri;
 
                     if (uri) {
-                        let url = new URL(uri);
-                        url.search = new URLSearchParams({
-                            error: provider.generateErrorResponse(
-                                ERROR_RESPONSES.access_denied.err.message
-                            ) as string
-                        }).toString();
+                        try {
+                            let url = new URL(uri);
+                            url.search = new URLSearchParams({
+                                error: provider.generateErrorResponse(
+                                    ERROR_RESPONSES.access_denied.err.message
+                                ) as string
+                            }).toString();
 
-                        if (tabs?.create) {
-                            tabs.create({
-                                url: url
-                            });
-                        } else if (window.open) {
-                            window.open(url, '_self');
+                            if (tabs?.create) {
+                                tabs.create({
+                                    url: url
+                                });
+                            } else if (window.open && url) {
+                                window.open(url, '_self');
+                            }
+
+                            return 'Successfully declined logging request';
+                        } catch (error) {
+                            console.log(error);
+                        } finally {
+                            removeRequest(request_index, () => {});
                         }
-
-                        removeRequest(request_index, () => {});
-
-                        return 'Successfully declined logging request';
                     } else {
+                        removeRequest(request_index, () => {});
                         processError = new Error('invalid redirect url');
                     }
                 }
@@ -809,9 +814,9 @@ async function createVP({ name, did, vcs }: CreateVPProps, callback: any) {
 
         const vp: any = await createStandardVP({ did, private_key, vcs });
 
-        if (!vp?.items?.[0]) return callback(false);
+        if (!vp) return callback(false);
 
-        return addVP(name, btoa(JSON.stringify(vp.items[0])), callback);
+        return addVP(name, btoa(JSON.stringify(vp)), callback);
     } catch (err) {
         console.log(err);
         if (callback) callback(false);

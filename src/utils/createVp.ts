@@ -1,6 +1,7 @@
 import VCSD from 'sd-vc-lib';
 import axios from 'axios';
 import documentLoader from './document-loader';
+import config from './config';
 
 const view_app_domains: any = {
     localhost: 'localhost',
@@ -16,7 +17,7 @@ const createVP = ({ did, vcs, private_key }: { did: string; vcs: any[]; private_
 
         const zedeid_doc: any = await axios({
             method: 'GET',
-            url: `${process.env.REACT_APP_RESOLVER}${did}`
+            url: `${config.zedeid_url}did/${did}`
         });
 
         if (!zedeid_doc?.data?.didDocument) {

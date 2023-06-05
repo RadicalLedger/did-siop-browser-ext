@@ -37,3 +37,7 @@ export const enum TASKS {
     GET_LOGIN_STATE,
     CHANGE_PROFILE_INFO
 }
+
+export const NOTIFICATIONS = {
+    NEW_REQUEST: 'new-request'
+};

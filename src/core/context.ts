@@ -4,12 +4,13 @@
 import axios from 'axios';
 import { Provider, ERROR_RESPONSES, VPData, Resolvers } from 'did-siop';
 import * as queryString from 'query-string';
-import { STORAGE_KEYS, TASKS } from '../const';
+import { NOTIFICATIONS, STORAGE_KEYS, TASKS } from '../const';
 import { authenticate, checkExtAuthenticationState, initExtAuthentication } from './AuthUtils';
 import { encrypt, decrypt } from './CryptoUtils';
 import { CustomDidResolver } from './custom-did-resolver';
 import { DidCreators } from './DidUtils';
 import createStandardVP from '../utils/createVp';
+import { resolve } from 'dns';
 
 let provider: Provider;
 let signingInfoSet: any[] = [];
@@ -80,12 +81,13 @@ runtime.onMessage.addListener(function ({ request, sender, signingInfo, loggedIn
     if (loggedIn) loggedInState = loggedIn;
     // console.log({ request });
 
-    const sendResponse = (data: any) => {
-        // console.log(signingInfoSet);
+    const sendResponse = (data: any, notification?: any, badge?: any) => {
         res({
             signingInfoSet,
             loggedInState,
-            data
+            data,
+            notification,
+            badge
         });
     };
 
@@ -168,8 +170,8 @@ runtime.onMessage.addListener(function ({ request, sender, signingInfo, loggedIn
                 break;
             }
             case TASKS.GET_REQUESTS: {
-                getRequests((didSiopRequests) => {
-                    sendResponse({ didSiopRequests });
+                getRequests((data) => {
+                    sendResponse({ didSiopRequests: data?.data }, null, data.badge);
                 });
                 break;
             }
@@ -232,7 +234,7 @@ runtime.onMessage.addListener(function ({ request, sender, signingInfo, loggedIn
                     request.vp_data
                 )
                     .then((result) => {
-                        sendResponse({ result });
+                        sendResponse({ result: result.message }, result.notification, result.badge);
                     })
                     .catch((err) => {
                         console.log('Error in processing request : ', err.message);
@@ -269,10 +271,11 @@ runtime.onMessage.addListener(function ({ request, sender, signingInfo, loggedIn
         switch (request.task) {
             case TASKS.MAKE_REQUEST: {
                 try {
-                    addRequest(request.did_siop, (result) => {
-                        sendResponse({ result });
+                    addRequest(request.did_siop).then((result: any) => {
+                        sendResponse({ result: result?.data }, result.notification, result.badge);
                     });
                 } catch (err) {
+                    console.log(err);
                     sendResponse({ err: err.message });
                 }
                 break;
@@ -489,11 +492,12 @@ async function processRequest(
         try {
             await checkSigning();
             try {
+                let decodedRequest = await provider.validateRequest(request);
+
                 if (confirmation) {
                     try {
                         // console.log({ request });
                         // console.log({ parsed: queryString.parseUrl(request) });
-                        let decodedRequest = await provider.validateRequest(request);
 
                         try {
                             //let response = await provider.generateResponse(decodedRequest.payload);
@@ -524,7 +528,9 @@ async function processRequest(
                                 decodedRequest.payload.response_mode === 'post'
                             ) {
                                 try {
-                                    await postToRP(decodedRequest.payload.redirect_uri, response);
+                                    await postToRP(decodedRequest.payload.redirect_uri, {
+                                        token: response
+                                    });
                                 } catch (e) {
                                     console.log('Failed to post request the response failed', e);
                                 }
@@ -533,7 +539,9 @@ async function processRequest(
                                 decodedRequest.payload.response_mode === 'get'
                             ) {
                                 try {
-                                    await getToRP(decodedRequest.payload.redirect_uri, response);
+                                    await getToRP(decodedRequest.payload.redirect_uri, {
+                                        code: response
+                                    });
                                 } catch (e) {
                                     console.log('Failed to get request the response', e);
                                 }
@@ -556,20 +564,13 @@ async function processRequest(
                                 }
                             }
 
-                            console.log(
-                                'Successfully logged into ' + decodedRequest.payload.redirect_uri
-                            );
-                            /* console.log(
-                                'Sent response to ' +
-                                    decodedRequest.payload.redirect_uri +
-                                    ' with token: ',
-                                response
-                            ); */
-
-                            removeRequest(request_index, () => {});
-                            return (
-                                'Successfully logged into ' + decodedRequest.payload.redirect_uri
-                            );
+                            const result: any = await removeRequest(request_index);
+                            return {
+                                ...result,
+                                message:
+                                    'Successfully logged into ' +
+                                    decodedRequest.payload.redirect_uri
+                            };
                         } catch (err) {
                             console.log({ error1: err });
                             processError = err;
@@ -593,7 +594,11 @@ async function processRequest(
                                 window.open(url, '_self');
                             }
 
-                            removeRequest(request_index, () => {});
+                            const result: any = await removeRequest(request_index);
+                            return {
+                                ...result,
+                                message: 'Failed to log into ' + decodedRequest.payload.redirect_uri
+                            };
                         } else {
                             processError = new Error('invalid redirect url');
                         }
@@ -602,30 +607,74 @@ async function processRequest(
                     let uri: any = queryString.parseUrl(request).query.redirect_uri;
 
                     if (uri) {
-                        try {
-                            let url = new URL(uri);
-                            url.search = new URLSearchParams({
-                                error: provider.generateErrorResponse(
-                                    ERROR_RESPONSES.access_denied.err.message
-                                ) as string
-                            }).toString();
-
-                            if (tabs?.create) {
-                                tabs.create({
-                                    url: url
+                        if (
+                            decodedRequest.payload.response_mode &&
+                            decodedRequest.payload.response_mode === 'post'
+                        ) {
+                            try {
+                                await postToRP(decodedRequest.payload.redirect_uri, {
+                                    error: provider.generateErrorResponse(
+                                        ERROR_RESPONSES.access_denied.err.message
+                                    ) as string
                                 });
-                            } else if (window.open && url) {
-                                window.open(url, '_self');
-                            }
 
-                            return 'Successfully declined logging request';
-                        } catch (error) {
-                            console.log(error);
-                        } finally {
-                            removeRequest(request_index, () => {});
+                                const result: any = await removeRequest(request_index);
+                                return {
+                                    ...result,
+                                    message: 'Successfully declined logging request'
+                                };
+                            } catch (e) {
+                                console.log('Failed to post request the response failed', e);
+                            }
+                        } else if (
+                            decodedRequest.payload.response_mode &&
+                            decodedRequest.payload.response_mode === 'get'
+                        ) {
+                            try {
+                                await getToRP(decodedRequest.payload.redirect_uri, {
+                                    error: provider.generateErrorResponse(
+                                        ERROR_RESPONSES.access_denied.err.message
+                                    ) as string
+                                });
+
+                                const result: any = await removeRequest(request_index);
+                                return {
+                                    ...result,
+                                    message: 'Successfully declined logging request'
+                                };
+                            } catch (e) {
+                                console.log('Failed to get request the response', e);
+                            }
+                        } else {
+                            try {
+                                let uri = decodedRequest.payload.redirect_uri;
+
+                                if (uri) {
+                                    let url = new URL(uri);
+                                    url.search = new URLSearchParams({
+                                        error: provider.generateErrorResponse(
+                                            ERROR_RESPONSES.access_denied.err.message
+                                        ) as string
+                                    }).toString();
+
+                                    if (tabs?.create) {
+                                        tabs.create({
+                                            url: url
+                                        });
+                                    } else if (window.open && url) {
+                                        window.open(url, '_self');
+                                    }
+                                }
+
+                                return 'Successfully declined logging request';
+                            } catch (error) {
+                                console.log(error);
+                            } finally {
+                                await removeRequest(request_index);
+                            }
                         }
                     } else {
-                        removeRequest(request_index, () => {});
+                        await removeRequest(request_index);
                         processError = new Error('invalid redirect url');
                     }
                 }
@@ -649,36 +698,43 @@ async function postToRP(redirectUri: string, response: any) {
             Accept: 'application/json',
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ token: response })
+        body: JSON.stringify(response)
     });
 
     try {
-        const content = await rawResponse.json();
-        console.log(content);
+        await rawResponse.json();
     } catch (e) {
         console.log(e);
     }
+
+    return;
 }
 
 async function getToRP(redirectUri: string, response: any) {
     let url = new URL(redirectUri);
-    url.search = new URLSearchParams({ code: response }).toString();
+    url.search = new URLSearchParams(response).toString();
 
     const rawResponse = await fetch(url);
 
     try {
-        const content = await rawResponse.json();
-        // console.log(content);
+        await rawResponse.json();
     } catch (e) {
         console.log(e);
     }
+
+    return;
 }
 
 function getRequests(callback: any) {
     storage.get([STORAGE_KEYS.requests], (result) => {
         let storedRequests = result[STORAGE_KEYS.requests] || [];
 
-        callback(storedRequests);
+        callback({
+            data: storedRequests,
+            badge: {
+                text: storedRequests.length
+            }
+        });
     });
 }
 
@@ -696,47 +752,71 @@ async function getRequestByIndex(index: number) {
     });
 }
 
-function addRequest(request: string, callback: any) {
-    try {
-        if (queryString.parseUrl(request).url != 'openid://') throw new Error('Invalid request');
+async function addRequest(request: string) {
+    return new Promise((resolve, reject) => {
+        try {
+            if (queryString.parseUrl(request).url != 'openid://')
+                throw new Error('Invalid request');
 
+            storage.get([STORAGE_KEYS.requests], (result) => {
+                let storedRequests: any = result[STORAGE_KEYS.requests] || [];
+
+                let index = 0;
+                for (let i = 0; i < storedRequests.length; i++) {
+                    if (storedRequests[i].index > index) index = storedRequests[i].index;
+                }
+                ++index;
+
+                let client_id = queryString.parseUrl(request).query.client_id;
+                storedRequests.push({ index, client_id, request });
+
+                storage.set({ [STORAGE_KEYS.requests]: storedRequests });
+
+                resolve({
+                    data: true,
+                    badge: {
+                        text: storedRequests.length
+                    },
+                    notification: {
+                        id: NOTIFICATIONS.NEW_REQUEST,
+                        options: {
+                            title: 'New Request Available',
+                            message: 'New request has been added to the extension',
+                            iconUrl: 'assets/did_siop_favicon.png',
+                            type: 'basic'
+                        }
+                    }
+                });
+            });
+        } catch (err) {
+            reject({ data: false });
+            throw err;
+        }
+    });
+}
+
+async function removeRequest(index: number) {
+    return new Promise((resolve, reject) => {
         storage.get([STORAGE_KEYS.requests], (result) => {
             let storedRequests: any = result[STORAGE_KEYS.requests] || [];
 
-            let index = 0;
-            for (let i = 0; i < storedRequests.length; i++) {
-                if (storedRequests[i].index > index) index = storedRequests[i].index;
-            }
-            ++index;
+            let request = storedRequests.filter((sr) => {
+                return sr.index == index;
+            })[0];
 
-            let client_id = queryString.parseUrl(request).query.client_id;
-            storedRequests.push({ index, client_id, request });
+            storedRequests = storedRequests.filter((sr) => {
+                return sr.index != index;
+            });
 
             storage.set({ [STORAGE_KEYS.requests]: storedRequests });
 
-            callback(true);
+            resolve({
+                data: request.request,
+                badge: {
+                    text: storedRequests.length
+                }
+            });
         });
-    } catch (err) {
-        callback(false);
-        throw err;
-    }
-}
-
-function removeRequest(index: number, callback: any) {
-    storage.get([STORAGE_KEYS.requests], (result) => {
-        let storedRequests: any = result[STORAGE_KEYS.requests] || [];
-
-        let request = storedRequests.filter((sr) => {
-            return sr.index == index;
-        })[0];
-
-        storedRequests = storedRequests.filter((sr) => {
-            return sr.index != index;
-        });
-
-        storage.set({ [STORAGE_KEYS.requests]: storedRequests });
-
-        callback(request.request);
     });
 }
 

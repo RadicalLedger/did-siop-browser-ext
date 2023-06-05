@@ -23,5 +23,5 @@
         }
     ],
     "host_permissions": ["*://*/*"],
-    "permissions": ["tabs", "activeTab", "storage", "cookies", "alarms"]
+    "permissions": ["tabs", "activeTab", "storage", "cookies", "alarms", "notifications"]
 }

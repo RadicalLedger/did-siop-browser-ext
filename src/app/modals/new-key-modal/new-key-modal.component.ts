@@ -18,6 +18,8 @@ export class NewKeyModalComponent implements OnInit {
 
     @Output() didChanged = new EventEmitter<boolean>();
 
+    keyType: string = 'private-key';
+
     constructor(
         private toastrService: ToastrService,
         private messageService: BackgroundMessageService,
@@ -32,6 +34,10 @@ export class NewKeyModalComponent implements OnInit {
         this.modalOpen.nativeElement.click();
     }
 
+    onSelectionChange(type: any) {
+        this.keyType = type;
+    }
+
     async addNewKey(keyString: string) {
         this.modalInfo.nativeElement.classList.remove('error');
         this.modalInfo.nativeElement.classList.add('waiting');
@@ -43,7 +49,8 @@ export class NewKeyModalComponent implements OnInit {
             this.messageService.sendMessage(
                 {
                     task: TASKS.ADD_KEY,
-                    keyInfo: keyString
+                    keyInfo: keyString,
+                    type: this.keyType
                 },
                 (response) => {
                     if (response.result) {

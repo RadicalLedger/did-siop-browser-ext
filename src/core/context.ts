@@ -11,6 +11,7 @@ import { CustomDidResolver } from './custom-did-resolver';
 import { DidCreators } from './DidUtils';
 import createStandardVP from '../utils/createVp';
 import { resolve } from 'dns';
+import Wallet, { Types, generateMnemonic } from 'did-hd-wallet';
 
 let provider: Provider;
 let signingInfoSet: any[] = [];
@@ -114,7 +115,7 @@ runtime.onMessage.addListener(function ({ request, sender, signingInfo, loggedIn
                 break;
             }
             case TASKS.ADD_KEY: {
-                addKey(request.keyInfo)
+                addKey(request.keyInfo, request.type)
                     .then((result) => {
                         sendResponse({ result: result });
                     })
@@ -439,8 +440,29 @@ async function changeProfileInfo(type: string, value: string): Promise<string> {
     }
 }
 
-async function addKey(key: string): Promise<string> {
+async function addKey(key: string, type: string = 'private-key'): Promise<string> {
     try {
+        if (type === 'memonic') {
+            const wallet = new Wallet(Types.MNEMONIC, key);
+            let encryptedDID: any = await getStorage(STORAGE_KEYS.userDID);
+            let currentDID = decrypt(encryptedDID, loggedInState);
+
+            const { privateKey: issuerPrivateKey, did: issuerDID }: any = await wallet.getChildKeys(
+                process.env.REACT_APP_HOLDER_DERIVATION_PATH || 'm/256/256/1'
+            );
+            const { privateKey: holderPrivateKey, did: holderDID }: any = await wallet.getChildKeys(
+                process.env.REACT_APP_HOLDER_DERIVATION_PATH || 'm/256/256/2'
+            );
+
+            if (holderDID === currentDID) {
+                key = holderPrivateKey;
+            } else if (issuerDID === currentDID) {
+                key = issuerPrivateKey;
+            } else {
+                key = holderPrivateKey;
+            }
+        }
+
         await checkSigning();
         let kid = provider.addSigningParams(key);
 

@@ -1,11 +1,5 @@
 <button #modalOpen data-toggle="modal" data-target="#newKeyModal" class="modal-trigger"></button>
-<div
-    class="modal"
-    id="newKeyModal"
-    tabindex="-1"
-    role="dialog"
-    aria-labelledby="newKeyModalLabel"
-    aria-hidden="true">
+<div class="modal" id="newKeyModal" tabindex="-1" role="dialog" aria-labelledby="newKeyModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -16,33 +10,31 @@
             </div>
             <div class="modal-body">
                 <div class="new-key-key">
-                    <p class="new-key-modal-input-label">Private Key</p>
+                    <div class="modal-radio-btns">
+                        <div class="radio-wrap">
+                            <input type="radio" [checked]="keyType == 'private-key'" name="key-type" id="private-btn"
+                                class="radio-btn" value="private-key" (change)="onSelectionChange('private-key')" />
+                            <label for="private-btn" class="radio-label">Private Key</label>
+                        </div>
+                        <div class="radio-wrap">
+                            <input type="radio" [checked]="keyType == 'memonic'" name="key-type" id="memonic-btn"
+                                class="radio-btn" value="memonic" (change)="onSelectionChange('memonic')" />
+                            <label for="memonic-btn" class="radio-label">Memonic String</label>
+                        </div>
+                    </div>
+                    <!-- <p class="new-key-modal-input-label">Private Key</p> -->
                     <div class="input-group input-group-sm new-key-modal-input">
-                        <textarea
-                            id="newKeyString"
-                            #newKeyString
-                            type="password"
-                            rows="10"
-                            class="form-control"
-                            aria-label="Small"
-                            aria-describedby="inputGroup-sizing-sm"></textarea>
+                        <textarea id="newKeyString" #newKeyString type="password" rows="10" class="form-control"
+                            aria-label="Small" aria-describedby="inputGroup-sizing-sm"></textarea>
                     </div>
                 </div>
                 <p #modalInfo></p>
             </div>
             <div class="modal-footer d-flex justify-content-start">
-                <button
-                    #modalYes
-                    type="button"
-                    class="btn btn-primary btn-ok"
-                    (click)="addNewKey(newKeyString.value)">
+                <button #modalYes type="button" class="btn btn-primary btn-ok" (click)="addNewKey(newKeyString.value)">
                     Add Key
                 </button>
-                <button
-                    #modalClose
-                    type="button"
-                    class="btn btn-link btn-cancel"
-                    data-dismiss="modal">
+                <button #modalClose type="button" class="btn btn-link btn-cancel" data-dismiss="modal">
                     Cancel
                 </button>
             </div>

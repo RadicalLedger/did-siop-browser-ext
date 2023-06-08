@@ -43,9 +43,9 @@ export class CreateDIDModalComponent implements OnInit {
                     data
                 },
                 (response) => {
-                    if (response.result) {
-                        this.identityService.setCurrentDID(response.result.did);
-                        this.identityService.setSigningInfoSet([{ kid: response.result.kid }]);
+                    if (response) {
+                        this.identityService.setCurrentDID(response.did);
+                        this.identityService.setSigningInfoSet([{ kid: response.kid }]);
                         this.modalClose.nativeElement.disabled = false;
                         this.didChanged.emit(true);
                         this.modalClose.nativeElement.click();

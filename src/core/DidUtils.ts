@@ -1,7 +1,3 @@
-const nacl = require('tweetnacl');
-import { encode as multibaseEncode } from 'multibase';
-import { addPrefix as mutlicodeAddPrefix } from 'multicodec';
-import * as base58 from 'bs58';
 import Wallet, { Types, generateMnemonic } from 'did-hd-wallet';
 import axios from 'axios';
 import jwt from 'jsonwebtoken';
@@ -61,21 +57,7 @@ const createKeyDid = async function (network: string) {
     };
 };
 
-const createKeyDidOld = async function () {
-    let keyPair = nacl.sign.keyPair();
-    let methodSpecificBytes = Buffer.from(
-        multibaseEncode('base58btc', mutlicodeAddPrefix('ed25519-pub', keyPair.publicKey))
-    );
-    let did = 'did:key:' + methodSpecificBytes.toString();
-    let privateKeyString = base58.encode(keyPair.secretKey);
-
-    return {
-        did,
-        privateKey: privateKeyString
-    };
-};
-
 export const DidCreators = {
     key: createKeyDid
-    // key: createKeyDid
+    // eth: createEthDid
 };

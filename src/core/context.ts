@@ -247,16 +247,15 @@ runtime.onMessage.addListener(function ({ request, sender, signingInfo, loggedIn
                 createDID(request.method, request.data)
                     .then((result) => {
                         sendResponse({
-                            result: {
-                                did: result.did,
-                                kid: result.kid,
-                                keyString: result.privateKey
-                            }
+                            did: result.did,
+                            kid: result.kid,
+                            keyString: result.privateKey
                         });
                     })
                     .catch((err) => {
                         sendResponse({ err: err.message });
                     });
+                break;
             }
             case TASKS.GET_LOGIN_STATE: {
                 try {
@@ -402,7 +401,7 @@ function changePassword(oldPassword: string, newPassword: string, callback: any)
     });
 }
 
-async function changeDID(did: string): Promise<string> {
+async function changeDID(did: string, update: boolean = true): Promise<string> {
     try {
         const resolver = new Resolvers.CombinedDidResolver('eth');
         const customResolver = new CustomDidResolver();
@@ -418,7 +417,7 @@ async function changeDID(did: string): Promise<string> {
         let encryptedSigningInfo = encrypt(JSON.stringify(signingInfoSet), loggedInState);
         storage.set({ [STORAGE_KEYS.signingInfoSet]: encryptedSigningInfo });
 
-        localStorage.setItem('new-content', 'true');
+        if (update) localStorage.setItem('new-content', 'true');
         return 'Identity changed successfully';
     } catch (err) {
         console.log({ err });
@@ -440,7 +439,11 @@ async function changeProfileInfo(type: string, value: string): Promise<string> {
     }
 }
 
-async function addKey(key: string, type: string = 'private-key'): Promise<string> {
+async function addKey(
+    key: string,
+    type: string = 'private-key',
+    update: boolean = true
+): Promise<string> {
     try {
         if (type === 'memonic') {
             const wallet = new Wallet(Types.MNEMONIC, key);
@@ -474,7 +477,7 @@ async function addKey(key: string, type: string = 'private-key'): Promise<string
         let encryptedSigningInfo = encrypt(JSON.stringify(signingInfoSet), loggedInState);
         storage.set({ [STORAGE_KEYS.signingInfoSet]: encryptedSigningInfo });
 
-        localStorage.setItem('new-content', 'true');
+        if (update) localStorage.setItem('new-content', 'true');
         return kid;
     } catch (err) {
         console.log({ err });
@@ -1000,8 +1003,17 @@ async function createDID(method: string, data: any): Promise<any> {
     try {
         const create = DidCreators[method];
         let identity = await create(data);
-        await changeDID(identity.did);
-        let kid = await addKey(identity.privateKey);
+        await changeDID(identity.did, false);
+
+        /* remove current signing private keys */
+        signingInfoSet = [];
+        let encryptedSigningInfo = encrypt(JSON.stringify(signingInfoSet), loggedInState);
+        storage.set({ [STORAGE_KEYS.signingInfoSet]: encryptedSigningInfo });
+
+        let kid = await addKey(identity.privateKey, 'private-key', false);
+
+        /* update new keys */
+        localStorage.setItem('new-content', 'true');
         return {
             did: identity.did,
             kid,

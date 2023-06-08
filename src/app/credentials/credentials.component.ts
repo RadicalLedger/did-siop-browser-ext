@@ -88,14 +88,6 @@ export class CredentialsComponent implements OnInit {
         this.modalCreate.nativeElement.disabled = true;
 
         try {
-            this.modalInfo.nativeElement.innerText = '';
-            this.modalInfo.nativeElement.classList.remove('waiting');
-            this.modalCreate.nativeElement.disabled = false;
-            console.log({
-                task: TASKS.CREATE_VP,
-                name: title,
-                vcs: verifiableCredentials
-            });
             this.messageService.sendMessage(
                 {
                     task: TASKS.CREATE_VP,
@@ -104,6 +96,10 @@ export class CredentialsComponent implements OnInit {
                     vcs: verifiableCredentials
                 },
                 (response) => {
+                    this.modalInfo.nativeElement.innerText = '';
+                    this.modalInfo.nativeElement.classList.remove('waiting');
+                    this.modalCreate.nativeElement.disabled = false;
+
                     if (response.result) {
                         this.toastrService.success('VP created', 'DID_SIOP', {
                             onActivateTick: true,

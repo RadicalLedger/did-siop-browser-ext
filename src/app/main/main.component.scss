@@ -1,0 +1,39 @@
+@import '../../styles/colors';
+
+#main {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+
+    .containers {
+        height: 100%;
+    }
+
+    .menu {
+        width: 100%;
+        height: 50px;
+        padding: 10px;
+        background-color: white;
+        display: flex;
+        justify-content: space-evenly;
+        gap: 20px;
+        align-items: center;
+        box-shadow: 4px 4px 16px 0px #2b303929;
+
+        .icon {
+            cursor: pointer;
+            font-size: 1.5em;
+            color: $secondary;
+            transition: all 0.3s ease;
+            width: max-content !important;
+
+            &.active {
+                color: $theme-color;
+            }
+
+            &:active {
+                color: $dark-theme-color;
+            }
+        }
+    }
+}

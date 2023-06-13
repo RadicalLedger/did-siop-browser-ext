@@ -1,0 +1,5 @@
+<div class="app">
+  <app-login *ngIf="!loggedIn" (onLogin)="setLoginState(true)"></app-login>
+  <app-main *ngIf="loggedIn" (onLogout)="setLoginState(false)"></app-main>
+</div>
+<router-outlet></router-outlet>

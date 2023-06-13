@@ -1,0 +1,8 @@
+import { Component } from '@angular/core';
+
+@Component({
+    selector: 'app-presentations',
+    templateUrl: './presentations.component.html',
+    styleUrls: ['./presentations.component.scss']
+})
+export class PresentationsComponent {}

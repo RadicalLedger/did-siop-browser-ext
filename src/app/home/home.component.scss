@@ -1,0 +1,109 @@
+@import '../../styles/colors';
+@import '../../styles/variables';
+@import '../../styles/common';
+
+#home {
+    width: 100%;
+    height: 100%;
+    background-color: $container-color;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+
+    .top-content {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        align-items: center;
+        position: relative;
+        padding: $container-padding;
+        background-color: $theme-color;
+        min-height: 195px;
+        margin-bottom: 15px;
+
+        .top-bar {
+            display: flex;
+            width: 100%;
+        }
+
+        .logo {
+            width: 100%;
+            max-width: 35px;
+            fill: white;
+        }
+
+        .title-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+
+            .description {
+                color: white;
+                font-weight: 500;
+                font-size: $px12;
+            }
+        }
+
+        .profile-image {
+            position: absolute;
+            bottom: -50px;
+            width: 105px;
+            height: 105px;
+            border: 5px solid $container-color;
+            background-color: $container-color;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+    }
+
+    .info-icon {
+        color: white;
+        font-size: 18px;
+        cursor: pointer;
+    }
+
+    .body {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: $container-padding;
+        height: 100%;
+
+        .key-card {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: $black;
+            font-size: $px12;
+        }
+
+        .pending-title {
+            color: $black;
+        }
+
+        .requests-card {
+            padding: 7px;
+            height: 100%;
+            overflow-y: auto;
+
+            .key {
+                font-size: $px12;
+                border-radius: 5px;
+                padding: 8px;
+                background-color: $theme-color;
+                color: white;
+                word-break: break-all;
+                text-align: center;
+                cursor: pointer;
+                transition: all 0.3s ease;
+
+                &:active {
+                    background-color: $dark-theme-color;
+                }
+            }
+        }
+    }
+}

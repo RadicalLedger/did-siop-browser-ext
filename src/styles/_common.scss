@@ -45,9 +45,29 @@
 }
 
 .card {
-    border: 2px solid $secondary;
+    border: 2px solid #00000014;
     background-color: white;
     border-radius: 5px;
     min-height: 45px;
     width: 100%;
+}
+
+.title-bar {
+    padding: 20px;
+    background-color: $theme-color;
+    width: 100%;
+
+    .title {
+        color: white;
+    }
+}
+
+.text-button {
+    color: $theme-color;
+    transition: all 0.3s ease;
+    cursor: pointer;
+
+    &:active {
+        color: $dark-theme-color;
+    }
 }

@@ -1,12 +1,22 @@
 <div id="login">
     <div class="title-wrap">
         <img src="assets/logo/logo.svg" alt="Logo" class="logo" />
-        <p class="description">Self-issued OpenIDConnect Provider based on Decentralized identities</p>
+        <p class="description">
+            Self-issued OpenIDConnect Provider based on Decentralized identities
+        </p>
     </div>
 
     <form *ngIf="!loginState" [formGroup]="registerForm" class="form">
-        <input type="password" formControlName="password" class="input" placeholder="Enter Password">
-        <input type="password" formControlName="confirmPassword" class="input" placeholder="Enter Confirm Password">
+        <input
+            type="password"
+            formControlName="password"
+            class="input"
+            placeholder="Enter Password" />
+        <input
+            type="password"
+            formControlName="confirmPassword"
+            class="input"
+            placeholder="Enter Confirm Password" />
 
         <button [disabled]="registerForm.invalid" type="submit" class="button">Create</button>
     </form>

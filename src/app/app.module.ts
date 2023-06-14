@@ -12,6 +12,8 @@ import { CredentialsComponent } from './credentials/credentials.component';
 import { PresentationsComponent } from './presentations/presentations.component';
 import { HomeComponent } from './home/home.component';
 import { SettingsComponent } from './settings/settings.component';
+import { GuidesComponent } from './guides/guides.component';
+import { ProfileComponent } from './profile/profile.component';
 
 @NgModule({
     declarations: [
@@ -21,7 +23,9 @@ import { SettingsComponent } from './settings/settings.component';
         CredentialsComponent,
         PresentationsComponent,
         HomeComponent,
-        SettingsComponent
+        SettingsComponent,
+        GuidesComponent,
+        ProfileComponent
     ],
     imports: [BrowserModule, AppRoutingModule, ReactiveFormsModule, MatIconModule],
     providers: [],

@@ -1,0 +1,36 @@
+<div id="profile">
+    <div class="title-bar">
+        <mat-icon (click)="onGoBack()" class="back-icon">navigate_before</mat-icon>
+        <p class="title">Profile</p>
+    </div>
+
+    <div class="body">
+        <div class="card profile-card">
+            <img src="assets/avatar.png" alt="Profile Picture" class="profile-image">
+            <p class="text-button">Change Profile Picture</p>
+        </div>
+
+        <div class="card section-card keys-card">
+            <div class="top">
+                <p class="title">Signing Keys</p>
+
+            </div>
+            <div class="divider"></div>
+            <form class="form">
+                <div class="input-wrap">
+                    <span class="label">Name</span>
+                    <input name="name" type="text" class="input">
+                </div>
+                <div class="input-wrap">
+                    <span class="label">Email</span>
+                    <input name="email" type="email" class="input">
+                </div>
+                <div class="input-wrap">
+                    <span class="label">Nickname</span>
+                    <input name="nickname" type="text" class="input">
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>

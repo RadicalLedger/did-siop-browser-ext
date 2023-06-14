@@ -3,17 +3,18 @@
         <app-home *ngIf="currentActive == 'home'"></app-home>
         <app-credentials *ngIf="currentActive == 'credentials'"></app-credentials>
         <app-presentations *ngIf="currentActive == 'presentations'"></app-presentations>
-        <app-settings *ngIf="currentActive == 'settings'"></app-settings>
+        <app-settings *ngIf="currentActive == 'settings'" (onProfile)="onSelect('profile')"></app-settings>
+        <app-profile *ngIf="currentActive == 'profile'" (onBack)="onSelect('settings')"></app-profile>
     </div>
 
     <div class="menu">
-        <mat-icon [ngClass]="currentActive == 'home' ? 'active' : '' " class="icon"
+        <mat-icon [ngClass]="currentActive == 'home' ? 'active' : ''" class="icon"
             (click)="onSelect('home')">home</mat-icon>
-        <mat-icon [ngClass]="currentActive == 'credentials' ? 'active' : '' " class="icon"
+        <mat-icon [ngClass]="currentActive == 'credentials' ? 'active' : ''" class="icon"
             (click)="onSelect('credentials')">badge</mat-icon>
-        <mat-icon [ngClass]="currentActive == 'presentations' ? 'active' : '' " class="icon"
+        <mat-icon [ngClass]="currentActive == 'presentations' ? 'active' : ''" class="icon"
             (click)="onSelect('presentations')">present_to_all</mat-icon>
-        <mat-icon [ngClass]="currentActive == 'settings' ? 'active' : '' " class="icon"
+        <mat-icon [ngClass]="currentActive == 'settings' || currentActive == 'profiles' ? 'active' : ''" class="icon"
             (click)="onSelect('settings')">settings</mat-icon>
     </div>
 </div>

@@ -1,10 +1,11 @@
 <div id="main">
     <div class="containers">
-        <app-home *ngIf="currentActive == 'home'"></app-home>
+        <app-home *ngIf="currentActive == 'home'" (onGuides)="onSelect('guides')"></app-home>
         <app-credentials *ngIf="currentActive == 'credentials'"></app-credentials>
         <app-presentations *ngIf="currentActive == 'presentations'"></app-presentations>
         <app-settings *ngIf="currentActive == 'settings'" (onProfile)="onSelect('profile')"></app-settings>
         <app-profile *ngIf="currentActive == 'profile'" (onBack)="onSelect('settings')"></app-profile>
+        <app-guides *ngIf="currentActive == 'guides'" (onBack)="onSelect('home')"></app-guides>
     </div>
 
     <div class="menu">

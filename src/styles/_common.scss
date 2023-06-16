@@ -1,4 +1,5 @@
 @import '../styles/colors';
+@import '../styles/variables';
 
 .input {
     outline: none;
@@ -70,4 +71,9 @@
     &:active {
         color: $dark-theme-color;
     }
+}
+
+.warn-message {
+    color: $red;
+    font-size: $px12;
 }

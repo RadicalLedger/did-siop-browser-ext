@@ -1,17 +1,23 @@
-/// <reference types="chrome"/>
-/// <reference types="firefox-webext-browser"/>
+import { Provider } from 'did-siop';
+
+import { Response } from './interfaces';
 
 import functions from './functions';
 import tasks from './functions/tasks';
-import { Response } from './interfaces';
 
-let engine: any;
-let action: any;
-let runtime: any;
-let tabs: any;
+/// <reference types="chrome"/>
+/// <reference types="firefox-webext-browser"/>
 
-let signingInfoSet: any[] = [];
-let loggedInState: string = undefined;
+const DATA = {
+    signingInfoSet: [],
+    loggedInState: undefined,
+    provider: Provider
+};
+
+var engine: any;
+var action: any;
+var runtime: any;
+var tabs: any;
 
 try {
     engine = browser;
@@ -29,34 +35,30 @@ try {
     }
 }
 
-const setVariables = (result) => {
-    if (result.loggedInState) loggedInState = result.loggedInState;
-    if (result.signingInfoSet) signingInfoSet = result.signingInfoSet;
+const setVariables = (result = {}) => {
+    for (const key in result) {
+        DATA[key] = result[key];
+    }
 };
 
 runtime.onMessage.addListener(function (request, sender, response) {
-    tabs.query({ active: true, currentWindow: true }, function (_tabs) {
-        if (!sender.tab) {
-            functions[request.task](
-                { request, data: { loggedInState, signingInfoSet } },
-                (result: Response) => {
-                    if (result?.set) setVariables(result.set);
+    const onResponse = (res: Response) => {
+        if (res?.set) setVariables(res.set);
 
-                    return response(result.result);
-                }
-            );
-        } else {
-            tasks[request.task](
-                { request, data: { loggedInState, signingInfoSet } },
-                (result: Response) => {
-                    if (result?.set) setVariables(result.set);
+        return response(res.result, res.error);
+    };
 
-                    return response(result.result);
-                }
-            );
-        }
+    if (!sender.tab) {
+        functions[request.task]({ request, data: DATA }, onResponse);
+    } else {
+        tasks[request.task]({ request, data: DATA }, onResponse);
+    }
+    /* tabs.query({ active: true, currentWindow: true }, function (_tabs) {
+        tabs.sendMessage(_tabs[0].id, { request, sender }, response);
+    }); */
 
-        /* tabs.sendMessage(
+    /* tabs.query({ active: true, currentWindow: true }, function (_tabs) {
+         tabs.sendMessage(
             _tabs[0].id,
             { request, sender, signingInfo: signingInfoSet, loggedIn: loggedInState },
             function (response) {
@@ -86,10 +88,10 @@ runtime.onMessage.addListener(function (request, sender, response) {
 
                 sendResponse(response?.data);
             }
-        ); */
+        );
 
         return true;
-    });
+    }); */
 
     return true;
 });

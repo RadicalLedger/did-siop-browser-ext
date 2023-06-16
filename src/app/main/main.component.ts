@@ -6,7 +6,7 @@ import { ChangeDetectorRef, Component } from '@angular/core';
     styleUrls: ['./main.component.scss']
 })
 export class MainComponent {
-    currentActive = 'home';
+    currentActive = 'settings';
 
     constructor(private changeDetector: ChangeDetectorRef) {}
 

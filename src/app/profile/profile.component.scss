@@ -90,5 +90,16 @@
                 font-size: $px12;
             }
         }
+
+        .input-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+
+            .label {
+                font-size: $px12;
+                font-weight: 500;
+            }
+        }
     }
 }

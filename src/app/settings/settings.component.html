@@ -6,8 +6,8 @@
     <div class="body">
         <div class="card profile-card" (click)="onSelectProfile()">
             <div class="profile-wrap">
-                <img src="assets/avatar.png" alt="Profile Image" class="profile-image" />
-                <p class="name">Unknown</p>
+                <img [src]="profileImage" alt="Profile Image" class="profile-image" />
+                <p class="name">{{name}}</p>
             </div>
 
             <mat-icon class="icon">navigate_next</mat-icon>
@@ -19,14 +19,14 @@
             <div class="top">
                 <p class="title">Current Identity</p>
                 <div class="buttons">
-                    <span class="text-button">Test</span>
-                    <span class="text-button">Create</span>
-                    <span class="text-button">Change</span>
+                    <span (click)="onTestKeys()" class="text-button">Test</span>
+                    <span (click)="onTestKeys()" class="text-button">Create</span>
+                    <span (click)="onTestKeys()" class="text-button">Change</span>
                 </div>
             </div>
             <div class="divider"></div>
             <div class="content">
-                <span class="key">did:key:z6MkswmCzzSLJEq5AM2EU9zDaoi7fLq7nLQVTX3qWj&&ymJe</span>
+                <span class="key">{{currentDID || 'No key is available'}}</span>
             </div>
         </div>
 
@@ -39,8 +39,8 @@
             </div>
             <div class="divider"></div>
             <div class="content">
-                <div class="keys">
-                    <span class="key">Key - 0</span>
+                <div *ngFor="let key of currentKeys; let i = index" class="keys">
+                    <span class="key">Key - {{i}}</span>
                 </div>
             </div>
         </div>

@@ -1,16 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <title>DidExtension</title>
-        <base href="/" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" type="image/x-icon" href="favicon.ico" />
 
-        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
-    </head>
+<head>
+    <meta charset="utf-8" />
+    <title>DidExtension</title>
+    <base href="/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
 
-    <body>
-        <app-root></app-root>
-    </body>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+
+    <style>
+        .swal2-title {
+            font-size: 1.1em !important;
+        }
+
+        .swal2-html-container {
+            font-size: 1em !important;
+        }
+
+        .swal2-popup-form {
+            display: flex !important;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .swal2-popup-input {
+            outline: none;
+            border: 2px solid #00000014;
+            padding: 10px 15px;
+            width: 100%;
+            border-radius: 5px;
+        }
+
+        .swal2-popup-input::placeholder {
+            font-weight: 500;
+            color: #989898;
+        }
+    </style>
+</head>
+
+<body>
+    <app-root></app-root>
+</body>
+
 </html>

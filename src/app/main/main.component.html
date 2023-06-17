@@ -3,19 +3,39 @@
         <app-home *ngIf="currentActive == 'home'" (onGuides)="onSelect('guides')"></app-home>
         <app-credentials *ngIf="currentActive == 'credentials'"></app-credentials>
         <app-presentations *ngIf="currentActive == 'presentations'"></app-presentations>
-        <app-settings *ngIf="currentActive == 'settings'" (onProfile)="onSelect('profile')"></app-settings>
-        <app-profile *ngIf="currentActive == 'profile'" (onBack)="onSelect('settings')"></app-profile>
+        <app-settings
+            *ngIf="currentActive == 'settings'"
+            (onProfile)="onSelect('profile')"></app-settings>
+        <app-profile
+            *ngIf="currentActive == 'profile'"
+            (onBack)="onSelect('settings')"></app-profile>
         <app-guides *ngIf="currentActive == 'guides'" (onBack)="onSelect('home')"></app-guides>
     </div>
 
     <div class="menu">
-        <mat-icon [ngClass]="currentActive == 'home' ? 'active' : ''" class="icon"
-            (click)="onSelect('home')">home</mat-icon>
-        <mat-icon [ngClass]="currentActive == 'credentials' ? 'active' : ''" class="icon"
-            (click)="onSelect('credentials')">badge</mat-icon>
-        <mat-icon [ngClass]="currentActive == 'presentations' ? 'active' : ''" class="icon"
-            (click)="onSelect('presentations')">present_to_all</mat-icon>
-        <mat-icon [ngClass]="currentActive == 'settings' || currentActive == 'profile' ? 'active' : ''" class="icon"
-            (click)="onSelect('settings')">settings</mat-icon>
+        <mat-icon
+            [ngClass]="currentActive == 'home' ? 'active' : ''"
+            class="icon"
+            (click)="onSelect('home')"
+            >home</mat-icon
+        >
+        <mat-icon
+            [ngClass]="currentActive == 'credentials' ? 'active' : ''"
+            class="icon"
+            (click)="onSelect('credentials')"
+            >badge</mat-icon
+        >
+        <mat-icon
+            [ngClass]="currentActive == 'presentations' ? 'active' : ''"
+            class="icon"
+            (click)="onSelect('presentations')"
+            >present_to_all</mat-icon
+        >
+        <mat-icon
+            [ngClass]="currentActive == 'settings' || currentActive == 'profile' ? 'active' : ''"
+            class="icon"
+            (click)="onSelect('settings')"
+            >settings</mat-icon
+        >
     </div>
 </div>

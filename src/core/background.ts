@@ -1,6 +1,6 @@
 import { Provider } from 'did-siop';
 
-import { Response } from './interfaces';
+import { Response } from '../types/core';
 
 import functions from './functions';
 import tasks from './functions/tasks';
@@ -8,10 +8,10 @@ import tasks from './functions/tasks';
 /// <reference types="chrome"/>
 /// <reference types="firefox-webext-browser"/>
 
-const DATA = {
+var DATA = {
     signingInfoSet: [],
     loggedInState: undefined,
-    provider: Provider
+    provider: undefined
 };
 
 var engine: any;

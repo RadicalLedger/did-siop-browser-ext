@@ -11,6 +11,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { BackgroundMessageService } from '../services/message.service';
 import { TASKS } from 'src/utils/tasks';
 import Swal from 'sweetalert2';
+import { PopupService } from '../services/popup.service';
 
 @Component({
     selector: 'app-profile',
@@ -27,7 +28,8 @@ export class ProfileComponent implements OnInit {
 
     constructor(
         private changeDetector: ChangeDetectorRef,
-        private messageService: BackgroundMessageService
+        private messageService: BackgroundMessageService,
+        private popupService: PopupService
     ) {}
 
     onGoBack() {
@@ -93,11 +95,19 @@ export class ProfileComponent implements OnInit {
             },
             (result, error) => {
                 if (error) {
-                    Swal.fire('Error', error?.message || 'Profile details update failed', 'error');
+                    this.popupService.show({
+                        icon: 'error',
+                        title: 'Oops',
+                        text: error?.message || 'Profile details update failed'
+                    });
                     return;
                 }
 
-                Swal.fire('Updated', 'Profile details updated', 'success');
+                this.popupService.show({
+                    icon: 'success',
+                    title: 'Updated',
+                    text: 'Profile details updated'
+                });
             }
         );
     }

@@ -50,7 +50,19 @@ export class LoginComponent implements OnInit {
             (result) => {
                 if (result) {
                     this.loginState = true;
-                    this.changeDetector.detectChanges();
+
+                    this.messageService.sendMessage(
+                        {
+                            task: TASKS.CHECK_LOGIN
+                        },
+                        (result) => {
+                            if (result) {
+                                this.onLogin.emit(true);
+                            }
+
+                            this.changeDetector.detectChanges();
+                        }
+                    );
                 }
             }
         );

@@ -7,7 +7,7 @@
         <div class="card profile-card" (click)="onSelectProfile()">
             <div class="profile-wrap">
                 <img [src]="profileImage" alt="Profile Image" class="profile-image" />
-                <p class="name">{{name}}</p>
+                <p class="name">{{ name }}</p>
             </div>
 
             <mat-icon class="icon">navigate_next</mat-icon>
@@ -26,7 +26,7 @@
             </div>
             <div class="divider"></div>
             <div class="content">
-                <span class="key">{{currentDID || 'No key is available'}}</span>
+                <span class="key">{{ currentDID || 'No key is available' }}</span>
             </div>
         </div>
 
@@ -40,7 +40,7 @@
             <div class="divider"></div>
             <div class="content">
                 <div *ngFor="let key of currentKeys; let i = index" class="keys">
-                    <span class="key">Key - {{i}}</span>
+                    <span (click)="onSelectKey(key)" class="key">Key - {{ i }}</span>
                 </div>
             </div>
         </div>
@@ -48,7 +48,7 @@
         <div class="card section-card">
             <div class="top">
                 <p class="title">Password</p>
-                <div class="buttons">
+                <div (click)="onChangePassword()" class="buttons">
                     <span class="text-button">Change</span>
                 </div>
             </div>

@@ -7,14 +7,26 @@
     </div>
 
     <form *ngIf="!loginState" [formGroup]="registerForm" class="form" (submit)="register()">
-        <input type="password" formControlName="password" class="input" placeholder="Enter Password" />
-        <input type="password" formControlName="confirmPassword" class="input" placeholder="Enter Confirm Password" />
+        <input
+            type="password"
+            formControlName="password"
+            class="input"
+            placeholder="Enter Password" />
+        <input
+            type="password"
+            formControlName="confirmPassword"
+            class="input"
+            placeholder="Enter Confirm Password" />
 
         <button [disabled]="registerForm.invalid" type="submit" class="button">Create</button>
     </form>
 
     <form *ngIf="loginState" [formGroup]="loginForm" class="form" (submit)="login()">
-        <input type="password" formControlName="loginPassword" class="input" placeholder="Enter Password" />
+        <input
+            type="password"
+            formControlName="loginPassword"
+            class="input"
+            placeholder="Enter Password" />
 
         <button type="submit" class="button">Login</button>
     </form>

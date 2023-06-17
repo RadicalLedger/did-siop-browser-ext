@@ -12,6 +12,7 @@ export interface Response {
     error?: any;
     set?: {
         loggedInState?: string;
-        signingInfoSet?: any;
+        signingInfoSet?: any[];
+        provider?: any;
     };
 }

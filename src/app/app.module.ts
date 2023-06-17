@@ -14,6 +14,8 @@ import { HomeComponent } from './home/home.component';
 import { SettingsComponent } from './settings/settings.component';
 import { GuidesComponent } from './guides/guides.component';
 import { ProfileComponent } from './profile/profile.component';
+import { AddKeyComponent } from './models/add-key/add-key.component';
+import { ChangePasswordComponent } from './models/change-password/change-password.component';
 
 @NgModule({
     declarations: [
@@ -25,7 +27,9 @@ import { ProfileComponent } from './profile/profile.component';
         HomeComponent,
         SettingsComponent,
         GuidesComponent,
-        ProfileComponent
+        ProfileComponent,
+        AddKeyComponent,
+        ChangePasswordComponent
     ],
     imports: [BrowserModule, AppRoutingModule, ReactiveFormsModule, MatIconModule],
     providers: [],

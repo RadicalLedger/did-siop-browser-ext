@@ -33,7 +33,7 @@
         <div class="card section-card keys-card">
             <div class="top">
                 <p class="title">Signing Keys</p>
-                <div class="buttons">
+                <div (click)="onAddNewKey()" class="buttons">
                     <span class="text-button">Add New Key</span>
                 </div>
             </div>
@@ -52,6 +52,15 @@
                     <span class="text-button">Change</span>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div class="hidden-model">
+        <div #changePasswordEl>
+            <app-change-password></app-change-password>
+        </div>
+        <div #addNewKeyEl>
+            <app-add-key></app-add-key>
         </div>
     </div>
 </div>

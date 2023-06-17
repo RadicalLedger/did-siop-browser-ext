@@ -12,6 +12,12 @@
         font-weight: 500;
         color: $secondary;
     }
+
+    &.textarea {
+        &.no-resize {
+            resize: none;
+        }
+    }
 }
 
 .button {
@@ -76,4 +82,8 @@
 .warn-message {
     color: $red;
     font-size: $px12;
+}
+
+.hidden-model {
+    display: none;
 }

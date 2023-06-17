@@ -1,5 +1,3 @@
-import { Provider } from 'did-siop';
-
 import { Response } from '../types/core';
 
 import functions from './functions';
@@ -53,45 +51,6 @@ runtime.onMessage.addListener(function (request, sender, response) {
     } else {
         tasks[request.task]({ request, data: DATA }, onResponse);
     }
-    /* tabs.query({ active: true, currentWindow: true }, function (_tabs) {
-        tabs.sendMessage(_tabs[0].id, { request, sender }, response);
-    }); */
-
-    /* tabs.query({ active: true, currentWindow: true }, function (_tabs) {
-         tabs.sendMessage(
-            _tabs[0].id,
-            { request, sender, signingInfo: signingInfoSet, loggedIn: loggedInState },
-            function (response) {
-                if (response !== undefined) {
-                    signingInfoSet = response.signingInfoSet || [];
-                    loggedInState = response.loggedInState || false;
-                }
-
-                if (response?.notification) {
-                    engine.notifications.clear(NOTIFICATIONS.NEW_REQUEST);
-
-                    engine.notifications.create(
-                        response?.notification.id,
-                        response?.notification.options,
-                        (id: string) => {
-                            setTimeout(() => {
-                                engine.notifications.clear(id);
-                            }, 5000);
-                        }
-                    );
-                }
-
-                if (response?.badge) {
-                    action.setBadgeBackgroundColor({ color: '#24b6aa' });
-                    action.setBadgeText({ text: `${response.badge.text || 0}` });
-                }
-
-                sendResponse(response?.data);
-            }
-        );
-
-        return true;
-    }); */
 
     return true;
 });

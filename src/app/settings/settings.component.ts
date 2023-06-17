@@ -1,4 +1,11 @@
-import { ChangeDetectorRef, Component, EventEmitter, Output } from '@angular/core';
+import {
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    EventEmitter,
+    Output,
+    ViewChild
+} from '@angular/core';
 import { BackgroundMessageService } from '../services/message.service';
 import { TASKS } from 'src/utils/tasks';
 import Swal from 'sweetalert2';
@@ -11,6 +18,9 @@ import { PopupService } from '../services/popup.service';
 })
 export class SettingsComponent {
     @Output() onProfile = new EventEmitter<boolean>();
+
+    @ViewChild('changePasswordEl', { static: false }) changePasswordEl: ElementRef;
+    @ViewChild('addNewKeyEl', { static: false }) addNewKeyEl: ElementRef;
 
     currentDID: string = '';
     currentKeys: SigningKeys[] = [];
@@ -160,10 +170,7 @@ export class SettingsComponent {
         this.popupService
             .show({
                 title: 'Change Password',
-                html:
-                    '<input id="swal-input1" type="password" class="swal2-popup-input">' +
-                    '<input id="swal-input2" type="password" class="swal2-popup-input">' +
-                    '<input id="swal-input3" type="password" class="swal2-popup-input">',
+                html: this.changePasswordEl.nativeElement,
                 customClass: {
                     htmlContainer: 'swal2-popup-form'
                 },
@@ -174,13 +181,19 @@ export class SettingsComponent {
                     return new Promise((resolve, reject) => {
                         let values = {
                             currentPassword: (
-                                document.getElementById('swal-input1') as HTMLInputElement
+                                document.getElementById(
+                                    'change-password-input1'
+                                ) as HTMLInputElement
                             ).value,
                             newPassword: (
-                                document.getElementById('swal-input2') as HTMLInputElement
+                                document.getElementById(
+                                    'change-password-input2'
+                                ) as HTMLInputElement
                             ).value,
                             newPasswordConfirm: (
-                                document.getElementById('swal-input3') as HTMLInputElement
+                                document.getElementById(
+                                    'change-password-input3'
+                                ) as HTMLInputElement
                             ).value
                         };
 
@@ -230,11 +243,84 @@ export class SettingsComponent {
                 }
             })
             .then((result) => {
+                /* reset form values */
+                (document.getElementById('change-password-input1') as HTMLInputElement).value = '';
+                (document.getElementById('change-password-input2') as HTMLInputElement).value = '';
+                (document.getElementById('change-password-input3') as HTMLInputElement).value = '';
+
                 if (result.isConfirmed) {
                     this.popupService.show({
                         icon: 'success',
                         title: 'Success',
                         text: 'New password has changed successfully'
+                    });
+                }
+            });
+    }
+
+    onAddNewKey() {
+        this.popupService
+            .show({
+                title: 'Add New Key',
+                html: this.addNewKeyEl.nativeElement,
+                customClass: {
+                    htmlContainer: 'swal2-popup-form'
+                },
+                showConfirmButton: true,
+                showCancelButton: true,
+                confirmButtonText: 'Add Key',
+                showLoaderOnConfirm: true,
+                preConfirm: () => {
+                    return new Promise((resolve, reject) => {
+                        let values = {
+                            memonic: (
+                                document.getElementById('add-key-memonic') as HTMLInputElement
+                            ).checked,
+                            private_key: (
+                                document.getElementById('add-key-private') as HTMLInputElement
+                            ).checked,
+                            key: (document.getElementById('add-key-value') as HTMLInputElement)
+                                .value
+                        };
+
+                        if (!values?.key) {
+                            Swal.showValidationMessage('Key string is required');
+                            return resolve(false);
+                        }
+
+                        return this.messageService.sendMessage(
+                            {
+                                task: TASKS.ADD_KEY,
+                                type: values?.memonic ? 'memonic' : 'private-key',
+                                keyString: values.key
+                            },
+                            (result, error) => {
+                                if (!result || error) {
+                                    Swal.showValidationMessage(
+                                        error || 'Failed to add new singing key'
+                                    );
+                                    return resolve(false);
+                                }
+
+                                return resolve(undefined);
+                            }
+                        );
+                    });
+                }
+            })
+            .then((result) => {
+                /* reset form values */
+                (document.getElementById('add-key-memonic') as HTMLInputElement).checked = false;
+                (document.getElementById('add-key-private') as HTMLInputElement).checked = true;
+                (document.getElementById('add-key-value') as HTMLInputElement).value = '';
+
+                if (result.isConfirmed) {
+                    this.setIdentity();
+
+                    this.popupService.show({
+                        icon: 'success',
+                        title: 'Success',
+                        text: 'New singing key has been added successfully'
                     });
                 }
             });

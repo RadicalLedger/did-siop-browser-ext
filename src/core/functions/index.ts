@@ -3,10 +3,9 @@ import utils from 'src/utils';
 import { STORAGE_KEYS } from 'src/utils/storage';
 import { Request } from '../../types/core';
 import { CustomDidResolver } from 'src/utils/custom-resolver';
-//import Wallet, { Types } from 'did-hd-wallet';
 import { Provider, Resolvers } from 'did-siop';
-let Wallet;
-let Types;
+import Wallet, { Types } from 'did-hd-wallet';
+
 /// <reference types="chrome"/>
 /// <reference types="firefox-webext-browser"/>
 
@@ -36,6 +35,15 @@ const getStorage = async (key: string) => {
     return new Promise((resolve) => {
         storage.get([key], async (result) => {
             resolve(result[key]);
+        });
+    });
+};
+
+const sendContext = async (request, data) => {
+    tabs.query({ active: true, currentWindow: true }, function (_tabs) {
+        tabs.sendMessage(_tabs[0].id, { request, data }, function (result) {
+            console.log(result);
+            return result;
         });
     });
 };
@@ -323,6 +331,13 @@ export default {
             data.loggedInState = request.password;
 
             response({ result: true, set: { loggedInState: data.loggedInState } });
+        } catch (error) {
+            console.log(error);
+            response({ error: error?.message });
+        }
+    },
+    [TASKS.CREATE_DID]: async ({ request, data }: Request, response) => {
+        try {
         } catch (error) {
             console.log(error);
             response({ error: error?.message });

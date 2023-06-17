@@ -1,0 +1,15 @@
+@import '../../../styles/colors';
+@import '../../../styles/common';
+@import '../../../styles/variables';
+
+#add-new-key {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+
+    .radio-buttons {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+}

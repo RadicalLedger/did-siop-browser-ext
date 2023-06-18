@@ -1,10 +1,14 @@
 import { TASKS } from 'src/utils/tasks';
 import utils from 'src/utils';
+import { checkSigning, getStorage, getProvider, sendContext } from 'src/core/helpers';
+import { setDID, setSingingKey } from '../helpers/did';
 import { STORAGE_KEYS } from 'src/utils/storage';
 import { Request } from '../../types/core';
-import { CustomDidResolver } from 'src/utils/custom-resolver';
-import { Provider, Resolvers } from 'did-siop';
-import Wallet, { Types } from 'did-hd-wallet';
+import configs from 'src/configs';
+import jwt from 'jsonwebtoken';
+import VCSD from 'sd-vc-lib';
+import Wallet, { Types, generateMnemonic } from 'did-hd-wallet';
+import { CONTEXT_TASKS } from 'src/utils/context';
 
 /// <reference types="chrome"/>
 /// <reference types="firefox-webext-browser"/>
@@ -29,61 +33,6 @@ try {
         console.log('DID-SIOP ERROR: No runtime detected');
     }
 }
-
-/* helper functions */
-const getStorage = async (key: string) => {
-    return new Promise((resolve) => {
-        storage.get([key], async (result) => {
-            resolve(result[key]);
-        });
-    });
-};
-
-const sendContext = async (request, data) => {
-    tabs.query({ active: true, currentWindow: true }, function (_tabs) {
-        tabs.sendMessage(_tabs[0].id, { request, data }, function (result) {
-            console.log(result);
-            return result;
-        });
-    });
-};
-
-const checkSigning = (provider: any, loggedInState: string, signingInfoSet: SigningKeys[]) => {
-    return new Promise(async (resolve, reject) => {
-        try {
-            if (!provider) {
-                let did: any = await getStorage(STORAGE_KEYS.userDID);
-                did = utils.decrypt(did, loggedInState);
-
-                const resolver = new Resolvers.CombinedDidResolver('key');
-                const customResolver = new CustomDidResolver();
-                resolver.removeAllResolvers();
-                resolver.addResolver(customResolver);
-
-                provider = await Provider.getProvider(did, undefined, [resolver]);
-            }
-
-            if (!signingInfoSet || signingInfoSet.length < 1) {
-                let result: any = await getStorage(STORAGE_KEYS.signingInfoSet);
-                signingInfoSet = JSON.parse(utils.decrypt(result, loggedInState));
-
-                if (!signingInfoSet) {
-                    signingInfoSet = [];
-                }
-            }
-
-            signingInfoSet.forEach((info) => {
-                provider.addSigningParams(info.key);
-            });
-
-            resolve({ provider, loggedInState, signingInfoSet });
-        } catch (error) {
-            provider = undefined;
-            signingInfoSet = [];
-            reject(error);
-        }
-    });
-};
 
 /* tasks */
 export default {
@@ -194,28 +143,92 @@ export default {
     },
     [TASKS.CHANGE_DID]: async ({ request, data }: Request, response) => {
         try {
-            const resolver = new Resolvers.CombinedDidResolver('key');
-            const customResolver = new CustomDidResolver();
-            resolver.removeAllResolvers();
-            resolver.addResolver(customResolver);
-
-            data.provider = await Provider.getProvider(request.did, undefined, [resolver]);
+            data.provider = await getProvider(request.did);
 
             /* store did */
-            let encryptedDID = utils.encrypt(request.did, data.loggedInState);
-            storage.set({ [STORAGE_KEYS.userDID]: encryptedDID });
+            await setDID({ request: { did: request.did }, data });
 
-            /* reset singing info set */
-            data.signingInfoSet = [];
-            let encryptedSigningInfo = utils.encrypt(
-                JSON.stringify(data.signingInfoSet),
-                data.loggedInState
-            );
-            storage.set({ [STORAGE_KEYS.signingInfoSet]: encryptedSigningInfo });
+            /* update local message to indicate there's new content */
+            sendContext({ request: { task: CONTEXT_TASKS.NEW_CONTENT } });
 
             response({ result: true, set: { signingInfoSet: [], provider: data.provider } });
         } catch (error) {
             console.log({ error });
+            response({ error: error?.message });
+        }
+    },
+    [TASKS.CREATE_DID]: async ({ request, data }: Request, response) => {
+        try {
+            const resolver_url = configs.env.offchain;
+            const mnemonic = generateMnemonic(128);
+
+            const wallet = new Wallet(Types.MNEMONIC, mnemonic);
+            const ed = new VCSD.utils.ed25519();
+
+            const {
+                publicKey: holderPublicKey,
+                privateKey: holderPrivateKey,
+                did: holderDID,
+                verificationKey: holderVerificationKey
+            }: any = await wallet.getChildKeys('m/256/256/2');
+
+            let holderChallengeResponse: any = await fetch(`${resolver_url}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ did: holderDID })
+            });
+            holderChallengeResponse = await holderChallengeResponse.json();
+
+            const { challenge: holderChallenge } = jwt.decode(
+                holderChallengeResponse.data.challengeToken
+            ) as any;
+
+            let holderResponse: any = await fetch(`${resolver_url}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    did: holderDID,
+                    verificationKey: holderVerificationKey,
+                    challengeResponse: {
+                        publicKey: holderPublicKey,
+                        cipherText: ed
+                            .sign(
+                                Buffer.from(holderChallenge, 'hex'),
+                                Buffer.from(holderPrivateKey as string, 'hex')
+                            )
+                            .toHex(),
+                        jwt: holderChallengeResponse.data.challengeToken
+                    }
+                })
+            });
+            holderResponse = await holderResponse.json();
+
+            if (holderResponse?.data?.status !== 'success') {
+                return response({ error: 'Holder DID document creation failed' });
+            }
+
+            /* set did */
+            await setDID({ request: { did: holderDID }, data });
+
+            /* set new singing key */
+            await setSingingKey({
+                request: {
+                    currentDID: holderDID,
+                    keyString: holderPrivateKey,
+                    type: 'private-key'
+                },
+                data
+            });
+
+            /* update local message to indicate there's new content */
+            sendContext({ request: { task: CONTEXT_TASKS.NEW_CONTENT } });
+
+            response({ result: true, set: data });
+        } catch (error) {
             response({ error: error?.message });
         }
     },
@@ -232,35 +245,13 @@ export default {
             let encryptedDID: any = await getStorage(STORAGE_KEYS.userDID);
             let currentDID = utils.decrypt(encryptedDID, data.loggedInState);
 
-            if (request.type === 'memonic') {
-                const wallet = new Wallet(Types.MNEMONIC, request.keyString);
-
-                const { privateKey: issuerPrivateKey, did: issuerDID }: any =
-                    await wallet.getChildKeys('m/256/256/1');
-                const { privateKey: holderPrivateKey, did: holderDID }: any =
-                    await wallet.getChildKeys('m/256/256/2');
-
-                if (holderDID === currentDID) {
-                    request.keyString = holderPrivateKey;
-                } else if (issuerDID === currentDID) {
-                    request.keyString = issuerPrivateKey;
-                } else {
-                    request.keyString = holderPrivateKey;
-                }
-            }
-
-            let kid = data.provider.addSigningParams(request.keyString);
-
-            data.signingInfoSet.push({
-                key: request.keyString,
-                kid: kid
+            const kid = await setSingingKey({
+                request: { currentDID, keyString: request.keyString, type: request.type },
+                data
             });
 
-            let encryptedSigningInfo = utils.encrypt(
-                JSON.stringify(data.signingInfoSet),
-                data.loggedInState
-            );
-            storage.set({ [STORAGE_KEYS.signingInfoSet]: encryptedSigningInfo });
+            /* update local message to indicate there's new content */
+            sendContext({ request: { task: CONTEXT_TASKS.NEW_CONTENT } });
 
             response({ result: kid, set: data });
         } catch (error) {
@@ -290,6 +281,9 @@ export default {
                 data.loggedInState
             );
             storage.set({ [STORAGE_KEYS.signingInfoSet]: encryptedSigningInfo });
+
+            /* update local message to indicate there's new content */
+            sendContext({ request: { task: CONTEXT_TASKS.NEW_CONTENT } });
 
             response({ result: true, set: data });
         } catch (error) {
@@ -330,14 +324,10 @@ export default {
 
             data.loggedInState = request.password;
 
+            /* update local message to indicate there's new content */
+            sendContext({ request: { task: CONTEXT_TASKS.NEW_CONTENT } });
+
             response({ result: true, set: { loggedInState: data.loggedInState } });
-        } catch (error) {
-            console.log(error);
-            response({ error: error?.message });
-        }
-    },
-    [TASKS.CREATE_DID]: async ({ request, data }: Request, response) => {
-        try {
         } catch (error) {
             console.log(error);
             response({ error: error?.message });

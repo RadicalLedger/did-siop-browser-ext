@@ -1,6 +1,8 @@
 /// <reference types="chrome"/>
 /// <reference types="firefox-webext-browser"/>
 
+import { CONTEXT_TASKS } from 'src/utils/context';
+
 var engine: any;
 var action: any;
 var runtime: any;
@@ -23,5 +25,16 @@ try {
 }
 
 runtime.onMessage.addListener(function ({ request, data }, _sender, response) {
+    switch (request.task) {
+        case CONTEXT_TASKS.NEW_CONTENT:
+            localStorage.setItem('new-content', 'true');
+            response({ result: true });
+            break;
+
+        default:
+            response({ result: true });
+            break;
+    }
+
     return true;
 });

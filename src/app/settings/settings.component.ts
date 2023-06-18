@@ -21,6 +21,7 @@ export class SettingsComponent {
 
     @ViewChild('changePasswordEl', { static: false }) changePasswordEl: ElementRef;
     @ViewChild('addNewKeyEl', { static: false }) addNewKeyEl: ElementRef;
+    @ViewChild('changeDIDKeyEl', { static: false }) changeDIDKeyEl: ElementRef;
 
     currentDID: string = '';
     currentKeys: SigningKeys[] = [];
@@ -62,7 +63,7 @@ export class SettingsComponent {
                             (result, error) => {
                                 if (error) {
                                     Swal.showValidationMessage('Failed to add new DID key');
-                                    throw resolve(undefined);
+                                    return resolve(false);
                                 }
 
                                 this.messageService.sendMessage(
@@ -78,7 +79,7 @@ export class SettingsComponent {
 
                                         this.setIdentity();
 
-                                        return resolve(true);
+                                        return resolve(undefined);
                                     }
                                 );
                             }
@@ -97,6 +98,103 @@ export class SettingsComponent {
             });
     }
 
+    /* on create did */
+    onCreateDID() {
+        this.popupService
+            .show({
+                icon: 'warning',
+                title: 'Create DID Key',
+                text: 'This will remove current DID and all the related keys. Are you sure?',
+                confirmButtonText: 'Yes',
+                cancelButtonText: 'Cancel',
+                showCancelButton: true,
+                showLoaderOnConfirm: true,
+                allowOutsideClick: () => !Swal.isLoading(),
+                preConfirm: () => {
+                    return new Promise((resolve, reject) => {
+                        this.messageService.sendMessage(
+                            {
+                                task: TASKS.CREATE_DID
+                            },
+                            (result, error) => {
+                                if (error) {
+                                    Swal.showValidationMessage(error || 'Failed to create DID key');
+                                    return resolve(false);
+                                }
+
+                                this.setIdentity();
+
+                                return resolve(undefined);
+                            }
+                        );
+                    });
+                }
+            })
+            .then((result) => {
+                if (result.isConfirmed) {
+                    this.popupService.show({
+                        icon: 'success',
+                        title: 'Success',
+                        text: 'New DID Key added successfully'
+                    });
+                }
+            });
+    }
+
+    /* on change did */
+    onChangeDID() {
+        this.popupService
+            .show({
+                title: 'Change DID Key',
+                html: this.changeDIDKeyEl.nativeElement,
+                confirmButtonText: 'Change',
+                cancelButtonText: 'Cancel',
+                showCancelButton: true,
+                showLoaderOnConfirm: true,
+                allowOutsideClick: () => !Swal.isLoading(),
+                preConfirm: () => {
+                    return new Promise((resolve, reject) => {
+                        let did = (document.getElementById('new-did-value') as HTMLInputElement)
+                            .value;
+
+                        if (!did) {
+                            Swal.showValidationMessage('DID key string is required');
+                            return resolve(false);
+                        }
+
+                        this.messageService.sendMessage(
+                            {
+                                task: TASKS.CHANGE_DID,
+                                did: did
+                            },
+                            (result, error) => {
+                                if (error) {
+                                    Swal.showValidationMessage('Failed to change DID key');
+                                    return resolve(false);
+                                }
+
+                                this.setIdentity();
+
+                                return resolve(undefined);
+                            }
+                        );
+                    });
+                }
+            })
+            .then((result) => {
+                (document.getElementById('new-did-value') as HTMLInputElement).value = '';
+
+                if (result.isConfirmed) {
+                    this.popupService.show({
+                        icon: 'success',
+                        title: 'Success',
+                        text: 'New DID Key added successfully'
+                    });
+                }
+            });
+    }
+
+    /* set identity */
     setIdentity() {
         this.messageService.sendMessage(
             {
@@ -118,6 +216,7 @@ export class SettingsComponent {
         );
     }
 
+    /* on singing key select */
     onSelectKey(data?: { key?: string; kid?: string }) {
         this.popupService
             .show({
@@ -166,6 +265,7 @@ export class SettingsComponent {
             });
     }
 
+    /* on change password */
     onChangePassword() {
         this.popupService
             .show({
@@ -258,6 +358,7 @@ export class SettingsComponent {
             });
     }
 
+    /* on add new signing key */
     onAddNewKey() {
         this.popupService
             .show({

@@ -78,6 +78,10 @@
             justify-content: center;
             color: $black;
             font-size: $px12;
+            word-break: break-all;
+            font-weight: 500;
+            padding: 8px;
+            text-align: center;
         }
 
         .pending-title {

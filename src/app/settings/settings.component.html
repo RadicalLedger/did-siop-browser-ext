@@ -21,7 +21,7 @@
                 <div class="buttons">
                     <span (click)="onTestKeys()" class="text-button">Test</span>
                     <span (click)="onTestKeys()" class="text-button">Create</span>
-                    <span (click)="onTestKeys()" class="text-button">Change</span>
+                    <span (click)="onChangeDID()" class="text-button">Change</span>
                 </div>
             </div>
             <div class="divider"></div>
@@ -61,6 +61,9 @@
         </div>
         <div #addNewKeyEl>
             <app-add-key></app-add-key>
+        </div>
+        <div #changeDIDKeyEl>
+            <app-change-did></app-change-did>
         </div>
     </div>
 </div>

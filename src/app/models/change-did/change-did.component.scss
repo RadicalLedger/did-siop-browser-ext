@@ -1,0 +1,9 @@
+@import '../../../styles/colors';
+@import '../../../styles/common';
+@import '../../../styles/variables';
+
+#change-did {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}

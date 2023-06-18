@@ -46,6 +46,7 @@
         "did-hd-wallet": "file:src/libs/did-hd-wallet",
         "did-siop": "^2.0.8",
         "hash.js": "^1.1.7",
+        "jsonwebtoken": "^9.0.0",
         "rxjs": "~7.8.0",
         "sd-vc-lib": "file:src/libs/sd-vc-lib",
         "sweetalert2": "^11.7.12",

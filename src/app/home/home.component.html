@@ -9,11 +9,11 @@
                 Self-issued OpenIDConnect Provider based on Decentralized identities
             </p>
         </div>
-        <img src="assets/avatar.png" alt="Profile Picture" class="profile-image" />
+        <img [src]="profileImage" alt="Profile Picture" class="profile-image" />
     </div>
 
     <div class="body">
-        <div class="card key-card">No key is available</div>
+        <div class="card key-card">{{currentDID || 'No key is available'}}</div>
 
         <h4 class="pending-title">Pending Requests</h4>
 

@@ -9,30 +9,9 @@ import jwt from 'jsonwebtoken';
 import VCSD from 'sd-vc-lib';
 import Wallet, { Types, generateMnemonic } from 'did-hd-wallet';
 import { CONTEXT_TASKS } from 'src/utils/context';
-
-/// <reference types="chrome"/>
-/// <reference types="firefox-webext-browser"/>
-
-var engine: any;
-var action: any;
-var storage: any;
-var tabs: any;
-
-try {
-    engine = browser;
-    tabs = browser.tabs;
-    action = browser.browserAction;
-    storage = browser.storage.local;
-} catch (err) {
-    try {
-        engine = chrome;
-        tabs = chrome.tabs;
-        action = chrome.action;
-        storage = chrome.storage.local;
-    } catch (err) {
-        console.log('DID-SIOP ERROR: No runtime detected');
-    }
-}
+import { storage, tabs } from '../runtime';
+import queryString from 'query-string';
+import { removeRequest } from '../helpers/requests';
 
 /* tasks */
 export default {
@@ -328,6 +307,149 @@ export default {
             sendContext({ request: { task: CONTEXT_TASKS.NEW_CONTENT } });
 
             response({ result: true, set: { loggedInState: data.loggedInState } });
+        } catch (error) {
+            console.log(error);
+            response({ error: error?.message });
+        }
+    },
+    [TASKS.GET_REQUESTS]: async ({ request, data }: Request, response) => {
+        try {
+            storage.get([STORAGE_KEYS.requests], (result) => {
+                let requests = result[STORAGE_KEYS.requests] || [];
+
+                response({
+                    result: requests,
+                    badge: {
+                        text: requests.length
+                    }
+                });
+            });
+        } catch (error) {
+            console.log(error);
+            response({ error: error?.message });
+        }
+    },
+    [TASKS.PROCESS_REQUEST]: async ({ request, data }: Request, response) => {
+        /* send request in post method */
+        const sendPostRequest = async (uri, result) => {
+            return await fetch(uri, {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(result)
+            }).then((res) => res.json());
+        };
+
+        /* send request in get method */
+        const sendGetRequest = async (uri, result) => {
+            let url = new URL(uri);
+            url.search = new URLSearchParams(result).toString();
+
+            return await fetch(url).then((res) => res.json());
+        };
+
+        /* send the response */
+        const sendResponse = async (response_mode, redirect_uri, result) => {
+            switch (response_mode) {
+                case 'post':
+                    await sendPostRequest(redirect_uri, result);
+                    break;
+
+                case 'get':
+                    await sendGetRequest(redirect_uri, result);
+                    break;
+
+                default:
+                    let url = new URL(redirect_uri);
+                    url.search = new URLSearchParams({
+                        code: result as string
+                    }).toString();
+
+                    tabs.create({
+                        url: url
+                    });
+                    break;
+            }
+        };
+
+        try {
+            const requests: any = (await getStorage(STORAGE_KEYS.requests)) || [];
+            const selectedRequest = requests.find((_) => _.index == request.index);
+
+            const parsedQuery: any = queryString.parseUrl(selectedRequest.request);
+
+            if (parsedQuery.url === 'openid://') return response({ error: 'Invalid request' });
+
+            /* check signing */
+            const signInfo: any = await checkSigning(
+                data.provider,
+                data.loggedInState,
+                data.signingInfoSet
+            );
+
+            if (signInfo?.provider) data.provider = signInfo.provider;
+            if (signInfo?.signingInfoSet) data.signingInfoSet = signInfo.signingInfoSet;
+
+            let decoded = await data.provider.validateRequest(selectedRequest.request);
+            console.log({ decoded });
+            if (!request.confirmed) {
+                let uri: any = parsedQuery.query.redirect_uri;
+
+                if (uri) {
+                    /* send response */
+                    await sendResponse(
+                        uri,
+                        decoded?.payload?.redirect_uri,
+                        data.provider.generateErrorResponse('Access denied') as string
+                    );
+                }
+
+                /* remove request */
+                await removeRequest(request.index);
+
+                return response({ result: true });
+            }
+
+            /* add id_token to payload claims */
+            if (request.id_token) decoded.payload.claims['id_token'] = request.id_token;
+
+            let response_result = {};
+            if (request.vp_data?.vp_token && request.vp_data?._vp_token) {
+                response_result = await data.provider.generateResponseWithVPData(
+                    decoded.payload,
+                    5000,
+                    request.vp_data
+                );
+            } else {
+                response_result = await data.provider.generateResponse(decoded.payload, 5000);
+            }
+
+            try {
+                /* send response */
+                await sendResponse(
+                    decoded?.payload?.response_mode,
+                    decoded?.payload?.redirect_uri,
+                    response_result
+                );
+
+                /* remove request */
+                await removeRequest(request.index);
+                response({ result: response_result });
+            } catch (error) {
+                return response({ error: error?.message || 'Failed to send response result' });
+            }
+        } catch (error) {
+            console.log(error);
+            response({ error: error?.message });
+        }
+    },
+    [TASKS.REMOVE_REQUEST]: async ({ request, data }: Request, response) => {
+        try {
+            await removeRequest(request.index);
+
+            response({ result: true });
         } catch (error) {
             console.log(error);
             response({ error: error?.message });

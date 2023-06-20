@@ -3,30 +3,7 @@ import { STORAGE_KEYS } from 'src/utils/storage';
 import { CustomDidResolver } from 'src/utils/custom-resolver';
 import { Provider, Resolvers } from 'did-siop';
 import { Request } from 'src/types/core';
-
-/// <reference types="chrome"/>
-/// <reference types="firefox-webext-browser"/>
-
-var engine: any;
-var action: any;
-var storage: any;
-var tabs: any;
-
-try {
-    engine = browser;
-    tabs = browser.tabs;
-    action = browser.browserAction;
-    storage = browser.storage.local;
-} catch (err) {
-    try {
-        engine = chrome;
-        tabs = chrome.tabs;
-        action = chrome.action;
-        storage = chrome.storage.local;
-    } catch (err) {
-        console.log('helpers/index.ts - ', err);
-    }
-}
+import { storage, tabs } from '../runtime';
 
 const getStorage = async (key: string) => {
     return new Promise((resolve) => {

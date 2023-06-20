@@ -12,6 +12,7 @@ export const enum TASKS {
     GET_IDENTITY,
     GET_REQUESTS,
     MAKE_REQUEST,
+    REMOVE_REQUEST,
     SET_SETTINGS,
     CREATE_DID,
     ADD_VC,

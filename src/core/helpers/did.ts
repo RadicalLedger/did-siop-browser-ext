@@ -1,28 +1,8 @@
 import { Request } from 'src/types/core';
 import { STORAGE_KEYS } from 'src/utils/storage';
 import utils from 'src/utils';
+import { storage } from '../runtime';
 import Wallet, { Types } from 'did-hd-wallet';
-
-var engine: any;
-var action: any;
-var storage: any;
-var tabs: any;
-
-try {
-    engine = browser;
-    tabs = browser.tabs;
-    action = browser.browserAction;
-    storage = browser.storage.local;
-} catch (err) {
-    try {
-        engine = chrome;
-        tabs = chrome.tabs;
-        action = chrome.action;
-        storage = chrome.storage.local;
-    } catch (err) {
-        console.log('helpers/did.ts -', err);
-    }
-}
 
 interface SigningKeyData extends Request {
     request: {

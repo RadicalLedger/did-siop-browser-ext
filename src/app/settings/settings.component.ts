@@ -35,7 +35,7 @@ export class SettingsComponent {
     ) {}
 
     ngOnInit(): void {
-        this.setIdentity();
+        this.loadIdentity();
     }
 
     onSelectProfile() {
@@ -77,7 +77,7 @@ export class SettingsComponent {
                                             throw new Error('Failed to add the singing key');
                                         }
 
-                                        this.setIdentity();
+                                        this.loadIdentity();
 
                                         return resolve(undefined);
                                     }
@@ -122,7 +122,7 @@ export class SettingsComponent {
                                     return resolve(false);
                                 }
 
-                                this.setIdentity();
+                                this.loadIdentity();
 
                                 return resolve(undefined);
                             }
@@ -173,7 +173,7 @@ export class SettingsComponent {
                                     return resolve(false);
                                 }
 
-                                this.setIdentity();
+                                this.loadIdentity();
 
                                 return resolve(undefined);
                             }
@@ -195,7 +195,7 @@ export class SettingsComponent {
     }
 
     /* set identity */
-    setIdentity() {
+    private loadIdentity() {
         this.messageService.sendMessage(
             {
                 task: TASKS.GET_IDENTITY
@@ -256,7 +256,7 @@ export class SettingsComponent {
                                             return;
                                         }
 
-                                        this.setIdentity();
+                                        this.loadIdentity();
                                     }
                                 );
                             }
@@ -416,7 +416,7 @@ export class SettingsComponent {
                 (document.getElementById('add-key-value') as HTMLInputElement).value = '';
 
                 if (result.isConfirmed) {
-                    this.setIdentity();
+                    this.loadIdentity();
 
                     this.popupService.show({
                         icon: 'success',

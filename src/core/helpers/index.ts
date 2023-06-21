@@ -22,6 +22,7 @@ const getProvider = async (did: string) => {
             resolver.addResolver(customResolver);
 
             let provider = await Provider.getProvider(did, undefined, [resolver]);
+
             resolve(provider);
         } catch (error) {
             reject(error);
@@ -32,8 +33,8 @@ const getProvider = async (did: string) => {
 const checkSigning = (provider: any, loggedInState: string, signingInfoSet: SigningKeys[]) => {
     return new Promise(async (resolve, reject) => {
         try {
+            let did: any = await getStorage(STORAGE_KEYS.userDID);
             if (!provider) {
-                let did: any = await getStorage(STORAGE_KEYS.userDID);
                 did = utils.decrypt(did, loggedInState);
 
                 provider = await getProvider(did);
@@ -64,7 +65,7 @@ const checkSigning = (provider: any, loggedInState: string, signingInfoSet: Sign
 const sendContext = async ({ request = {}, data = {} }: Request, response?) => {
     tabs.query({ active: true, currentWindow: true }, function (_tabs) {
         tabs.sendMessage(_tabs[0].id, { request, data }, function (result) {
-            response(result);
+            if (response) response(result);
             return true;
         });
     });

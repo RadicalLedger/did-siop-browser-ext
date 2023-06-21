@@ -56,7 +56,8 @@ export class HomeComponent implements OnInit {
 
             /* set values to id token attributes in claims */
             for (const key in idTokenData) {
-                if (this.currentProfile?.[key]) idTokenData[key] = this.currentProfile?.[key];
+                if (key == 'did') idTokenData[key] = this.currentDID;
+                else if (this.currentProfile?.[key]) idTokenData[key] = this.currentProfile?.[key];
             }
 
             if (decoded.claims.vp_token) vpResponseData = sampleResponseVPData;
@@ -84,7 +85,7 @@ export class HomeComponent implements OnInit {
                                     vp_data: vpResponseData
                                 },
                                 (result, error) => {
-                                    console.log(result, error);
+                                    console.log({ result, error });
                                     if (error) {
                                         this.popupService.show({
                                             icon: 'error',
@@ -180,6 +181,8 @@ export class HomeComponent implements OnInit {
             (result) => {
                 if (result) {
                     let profile = result?.profile;
+
+                    if (profile) this.currentProfile = profile;
 
                     if (profile?.image) this.profileImage = profile.image;
 

@@ -1,5 +1,5 @@
 import { CONTEXT_TASKS } from 'src/utils/context';
-import { runtime } from './runtime';
+import { runtime, tabs } from './runtime';
 import { TASKS } from 'src/utils/tasks';
 
 /* on runtime */
@@ -7,6 +7,9 @@ runtime.onMessage.addListener(function ({ request, data }, _sender, response) {
     switch (request.task) {
         case CONTEXT_TASKS.NEW_CONTENT:
             localStorage.setItem('new-content', 'true');
+            response({ result: true });
+            break;
+        case CONTEXT_TASKS.OPEN_TAB:
             response({ result: true });
             break;
 

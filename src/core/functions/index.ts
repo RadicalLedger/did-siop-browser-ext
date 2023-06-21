@@ -330,47 +330,49 @@ export default {
         }
     },
     [TASKS.PROCESS_REQUEST]: async ({ request, data }: Request, response) => {
-        /* send request in post method */
-        const sendPostRequest = async (uri, result) => {
-            return await fetch(uri, {
-                method: 'POST',
-                headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(result)
-            }).then((res) => res.json());
-        };
-
-        /* send request in get method */
-        const sendGetRequest = async (uri, result) => {
-            let url = new URL(uri);
-            url.search = new URLSearchParams(result).toString();
-
-            return await fetch(url).then((res) => res.json());
-        };
-
         /* send the response */
         const sendResponse = async (response_mode, redirect_uri, result) => {
-            switch (response_mode) {
-                case 'post':
-                    await sendPostRequest(redirect_uri, result);
-                    break;
+            try {
+                switch (response_mode) {
+                    case 'post':
+                        await fetch(redirect_uri, {
+                            method: 'POST',
+                            headers: {
+                                Accept: 'application/json',
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ token: result })
+                        });
+                        break;
 
-                case 'get':
-                    await sendGetRequest(redirect_uri, result);
-                    break;
+                    case 'get':
+                        let get_url = new URL(redirect_uri);
+                        get_url.search = new URLSearchParams({ token: result }).toString();
 
-                default:
-                    let url = new URL(redirect_uri);
-                    url.search = new URLSearchParams({
-                        code: result as string
-                    }).toString();
+                        await fetch(get_url);
+                        break;
 
-                    tabs.create({
-                        url: url
-                    });
-                    break;
+                    case 'tab-url':
+                        let tab_url = new URL(redirect_uri);
+                        tab_url.search = new URLSearchParams({
+                            code: result as string
+                        }).toString();
+
+                        tabs.query({ active: true, currentWindow: true }, function (_tabs) {
+                            var tab = _tabs[0];
+                            tabs.update(tab.id, { url: tab_url.href });
+                        });
+                        // sendContext({ request: { task: CONTEXT_TASKS.OPEN_TAB, url: tab_url } });
+                        break;
+                    case 'new-tab-url':
+                        tabs.create({ url: tab_url.href });
+                        // sendContext({ request: { task: CONTEXT_TASKS.OPEN_TAB, url: tab_url } });
+                        break;
+                }
+
+                return true;
+            } catch (error) {
+                return { error };
             }
         };
 
@@ -380,7 +382,7 @@ export default {
 
             const parsedQuery: any = queryString.parseUrl(selectedRequest.request);
 
-            if (parsedQuery.url === 'openid://') return response({ error: 'Invalid request' });
+            if (parsedQuery.url != 'openid://') return response({ error: 'Invalid request' });
 
             /* check signing */
             const signInfo: any = await checkSigning(
@@ -393,15 +395,15 @@ export default {
             if (signInfo?.signingInfoSet) data.signingInfoSet = signInfo.signingInfoSet;
 
             let decoded = await data.provider.validateRequest(selectedRequest.request);
-            console.log({ decoded });
+
             if (!request.confirmed) {
-                let uri: any = parsedQuery.query.redirect_uri;
+                let uri: any = parsedQuery.query.redirect_uri || decoded?.payload?.redirect_uri;
 
                 if (uri) {
                     /* send response */
                     await sendResponse(
+                        decoded?.payload?.response_mode,
                         uri,
-                        decoded?.payload?.redirect_uri,
                         data.provider.generateErrorResponse('Access denied') as string
                     );
                 }
@@ -428,11 +430,13 @@ export default {
 
             try {
                 /* send response */
-                await sendResponse(
+                const sendResult: any = await sendResponse(
                     decoded?.payload?.response_mode,
                     decoded?.payload?.redirect_uri,
                     response_result
                 );
+
+                if (sendResult?.error) return response({ error: sendResult.error });
 
                 /* remove request */
                 await removeRequest(request.index);

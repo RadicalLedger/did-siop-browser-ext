@@ -1,0 +1,67 @@
+@import '../../../styles/colors';
+@import '../../../styles/common';
+@import '../../../styles/variables';
+
+#confirm-request {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+
+    .section {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+
+        .input-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+
+            .title {
+                text-align: left;
+            }
+        }
+
+        .input {
+            &[data-hide='true'] {
+                display: none;
+            }
+        }
+
+        .vp-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            height: 100%;
+            padding: 15px;
+            height: 180px;
+            overflow-y: auto;
+
+            .vp-label {
+                cursor: pointer;
+                display: flex;
+                padding: 5px 10px;
+                background-color: $theme-color;
+                gap: 10px;
+                border-radius: 5px;
+                width: 100%;
+                user-select: none;
+                transition: all 0.4s ease;
+
+                &:active {
+                    background-color: $dark-theme-color;
+                }
+            }
+        }
+
+        .button {
+            &.grey {
+                background-color: $secondary;
+
+                &:active {
+                    background-color: $dark-secondary;
+                }
+            }
+        }
+    }
+}

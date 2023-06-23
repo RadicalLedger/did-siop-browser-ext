@@ -1,7 +1,25 @@
 import * as hashUtils from 'hash.js';
 import { createCipher, createDecipher } from 'browserify-aes';
+import _ from 'lodash';
+
+const getObjectValue = (obj: any, key: string) => {
+    if (!obj) return null;
+
+    for (const k in obj) {
+        if (k === key) return obj[k];
+
+        if (_.isObject(obj[k]) && !_.isArray(obj[k])) {
+            let v = getObjectValue(obj[k], key);
+
+            if (v) return v;
+        }
+    }
+
+    return null;
+};
 
 export default {
+    getObjectValue,
     randomString: (length: number = 7) => {
         return (Math.random() + 1).toString(36).substring(length);
     },

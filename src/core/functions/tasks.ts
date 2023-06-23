@@ -41,5 +41,34 @@ export default {
             console.log(error);
             response({ error: error?.message });
         }
+    },
+    [TASKS.ADD_VC]: async ({ request, data }: Request, response) => {
+        try {
+            storage.get([STORAGE_KEYS.vcs], function (result) {
+                let vcs = result[STORAGE_KEYS.vcs] || [];
+
+                let index = 1;
+                if (vcs.length > 0) index = Math.max(...vcs.map((o) => o.index)) + 1;
+
+                vcs.push({ index, vc: JSON.parse(atob(request.vc)) });
+                storage.set({ [STORAGE_KEYS.vcs]: vcs });
+
+                response({
+                    result: true,
+                    notification: {
+                        id: NOTIFICATIONS.NEW_REQUEST,
+                        options: {
+                            title: 'New Verifiable Credential',
+                            message: 'New verifiable credential has been added to the extension',
+                            iconUrl: 'assets/did_siop_favicon.png',
+                            type: 'basic'
+                        }
+                    }
+                });
+            });
+        } catch (error) {
+            console.log(error);
+            response({ error: error?.message });
+        }
     }
 };

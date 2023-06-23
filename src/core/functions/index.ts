@@ -12,6 +12,7 @@ import { CONTEXT_TASKS } from 'src/utils/context';
 import { storage, tabs } from '../runtime';
 import queryString from 'query-string';
 import { removeRequest } from '../helpers/requests';
+import createVP from 'src/utils/vp';
 
 /* tasks */
 export default {
@@ -454,6 +455,107 @@ export default {
             await removeRequest(request.index);
 
             response({ result: true });
+        } catch (error) {
+            console.log(error);
+            response({ error: error?.message });
+        }
+    },
+    [TASKS.GET_VCS]: async ({ request, data }: Request, response) => {
+        try {
+            storage.get([STORAGE_KEYS.vcs], function (result) {
+                let vcs = result[STORAGE_KEYS.vcs] || [];
+
+                response({ result: vcs });
+            });
+        } catch (error) {
+            console.log(error);
+            response({ error: error?.message });
+        }
+    },
+    [TASKS.REMOVE_VC]: async ({ request, data }: Request, response) => {
+        try {
+            storage.get([STORAGE_KEYS.vcs], function (result) {
+                let vcs = result[STORAGE_KEYS.vcs] || [];
+
+                vcs = vcs.filter((sr) => {
+                    return sr.index != request.index;
+                });
+
+                storage.set({ [STORAGE_KEYS.vcs]: vcs });
+
+                response({ result: vcs });
+            });
+        } catch (error) {
+            console.log(error);
+            response({ error: error?.message });
+        }
+    },
+    [TASKS.CREATE_VP]: async ({ request, data }: Request, response) => {
+        try {
+            /* check signing */
+            const signInfo: any = await checkSigning(
+                data.provider,
+                data.loggedInState,
+                data.signingInfoSet
+            );
+
+            if (signInfo?.provider) data.provider = signInfo.provider;
+            if (signInfo?.signingInfoSet) data.signingInfoSet = signInfo.signingInfoSet;
+
+            let private_key = data.signingInfoSet[0]?.key;
+
+            let encryptedDID: any = await getStorage(STORAGE_KEYS.userDID);
+            let currentDID = utils.decrypt(encryptedDID, data.loggedInState);
+
+            const vp: any = await createVP({
+                did: currentDID,
+                private_key,
+                vcs: request.vcs
+            });
+
+            if (vp.error) return response({ error: vp.error });
+
+            storage.get([STORAGE_KEYS.vps], function (result) {
+                let vps = result[STORAGE_KEYS.vps] || [];
+
+                let index = 1;
+                if (vps.length > 0) index = Math.max(...vps.map((o) => o.index)) + 1;
+
+                vps.push({ index, title: request.title, vp });
+                storage.set({ [STORAGE_KEYS.vps]: vps });
+
+                response({ result: vp });
+            });
+        } catch (error) {
+            console.log(error);
+            response({ error: error?.message });
+        }
+    },
+    [TASKS.GET_VPS]: async ({ request, data }: Request, response) => {
+        try {
+            storage.get([STORAGE_KEYS.vps], function (result) {
+                let vps = result[STORAGE_KEYS.vps] || [];
+
+                response({ result: vps });
+            });
+        } catch (error) {
+            console.log(error);
+            response({ error: error?.message });
+        }
+    },
+    [TASKS.REMOVE_VP]: async ({ request, data }: Request, response) => {
+        try {
+            storage.get([STORAGE_KEYS.vps], function (result) {
+                let vps = result[STORAGE_KEYS.vps] || [];
+
+                vps = vps.filter((sr) => {
+                    return sr.index != request.index;
+                });
+
+                storage.set({ [STORAGE_KEYS.vps]: vps });
+
+                response({ result: vps });
+            });
         } catch (error) {
             console.log(error);
             response({ error: error?.message });

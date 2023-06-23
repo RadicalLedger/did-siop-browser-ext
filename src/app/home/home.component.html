@@ -18,12 +18,15 @@
         <h4 class="pending-title">Pending Requests</h4>
 
         <div class="card requests-card">
-            <div
-                *ngFor="let request of currentRequests"
-                class="key"
-                (click)="onSelectRequest(request)">
+            <div *ngFor="let request of currentRequests" class="key" (click)="onSelectRequest(request)">
                 {{ request.client_id }}
             </div>
+        </div>
+    </div>
+
+    <div class="hidden-model">
+        <div #confirmRequest>
+            <app-confirm-request [data]="confirmRequestData"></app-confirm-request>
         </div>
     </div>
 </div>

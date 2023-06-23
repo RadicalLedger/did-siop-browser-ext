@@ -1,9 +1,18 @@
-import { ChangeDetectorRef, Component, EventEmitter, OnInit, Output } from '@angular/core';
+import {
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    EventEmitter,
+    OnInit,
+    Output,
+    ViewChild
+} from '@angular/core';
 import { BackgroundMessageService } from '../services/message.service';
 import { TASKS } from 'src/utils/tasks';
 import { PopupService } from '../services/popup.service';
 import sampleResponseVPData from './response-vp_data.json';
 import Swal from 'sweetalert2';
+import _ from 'lodash';
 
 interface CurrentRequest {
     client_id: string;
@@ -18,6 +27,14 @@ interface CurrentProfile {
     image: string;
 }
 
+interface ConfirmRequest {
+    vp_token?: any;
+    response?: {
+        vp_token?: any;
+        _vp_token?: any;
+    };
+}
+
 @Component({
     selector: 'app-home',
     templateUrl: './home.component.html',
@@ -26,10 +43,13 @@ interface CurrentProfile {
 export class HomeComponent implements OnInit {
     @Output() onGuides = new EventEmitter<boolean>();
 
+    @ViewChild('confirmRequest') confirmRequest: ElementRef;
+
     currentRequests: CurrentRequest[];
     currentDID: string;
     currentProfile: CurrentProfile;
     profileImage: string = 'assets/avatar.png';
+    confirmRequestData: ConfirmRequest = {};
 
     constructor(
         private changeDetector: ChangeDetectorRef,
@@ -60,22 +80,61 @@ export class HomeComponent implements OnInit {
                 else if (this.currentProfile?.[key]) idTokenData[key] = this.currentProfile?.[key];
             }
 
-            if (decoded.claims.vp_token) vpResponseData = sampleResponseVPData;
+            if (decoded.claims.vp_token) {
+                vpResponseData = sampleResponseVPData;
+
+                this.confirmRequestData = {
+                    vp_token: decoded.claims.vp_token,
+                    response: vpResponseData
+                };
+                this.changeDetector.detectChanges();
+            }
 
             /* if claims include vp_token */
             this.popupService
                 .show({
                     title: 'Confirm Request',
                     text: `Confirm login to ${data.client_id}`,
+                    html: decoded.claims.vp_token ? this.confirmRequest.nativeElement : undefined,
                     confirmButtonText: 'Confirm',
                     cancelButtonText: 'Cancel',
                     denyButtonText: 'Deny',
                     showDenyButton: true,
                     showCancelButton: true,
                     showLoaderOnConfirm: true,
+                    showLoaderOnDeny: true,
                     allowOutsideClick: () => !Swal.isLoading(),
                     preConfirm: () => {
                         return new Promise((resolve, reject) => {
+                            if (decoded.claims.vp_token) {
+                                let vp_token = (
+                                    document.getElementById('vp_token-txt') as HTMLInputElement
+                                ).value;
+                                let _vp_token = (
+                                    document.getElementById('_vp_token-txt') as HTMLInputElement
+                                ).value;
+
+                                if (!vp_token) {
+                                    Swal.showValidationMessage('"vp_token" is required');
+                                    return resolve(false);
+                                }
+                                if (!_vp_token) {
+                                    Swal.showValidationMessage('"vp_token" is required');
+                                    return resolve(false);
+                                }
+                                if (!_.isObject(vp_token)) {
+                                    Swal.showValidationMessage('"vp_token" is not a valid JSON');
+                                    return resolve(false);
+                                }
+                                if (!_.isObject(_vp_token)) {
+                                    Swal.showValidationMessage('"_vp_token" is not a valid JSON');
+                                    return resolve(false);
+                                }
+
+                                vpResponseData.vp_token = vp_token;
+                                vpResponseData._vp_token = _vp_token;
+                            }
+
                             this.messageService.sendMessage(
                                 {
                                     task: TASKS.PROCESS_REQUEST,

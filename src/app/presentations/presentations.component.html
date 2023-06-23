@@ -6,6 +6,13 @@
     <div class="body">
         <button class="button">Share</button>
 
-        <div class="card"></div>
+        <div class="card">
+            <div *ngFor="let vp of currentVPs; let i = index;" class="vp">
+                <label class="vp-label">
+                    <span class="name">{{vp.title || 'VP ' + vp.index }}</span>
+                </label>
+                <mat-icon (click)="removeVP(vp.index)" class="icon">cancel</mat-icon>
+            </div>
+        </div>
     </div>
 </div>

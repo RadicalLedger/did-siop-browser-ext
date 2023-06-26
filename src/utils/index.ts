@@ -45,5 +45,14 @@ export default {
         decrypted += decipher.final('utf8');
 
         return decrypted;
+    },
+    isJson: (str: string) => {
+        try {
+            JSON.parse(str);
+
+            return true;
+        } catch (error) {
+            return false;
+        }
     }
 };

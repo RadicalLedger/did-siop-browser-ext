@@ -3,7 +3,11 @@
         <h4 class="title">Request</h4>
         <div class="input-wrap">
             <p class="title">vp_token :</p>
-            <textarea [value]="getJSONFormatted(data?.vp_token)" class="input textarea no-resize" readonly cols="30"
+            <textarea
+                [value]="getJSONFormatted(data?.vp_token)"
+                class="input textarea no-resize"
+                readonly
+                cols="30"
                 rows="10"></textarea>
         </div>
     </div>
@@ -11,24 +15,38 @@
         <h4 class="title">Response</h4>
         <div class="input-wrap">
             <p class="title">vp_token :</p>
-            <textarea [defaultValue]="getJSONFormatted(data?.response?.vp_token)" class="input textarea no-resize"
-                [attr.data-hide]="vpListActive" #vpTokenTxtEl id="vp_token-txt" cols="30" rows="10"></textarea>
+            <textarea
+                [defaultValue]="getJSONFormatted(data?.response?.vp_token)"
+                class="input textarea no-resize"
+                [attr.data-hide]="vpListActive"
+                #vpTokenTxtEl
+                id="vp_token-txt"
+                cols="30"
+                rows="10"></textarea>
 
             <div *ngIf="vpListActive" class="card vp-list">
-                <div *ngFor="let vp of currentVPs; let i = index;" class="vp">
+                <div *ngFor="let vp of currentVPs; let i = index" class="vp">
                     <label (click)="onVPSelect(vp)" class="vp-label">
-                        <span class="name">{{vp.title || 'VP ' + vp.index }}</span>
+                        <span class="name">{{ vp.title || 'VP ' + vp.index }}</span>
                     </label>
                 </div>
             </div>
 
-            <button *ngIf="vpListActive" (click)="onSelectVPState(false)" class="button grey">Back</button>
-            <button *ngIf="!vpListActive" (click)="onSelectVPState(true)" class="button">Select VP</button>
+            <button *ngIf="vpListActive" (click)="onSelectVPState(false)" class="button grey">
+                Back
+            </button>
+            <button *ngIf="!vpListActive" (click)="onSelectVPState(true)" class="button">
+                Select VP
+            </button>
         </div>
         <div class="input-wrap">
             <p class="title">_vp_token :</p>
-            <textarea [defaultValue]="getJSONFormatted(data?.response?._vp_token)" class="input textarea no-resize"
-                id="_vp_token-txt" cols="30" rows="10"></textarea>
+            <textarea
+                [defaultValue]="getJSONFormatted(data?.response?._vp_token)"
+                class="input textarea no-resize"
+                id="_vp_token-txt"
+                cols="30"
+                rows="10"></textarea>
         </div>
     </div>
 </div>

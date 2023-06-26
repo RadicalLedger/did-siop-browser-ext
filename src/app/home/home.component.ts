@@ -13,6 +13,7 @@ import { PopupService } from '../services/popup.service';
 import sampleResponseVPData from './response-vp_data.json';
 import Swal from 'sweetalert2';
 import _ from 'lodash';
+import utils from 'src/utils';
 
 interface CurrentRequest {
     client_id: string;
@@ -122,17 +123,17 @@ export class HomeComponent implements OnInit {
                                     Swal.showValidationMessage('"vp_token" is required');
                                     return resolve(false);
                                 }
-                                if (!_.isObject(vp_token)) {
+                                if (!utils.isJson(vp_token)) {
                                     Swal.showValidationMessage('"vp_token" is not a valid JSON');
                                     return resolve(false);
                                 }
-                                if (!_.isObject(_vp_token)) {
+                                if (!utils.isJson(_vp_token)) {
                                     Swal.showValidationMessage('"_vp_token" is not a valid JSON');
                                     return resolve(false);
                                 }
 
-                                vpResponseData.vp_token = vp_token;
-                                vpResponseData._vp_token = _vp_token;
+                                vpResponseData.vp_token = JSON.parse(vp_token);
+                                vpResponseData._vp_token = JSON.parse(_vp_token);
                             }
 
                             this.messageService.sendMessage(
@@ -144,7 +145,6 @@ export class HomeComponent implements OnInit {
                                     vp_data: vpResponseData
                                 },
                                 (result, error) => {
-                                    console.log({ result, error });
                                     if (error) {
                                         this.popupService.show({
                                             icon: 'error',

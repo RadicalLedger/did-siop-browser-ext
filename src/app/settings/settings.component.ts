@@ -18,6 +18,7 @@ import { PopupService } from '../services/popup.service';
 })
 export class SettingsComponent {
     @Output() onProfile = new EventEmitter<boolean>();
+    @Output() onLogout = new EventEmitter<boolean>();
 
     @ViewChild('changePasswordEl', { static: false }) changePasswordEl: ElementRef;
     @ViewChild('addNewKeyEl', { static: false }) addNewKeyEl: ElementRef;
@@ -425,5 +426,18 @@ export class SettingsComponent {
                     });
                 }
             });
+    }
+
+    logout() {
+        this.messageService.sendMessage(
+            {
+                task: TASKS.LOGOUT
+            },
+            (result) => {
+                if (result) {
+                    this.onLogout.emit(true);
+                }
+            }
+        );
     }
 }

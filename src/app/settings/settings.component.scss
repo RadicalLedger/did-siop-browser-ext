@@ -52,6 +52,27 @@
         }
     }
 
+    .logout-card {
+        display: flex;
+        gap: 20px;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        padding: 10px;
+
+        &:active {
+            background-color: #eee;
+        }
+
+        .logout-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: $px12;
+        }
+    }
+
     .section-card {
         display: flex;
         flex-direction: column;

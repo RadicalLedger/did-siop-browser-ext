@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Output } from '@angular/core';
 
 @Component({
     selector: 'app-main',
@@ -6,6 +6,8 @@ import { ChangeDetectorRef, Component } from '@angular/core';
     styleUrls: ['./main.component.scss']
 })
 export class MainComponent {
+    @Output() onLogout = new EventEmitter<boolean>();
+
     currentActive = 'home';
 
     constructor(private changeDetector: ChangeDetectorRef) {}
@@ -13,5 +15,9 @@ export class MainComponent {
     onSelect(state: string) {
         this.currentActive = state;
         this.changeDetector.detectChanges();
+    }
+
+    logout() {
+        this.onLogout.emit(true);
     }
 }

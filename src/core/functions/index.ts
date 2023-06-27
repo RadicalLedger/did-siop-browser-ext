@@ -560,5 +560,19 @@ export default {
             console.log(error);
             response({ error: error?.message });
         }
+    },
+    [TASKS.LOGOUT]: async ({ request, data }: Request, response) => {
+        try {
+            if (data.loggedInState) {
+                /* update local message to indicate there's new content */
+                sendContext({ request: { task: CONTEXT_TASKS.NEW_CONTENT } });
+                return response({ result: true, set: { loggedInState: undefined } });
+            }
+
+            return response({ result: false });
+        } catch (error) {
+            console.log(error);
+            response({ error: error?.message });
+        }
     }
 };

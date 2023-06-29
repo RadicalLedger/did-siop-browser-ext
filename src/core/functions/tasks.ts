@@ -32,7 +32,7 @@ export default {
                     options: {
                         title: 'New Request Available',
                         message: 'New request has been added to the extension',
-                        iconUrl: 'assets/did_siop_favicon.png',
+                        iconUrl: 'assets/favicon.png',
                         type: 'basic'
                     }
                 }

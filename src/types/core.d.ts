@@ -15,4 +15,16 @@ export interface Response {
         signingInfoSet?: any[];
         provider?: any;
     };
+    notification?: {
+        id: string;
+        options: {
+            title: string;
+            message: string;
+            iconUrl: string;
+            type: string;
+        };
+    };
+    badge?: {
+        text?: string;
+    };
 }

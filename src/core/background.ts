@@ -3,7 +3,7 @@ import { Response } from '../types/core';
 import functions from './functions';
 import tasks from './functions/tasks';
 
-import { runtime } from './runtime';
+import { action, engine, runtime } from './runtime';
 
 var DATA = {
     signingInfoSet: [],
@@ -20,6 +20,28 @@ const setVariables = (result = {}) => {
 runtime.onMessage.addListener(function (request, sender, response) {
     const onResponse = (res: Response) => {
         if (res?.set) setVariables(res.set);
+
+        if (res?.notification) {
+            /* clear request notification */
+            engine.notifications.clear(res.notification.id);
+
+            setTimeout(() => {
+                engine.notifications.create(
+                    res.notification.id,
+                    res.notification.options,
+                    (id: string) => {
+                        setTimeout(() => {
+                            engine.notifications.clear(id);
+                        }, 5000);
+                    }
+                );
+            }, 500);
+        }
+
+        if (res?.badge) {
+            action.setBadgeBackgroundColor({ color: '#24b6aa' });
+            action.setBadgeText({ text: `${res.badge.text || 0}` });
+        }
 
         return response(res.result, res.error);
     };

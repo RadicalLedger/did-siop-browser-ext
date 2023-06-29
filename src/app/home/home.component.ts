@@ -260,7 +260,7 @@ export class HomeComponent implements OnInit {
             },
             (result) => {
                 if (result) {
-                    this.currentRequests = result;
+                    this.currentRequests = _.orderBy(result, ['index'], 'desc');
                     this.changeDetector.detectChanges();
                 }
             }

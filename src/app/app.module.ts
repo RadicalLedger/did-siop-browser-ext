@@ -18,6 +18,7 @@ import { AddKeyComponent } from './models/add-key/add-key.component';
 import { ChangePasswordComponent } from './models/change-password/change-password.component';
 import { ChangeDidComponent } from './models/change-did/change-did.component';
 import { ConfirmRequestComponent } from './models/confirm-request/confirm-request.component';
+import { PresentationComponent } from './presentation/presentation.component';
 
 @NgModule({
     declarations: [
@@ -33,7 +34,8 @@ import { ConfirmRequestComponent } from './models/confirm-request/confirm-reques
         AddKeyComponent,
         ChangePasswordComponent,
         ChangeDidComponent,
-        ConfirmRequestComponent
+        ConfirmRequestComponent,
+        PresentationComponent
     ],
     imports: [BrowserModule, AppRoutingModule, ReactiveFormsModule, MatIconModule],
     providers: [],

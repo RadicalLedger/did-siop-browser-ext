@@ -18,6 +18,7 @@ interface CurrentVP {
 })
 export class PresentationsComponent implements OnInit {
     currentVPs: CurrentVP[] = [];
+    selectedVP: CurrentVP = null;
 
     constructor(
         private changeDetector: ChangeDetectorRef,
@@ -65,6 +66,11 @@ export class PresentationsComponent implements OnInit {
             .then((result) => {
                 this.loadVPs();
             });
+    }
+
+    onSelectVP(vp: CurrentVP) {
+        this.selectedVP = vp;
+        this.changeDetector.detectChanges();
     }
 
     private loadVPs() {

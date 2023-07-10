@@ -1,0 +1,56 @@
+@import '../../styles/colors';
+@import '../../styles/common';
+@import '../../styles/variables';
+
+#presentation {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+
+    .title-bar {
+        display: flex;
+        gap: 5px;
+        align-items: center;
+
+        .back-icon {
+            color: white;
+            transition: all 0.3s ease;
+            cursor: pointer;
+
+            &:active {
+                color: #eee;
+            }
+        }
+    }
+
+    .body {
+        padding: 20px;
+        height: 100%;
+
+        .content {
+            height: 90%;
+        }
+    }
+
+    .tabs {
+        display: flex;
+        overflow-x: auto;
+        width: 100%;
+        gap: 10px;
+
+        .tab {
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            background-color: #eee;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            font-size: $px12;
+
+            &[data-active='true'] {
+                color: $theme-color;
+            }
+        }
+    }
+}

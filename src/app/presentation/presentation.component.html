@@ -1,0 +1,15 @@
+<div id="presentation">
+    <div class="title-bar">
+        <mat-icon (click)="onGoBack()" class="back-icon">navigate_before</mat-icon>
+        <p class="title">Presentation</p>
+    </div>
+
+    <div class="body">
+        <div class="tabs">
+            <span *ngFor="let vc of credentials; let i = index" [attr.data-active]="activeTab == i ? 'true' : 'false'"
+                (click)="onCredential(vc, i)" class="tab">{{getType(getValue(vc, 'type')[0])}}</span>
+        </div>
+
+        <div class="content card"></div>
+    </div>
+</div>

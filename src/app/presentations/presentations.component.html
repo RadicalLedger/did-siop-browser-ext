@@ -15,7 +15,9 @@
             </div>
         </div>
     </div>
-
 </div>
 
-<app-presentation *ngIf="selectedVP != null" [data]="selectedVP" (onBack)="onSelectVP(null)"></app-presentation>
+<app-presentation
+    *ngIf="selectedVP != null"
+    [data]="selectedVP"
+    (onBack)="onSelectVP(null)"></app-presentation>

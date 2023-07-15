@@ -7,9 +7,50 @@
     <div class="body">
         <div class="tabs">
             <span *ngFor="let vc of credentials; let i = index" [attr.data-active]="activeTab == i ? 'true' : 'false'"
-                (click)="onCredential(vc, i)" class="tab">{{getType(getValue(vc, 'type')[0])}}</span>
+                (click)="onCredential(vc, i)" class="tab">{{ getType(getValue(vc, 'type')[0]) }}</span>
         </div>
 
-        <div class="content card"></div>
+        <div class="content card">
+            <img [attr.data-type]="getType(getValue(currentVC, 'type')[0])" class="image"
+                [src]="getValue(currentVC, 'visualPresentation')" alt="Visual Presentation">
+
+            <div *ngIf="getType(getValue(currentVC, 'type')[0]) === 'Badge'" class="badge-content">
+                <p class="description">{{getValue(currentVC, 'description')}}</p>
+
+                <div class="detailed-content">
+                    <p class="title">Issued To</p>
+                    <div class="value-wrap">
+                        <div class="section">
+                            <img class="image" [src]="getValue(currentVC, 'holderImage') || 'assets/profile-image.png'"
+                                alt="Holder Image">
+                        </div>
+                        <div class="section">
+                            <p class="value">{{getValue(currentVC, 'holderName')}}</p>
+                            <a target="_blank" [href]="getValue(currentVC, 'holderProfileUrl')" class="link">Public
+                                Profile</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detailed-content">
+                    <p class="title">Issued By</p>
+                    <div class="value-wrap">
+                        <div class="section">
+                            <img class="image" [src]="getValue(currentVC, 'issuerLogo') || 'assets/profile-image.png'"
+                                alt="Issuer Image">
+                        </div>
+                        <div class="section">
+                            <p class="value">{{getValue(currentVC, 'issuerName')}}</p>
+                            <a target="_blank" [href]="getValue(currentVC, 'issuerUrl')" class="link">Public Profile</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detailed-content">
+                    <p class="title">Issued On</p>
+                    <p class="value">{{getValue(currentVC, 'issuanceDate').split('T')[0]}}</p>
+                </div>
+            </div>
+        </div>
     </div>
 </div>

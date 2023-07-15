@@ -2,6 +2,7 @@ import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } fro
 import { BackgroundMessageService } from '../services/message.service';
 import { PopupService } from '../services/popup.service';
 import utils from 'src/utils';
+import _ from 'lodash';
 
 interface DataProps {
     index: string | number;
@@ -29,7 +30,12 @@ export class PresentationComponent implements OnInit {
     ) {}
 
     ngOnInit(): void {
-        this.credentials = this.data.vp.verifiableCredential;
+        this.credentials = _.orderBy(
+            this.data.vp.verifiableCredential,
+            (item) => utils.getObjectValue(item, 'type'),
+            'asc'
+        );
+        this.currentVC = this.credentials[this.activeTab];
     }
 
     onGoBack() {

@@ -3,7 +3,7 @@ name: BuildDeploy
 on:
     push:
         branches:
-            - master/v2
+            - v2/master
 
 jobs:
     build:

@@ -119,6 +119,7 @@ export class SettingsComponent {
                                 task: TASKS.CREATE_DID
                             },
                             (result, error) => {
+                                console.log(result, error);
                                 if (error) {
                                     Swal.showValidationMessage(error || 'Failed to create DID key');
                                     return resolve(false);
@@ -223,7 +224,7 @@ export class SettingsComponent {
         this.popupService
             .show({
                 title: 'Signing Key',
-                text: data.kid,
+                text: data.key,
                 showConfirmButton: false,
                 showDenyButton: true,
                 showCancelButton: true,

@@ -162,7 +162,7 @@ export default {
             holderChallengeResponse = await holderChallengeResponse.json();
 
             const { challenge: holderChallenge } = jwt.decode(
-                holderChallengeResponse.data.challengeToken
+                holderChallengeResponse.challengeToken
             ) as any;
 
             let holderResponse: any = await fetch(`${resolver_url}`, {
@@ -181,18 +181,26 @@ export default {
                                 Buffer.from(holderPrivateKey as string, 'hex')
                             )
                             .toHex(),
-                        jwt: holderChallengeResponse.data.challengeToken
+                        jwt: holderChallengeResponse.challengeToken
                     }
                 })
             });
             holderResponse = await holderResponse.json();
 
-            if (holderResponse?.data?.status !== 'success') {
+            if (holderResponse?.status !== 'success') {
                 return response({ error: 'Holder DID document creation failed' });
             }
 
             /* set did */
-            await setDID({ request: { did: holderDID }, data });
+            setDID({ request: { did: holderDID }, data });
+
+            const signInfo: any = await checkSigning(
+                data.provider,
+                data.loggedInState,
+                data.signingInfoSet
+            );
+            if (signInfo?.provider) data.provider = signInfo.provider;
+            if (signInfo?.signingInfoSet) data.signingInfoSet = signInfo.signingInfoSet;
 
             /* set new singing key */
             await setSingingKey({

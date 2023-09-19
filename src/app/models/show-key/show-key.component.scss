@@ -1,0 +1,16 @@
+@import '../../../styles/colors';
+@import '../../../styles/common';
+@import '../../../styles/variables';
+
+#show-key {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+
+    .wrap {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        gap: 5px;
+    }
+}

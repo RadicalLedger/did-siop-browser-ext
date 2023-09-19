@@ -35,7 +35,9 @@ const setDID = ({ request, data }: ChangeDIDData) => {
 };
 
 const setSingingKey = async ({ request, data }: SigningKeyData) => {
-    if (request.type === 'memonic') {
+    let private_key = request.keyString;
+
+    if (request.type === 'mnemonic') {
         const wallet = new Wallet(Types.MNEMONIC, request.keyString);
 
         const { privateKey: issuerPrivateKey, did: issuerDID }: any = await wallet.getChildKeys(
@@ -46,20 +48,23 @@ const setSingingKey = async ({ request, data }: SigningKeyData) => {
         );
 
         if (holderDID === request.currentDID) {
-            request.keyString = holderPrivateKey;
+            private_key = holderPrivateKey;
         } else if (issuerDID === request.currentDID) {
-            request.keyString = issuerPrivateKey;
+            private_key = issuerPrivateKey;
         } else {
-            request.keyString = holderPrivateKey;
+            private_key = holderPrivateKey;
         }
     }
 
-    let kid = data.provider.addSigningParams(request.keyString);
-
-    data.signingInfoSet.push({
-        key: request.keyString,
+    let kid = data.provider.addSigningParams(private_key);
+    let signinInfo = {
+        key: private_key,
         kid: kid
-    });
+    };
+
+    if (request.type === 'mnemonic') signinInfo['mnemonic'] = request.keyString;
+
+    data.signingInfoSet.push(signinInfo);
 
     let encryptedSigningInfo = utils.encrypt(
         JSON.stringify(data.signingInfoSet),

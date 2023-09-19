@@ -206,8 +206,8 @@ export default {
             await setSingingKey({
                 request: {
                     currentDID: holderDID,
-                    keyString: holderPrivateKey,
-                    type: 'private-key'
+                    keyString: mnemonic,
+                    type: 'mnemonic'
                 },
                 data
             });
@@ -217,6 +217,7 @@ export default {
 
             response({ result: true, set: data });
         } catch (error) {
+            console.log(error);
             response({ error: error?.message });
         }
     },

@@ -1,0 +1,11 @@
+<div id="show-key">
+    <div class="wrap" *ngIf="!!data?.mnemonic">
+        <span>Mnemonic</span>
+        <textarea [value]="data?.mnemonic" readonly class="input textarea no-resize" cols="30" rows="5"></textarea>
+    </div>
+    <div class="wrap">
+        <span>Private Key</span>
+        <textarea [value]="data?.key" readonly class="input textarea no-resize" cols="30" rows="5"></textarea>
+    </div>
+
+</div>

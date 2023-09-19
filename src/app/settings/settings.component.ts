@@ -24,9 +24,11 @@ export class SettingsComponent {
     @ViewChild('changePasswordEl', { static: false }) changePasswordEl: ElementRef;
     @ViewChild('addNewKeyEl', { static: false }) addNewKeyEl: ElementRef;
     @ViewChild('changeDIDKeyEl', { static: false }) changeDIDKeyEl: ElementRef;
+    @ViewChild('showKeyEl', { static: false }) showKeyEl: ElementRef;
 
     currentDID: string = '';
     currentKeys: SigningKeys[] = [];
+    selectedKeysData: SigningKeys;
     profileImage: string = 'assets/avatar.png';
     name: string = 'Unknown';
 
@@ -205,6 +207,7 @@ export class SettingsComponent {
             },
             (result) => {
                 if (result) {
+                    console.log(result);
                     let profile = result?.profile;
 
                     if (profile?.name) this.name = profile.name;
@@ -220,11 +223,14 @@ export class SettingsComponent {
     }
 
     /* on singing key select */
-    onSelectKey(data?: { key?: string; kid?: string }) {
+    onSelectKey(data?: { mnemonic?: string; key: string; kid: string }) {
+        this.selectedKeysData = data;
+        this.changeDetector.detectChanges();
+
         this.popupService
             .show({
                 title: 'Signing Key',
-                text: data.key,
+                html: this.showKeyEl.nativeElement,
                 showConfirmButton: false,
                 showDenyButton: true,
                 showCancelButton: true,
@@ -377,8 +383,8 @@ export class SettingsComponent {
                 preConfirm: () => {
                     return new Promise((resolve, reject) => {
                         let values = {
-                            memonic: (
-                                document.getElementById('add-key-memonic') as HTMLInputElement
+                            mnemonic: (
+                                document.getElementById('add-key-mnemonic') as HTMLInputElement
                             ).checked,
                             private_key: (
                                 document.getElementById('add-key-private') as HTMLInputElement
@@ -395,7 +401,7 @@ export class SettingsComponent {
                         return this.messageService.sendMessage(
                             {
                                 task: TASKS.ADD_KEY,
-                                type: values?.memonic ? 'memonic' : 'private-key',
+                                type: values?.mnemonic ? 'mnemonic' : 'private-key',
                                 keyString: values.key
                             },
                             (result, error) => {
@@ -414,7 +420,7 @@ export class SettingsComponent {
             })
             .then((result) => {
                 /* reset form values */
-                (document.getElementById('add-key-memonic') as HTMLInputElement).checked = false;
+                (document.getElementById('add-key-mnemonic') as HTMLInputElement).checked = false;
                 (document.getElementById('add-key-private') as HTMLInputElement).checked = true;
                 (document.getElementById('add-key-value') as HTMLInputElement).value = '';
 

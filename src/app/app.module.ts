@@ -19,6 +19,7 @@ import { ChangePasswordComponent } from './models/change-password/change-passwor
 import { ChangeDidComponent } from './models/change-did/change-did.component';
 import { ConfirmRequestComponent } from './models/confirm-request/confirm-request.component';
 import { PresentationComponent } from './presentation/presentation.component';
+import { ShowKeyComponent } from './models/show-key/show-key.component';
 
 @NgModule({
     declarations: [
@@ -35,7 +36,8 @@ import { PresentationComponent } from './presentation/presentation.component';
         ChangePasswordComponent,
         ChangeDidComponent,
         ConfirmRequestComponent,
-        PresentationComponent
+        PresentationComponent,
+        ShowKeyComponent
     ],
     imports: [BrowserModule, AppRoutingModule, ReactiveFormsModule, MatIconModule],
     providers: [],

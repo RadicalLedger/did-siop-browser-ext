@@ -194,13 +194,13 @@ export default {
             /* set did */
             setDID({ request: { did: holderDID }, data });
 
-            const signInfo: any = await checkSigning(
+            /* const signInfo: any = await checkSigning(
                 data.provider,
                 data.loggedInState,
                 data.signingInfoSet
-            );
-            if (signInfo?.provider) data.provider = signInfo.provider;
-            if (signInfo?.signingInfoSet) data.signingInfoSet = signInfo.signingInfoSet;
+            ); */
+            data.provider = await getProvider(holderDID);
+            data.signingInfoSet = [];
 
             /* set new singing key */
             await setSingingKey({
@@ -238,7 +238,7 @@ export default {
                 request: { currentDID, keyString: request.keyString, type: request.type },
                 data
             });
-
+            console.log({ kid });
             /* update local message to indicate there's new content */
             sendContext({ request: { task: CONTEXT_TASKS.NEW_CONTENT } });
 

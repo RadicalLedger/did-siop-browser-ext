@@ -39,14 +39,7 @@ export class CredentialsComponent {
         const vc_data = this.currentVCs.find((item: any) => item.index == index);
         let title = utils.getObjectValue(vc_data.vc, 'title') || 'Verifiable credential';
 
-        var element = document.createElement('a');
-        var sJson = JSON.stringify(vc_data.vc, null, 4);
-        element.setAttribute('href', 'data:text/json;charset=UTF-8,' + encodeURIComponent(sJson));
-        element.setAttribute('download', `${title}.json`);
-        element.style.display = 'none';
-        document.body.appendChild(element);
-        element.click();
-        document.body.removeChild(element);
+        utils.downloadJson(vc_data.vc, title);
     }
 
     removeVC(index: string | number) {

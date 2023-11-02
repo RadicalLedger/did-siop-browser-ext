@@ -54,5 +54,15 @@ export default {
         } catch (error) {
             return false;
         }
+    },
+    downloadJson: (json: object, title: string) => {
+        var element = document.createElement('a');
+        var sJson = JSON.stringify(json, null, 4);
+        element.setAttribute('href', 'data:text/json;charset=UTF-8,' + encodeURIComponent(sJson));
+        element.setAttribute('download', `${title}.json`);
+        element.style.display = 'none';
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
     }
 };

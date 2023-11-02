@@ -4,6 +4,7 @@ import { PopupService } from '../services/popup.service';
 import { TASKS } from 'src/utils/tasks';
 import utils from 'src/utils';
 import Swal from 'sweetalert2';
+import { DomSanitizer } from '@angular/platform-browser';
 
 interface CurrentVC {
     index: string | number;
@@ -22,7 +23,8 @@ export class CredentialsComponent {
     constructor(
         private changeDetector: ChangeDetectorRef,
         private messageService: BackgroundMessageService,
-        private popupService: PopupService
+        private popupService: PopupService,
+        private sanitizer: DomSanitizer
     ) {}
 
     ngOnInit(): void {
@@ -31,6 +33,20 @@ export class CredentialsComponent {
 
     getName(data: any) {
         return utils.getObjectValue(data.vc, 'title');
+    }
+
+    downloadVC(index: string | number) {
+        const vc_data = this.currentVCs.find((item: any) => item.index == index);
+        let title = utils.getObjectValue(vc_data.vc, 'title') || 'Verifiable credential';
+
+        var element = document.createElement('a');
+        var sJson = JSON.stringify(vc_data.vc, null, 4);
+        element.setAttribute('href', 'data:text/json;charset=UTF-8,' + encodeURIComponent(sJson));
+        element.setAttribute('download', `${title}.json`);
+        element.style.display = 'none';
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
     }
 
     removeVC(index: string | number) {

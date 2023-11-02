@@ -7,17 +7,15 @@
         <button class="button">Share</button>
 
         <div class="card">
-            <div *ngFor="let vp of currentVPs; let i = index" class="vp" (click)="onSelectVP(vp)">
-                <label class="vp-label">
+            <div *ngFor="let vp of currentVPs; let i = index" class="vp">
+                <label class="vp-label" (click)="onSelectVP(vp)">
                     <span class="name">{{ vp.title || 'VP ' + vp.index }}</span>
                 </label>
+                <mat-icon (click)="downloadVP(vp.index)" class="icon">cloud_download</mat-icon>
                 <mat-icon (click)="removeVP(vp.index)" class="icon">cancel</mat-icon>
             </div>
         </div>
     </div>
 </div>
 
-<app-presentation
-    *ngIf="selectedVP != null"
-    [data]="selectedVP"
-    (onBack)="onSelectVP(null)"></app-presentation>
+<app-presentation *ngIf="selectedVP != null" [data]="selectedVP" (onBack)="onSelectVP(null)"></app-presentation>

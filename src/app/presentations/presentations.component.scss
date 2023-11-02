@@ -56,14 +56,18 @@
         }
 
         .icon {
-            color: $red;
             transition: all 0.4s ease;
             cursor: pointer;
             font-size: 0.9em;
             height: max-content;
+            color: #fff;
 
-            &:active {
-                color: $dark-red;
+            &.red {
+                color: $red;
+
+                &:active {
+                    color: $dark-red;
+                }
             }
         }
     }

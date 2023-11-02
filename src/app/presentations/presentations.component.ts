@@ -30,6 +30,20 @@ export class PresentationsComponent implements OnInit {
         this.loadVPs();
     }
 
+    downloadVP(index: string | number) {
+        const vp_data = this.currentVPs.find((item: any) => item.index == index);
+        let title = vp_data.title || 'Verifiable presentation';
+
+        var element = document.createElement('a');
+        var sJson = JSON.stringify(vp_data.vp, null, 4);
+        element.setAttribute('href', 'data:text/json;charset=UTF-8,' + encodeURIComponent(sJson));
+        element.setAttribute('download', `${title}.json`);
+        element.style.display = 'none';
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+    }
+
     removeVP(index: string | number) {
         this.popupService
             .show({

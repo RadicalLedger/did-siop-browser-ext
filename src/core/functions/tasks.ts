@@ -56,7 +56,7 @@ export default {
                 response({
                     result: true,
                     notification: {
-                        id: NOTIFICATIONS.NEW_REQUEST,
+                        id: NOTIFICATIONS.NEW_VC,
                         options: {
                             title: 'New Verifiable Credential',
                             message: 'New verifiable credential has been added to the extension',

@@ -1,7 +1,7 @@
 import { TASKS } from 'src/utils/tasks';
 import utils from 'src/utils';
 import { checkSigning, getStorage, getProvider, sendContext } from 'src/core/helpers';
-import { setDID, setSingingKey } from '../helpers/did';
+import { resolveSigningKey, setDID, setSingingKey } from '../helpers/did';
 import { STORAGE_KEYS } from 'src/utils/storage';
 import { Request } from '../../types/core';
 import configs from 'src/configs';
@@ -223,6 +223,11 @@ export default {
     },
     [TASKS.ADD_KEY]: async ({ request, data }: Request, response) => {
         try {
+            if (request.didAddress) {
+                data.provider = await getProvider(request.didAddress);
+                await setDID({ request: { did: request.didAddress }, data });
+            }
+
             const signInfo: any = await checkSigning(
                 data.provider,
                 data.loggedInState,
@@ -235,10 +240,16 @@ export default {
             let currentDID = utils.decrypt(encryptedDID, data.loggedInState);
 
             const kid = await setSingingKey({
-                request: { currentDID, keyString: request.keyString, type: request.type },
+                request: {
+                    currentDID,
+                    keyString: request.keyString,
+                    type: request.type,
+                    didAddress: request.didAddress,
+                    didPath: request.didPath
+                },
                 data
             });
-            console.log({ kid });
+
             /* update local message to indicate there's new content */
             sendContext({ request: { task: CONTEXT_TASKS.NEW_CONTENT } });
 
@@ -277,6 +288,30 @@ export default {
             response({ result: true, set: data });
         } catch (error) {
             console.log(error);
+            response({ error: error?.message });
+        }
+    },
+    [TASKS.RESOLVE_KEY]: async ({ request, data }: Request, response) => {
+        try {
+            const signInfo: any = await checkSigning(
+                data.provider,
+                data.loggedInState,
+                data.signingInfoSet
+            );
+            if (signInfo?.provider) data.provider = signInfo.provider;
+            if (signInfo?.signingInfoSet) data.signingInfoSet = signInfo.signingInfoSet;
+
+            const did = await resolveSigningKey({
+                request: {
+                    keyString: request.keyString,
+                    type: request.type,
+                    didPath: request.didPath
+                },
+                data
+            });
+
+            response({ result: did, set: data });
+        } catch (error) {
             response({ error: error?.message });
         }
     },

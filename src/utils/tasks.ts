@@ -23,5 +23,6 @@ export const enum TASKS {
     REMOVE_VP,
     GET_VPS,
     GET_LOGIN_STATE,
-    UPDATE_IDENTITY
+    UPDATE_IDENTITY,
+    RESOLVE_KEY
 }

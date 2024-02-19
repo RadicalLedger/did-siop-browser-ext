@@ -23,12 +23,14 @@ export class SettingsComponent {
 
     @ViewChild('changePasswordEl', { static: false }) changePasswordEl: ElementRef;
     @ViewChild('addNewKeyEl', { static: false }) addNewKeyEl: ElementRef;
+    @ViewChild('resolveKeyEl', { static: false }) resolveKeyEl: ElementRef;
     @ViewChild('changeDIDKeyEl', { static: false }) changeDIDKeyEl: ElementRef;
     @ViewChild('showKeyEl', { static: false }) showKeyEl: ElementRef;
 
     currentDID: string = '';
     currentKeys: SigningKeys[] = [];
     selectedKeysData: SigningKeys;
+    resolveKeyData: ResolveKeyData = { key: '', type: '' };
     profileImage: string = 'assets/avatar.png';
     name: string = 'Unknown';
 
@@ -207,7 +209,6 @@ export class SettingsComponent {
             },
             (result) => {
                 if (result) {
-                    console.log(result);
                     let profile = result?.profile;
 
                     if (profile?.name) this.name = profile.name;
@@ -378,7 +379,7 @@ export class SettingsComponent {
                 },
                 showConfirmButton: true,
                 showCancelButton: true,
-                confirmButtonText: 'Add Key',
+                confirmButtonText: 'Resolve',
                 showLoaderOnConfirm: true,
                 preConfirm: () => {
                     return new Promise((resolve, reject) => {
@@ -398,23 +399,96 @@ export class SettingsComponent {
                             return resolve(false);
                         }
 
-                        return this.messageService.sendMessage(
-                            {
-                                task: TASKS.ADD_KEY,
-                                type: values?.mnemonic ? 'mnemonic' : 'private-key',
-                                keyString: values.key
-                            },
-                            (result, error) => {
-                                if (!result || error) {
-                                    Swal.showValidationMessage(
-                                        error || 'Failed to add new singing key'
-                                    );
-                                    return resolve(false);
+                        this.resolveKeyData = {
+                            key: values.key,
+                            type: values?.mnemonic ? 'mnemonic' : 'private-key'
+                        };
+
+                        /* select the did popup */
+                        this.popupService
+                            .show({
+                                title: 'Select DID',
+                                html: this.resolveKeyEl.nativeElement,
+                                showConfirmButton: true,
+                                showCancelButton: true,
+                                confirmButtonText: 'Done',
+                                cancelButtonText: 'Cancel',
+                                preConfirm: () => {
+                                    return new Promise((resolve) => {
+                                        let didPath = (
+                                            document.getElementById(
+                                                'resolve-did-didPath'
+                                            ) as HTMLInputElement
+                                        ).value;
+                                        let didAddress = (
+                                            document.getElementById(
+                                                'resolve-did-didAddress'
+                                            ) as HTMLInputElement
+                                        ).value;
+
+                                        if (!didPath) {
+                                            Swal.showValidationMessage(
+                                                'Resolved DID path is required'
+                                            );
+                                            return resolve(false);
+                                        }
+                                        if (!didAddress) {
+                                            Swal.showValidationMessage('Resolved DID is required');
+                                            return resolve(false);
+                                        }
+
+                                        this.messageService.sendMessage(
+                                            {
+                                                task: TASKS.ADD_KEY,
+                                                type: values?.mnemonic ? 'mnemonic' : 'private-key',
+                                                keyString: values.key,
+                                                didPath: didPath, // selected DID address path
+                                                didAddress: didAddress // selected DID address
+                                            },
+                                            (result, error) => {
+                                                if (!result || error) {
+                                                    Swal.showValidationMessage(
+                                                        error || 'Failed to add new singing key'
+                                                    );
+                                                    return resolve(false);
+                                                }
+
+                                                return resolve(undefined);
+                                            }
+                                        );
+                                    });
+                                }
+                            })
+                            .then((result) => {
+                                /* reset form values */
+                                (
+                                    document.getElementById(
+                                        'resolve-did-didPathType'
+                                    ) as HTMLInputElement
+                                ).value = 'custom';
+                                (
+                                    document.getElementById(
+                                        'resolve-did-didPath'
+                                    ) as HTMLInputElement
+                                ).value = '';
+                                (
+                                    document.getElementById(
+                                        'resolve-did-didAddress'
+                                    ) as HTMLInputElement
+                                ).value = '';
+
+                                if (result.isConfirmed) {
+                                    this.loadIdentity();
+
+                                    this.popupService.show({
+                                        icon: 'success',
+                                        title: 'Success',
+                                        text: 'New singing key has been added successfully'
+                                    });
                                 }
 
-                                return resolve(undefined);
-                            }
-                        );
+                                return resolve(false);
+                            });
                     });
                 }
             })

@@ -7,8 +7,18 @@ import Wallet, { Types } from 'did-hd-wallet';
 interface SigningKeyData extends Request {
     request: {
         type?: string;
+        didAddress?: string;
+        didPath?: string;
         currentDID: string;
         keyString: string;
+    };
+}
+
+interface DidPathData extends Request {
+    request: {
+        type?: string;
+        keyString: string;
+        didPath: string;
     };
 }
 
@@ -36,26 +46,40 @@ const setDID = ({ request, data }: ChangeDIDData) => {
 
 const setSingingKey = async ({ request, data }: SigningKeyData) => {
     let private_key = request.keyString;
+    let did = request?.didAddress || request.currentDID;
 
     if (request.type === 'mnemonic') {
         const wallet = new Wallet(Types.MNEMONIC, request.keyString);
 
-        const { privateKey: issuerPrivateKey, did: issuerDID }: any = await wallet.getChildKeys(
-            'm/256/256/1'
-        );
-        const { privateKey: holderPrivateKey, did: holderDID }: any = await wallet.getChildKeys(
-            'm/256/256/2'
-        );
+        if (request?.didPath) {
+            const { privateKey: privateKey, did: didAddress }: any = await wallet.getChildKeys(
+                request.didPath
+            );
 
-        if (holderDID === request.currentDID) {
-            private_key = holderPrivateKey;
-        } else if (issuerDID === request.currentDID) {
-            private_key = issuerPrivateKey;
+            private_key = privateKey;
+            did = didAddress;
         } else {
+            const { privateKey: issuerPrivateKey, did: issuerDID }: any = await wallet.getChildKeys(
+                'm/256/256/1'
+            );
+            const { privateKey: holderPrivateKey, did: holderDID }: any = await wallet.getChildKeys(
+                'm/256/256/2'
+            );
+
             private_key = holderPrivateKey;
+            did = holderDID;
+
+            if (issuerDID === request.currentDID) {
+                private_key = issuerPrivateKey;
+                did = issuerDID;
+            }
         }
     }
 
+    /* set did address */
+    setDID({ request: { did }, data });
+
+    /* set private key */
     let kid = data.provider.addSigningParams(private_key);
     let signinInfo = {
         key: private_key,
@@ -76,4 +100,18 @@ const setSingingKey = async ({ request, data }: SigningKeyData) => {
     return kid;
 };
 
-export { setDID, setSingingKey };
+const resolveSigningKey = async ({ request, data }: DidPathData) => {
+    let wallet;
+
+    if (request.type === 'mnemonic') {
+        wallet = new Wallet(Types.MNEMONIC, request.keyString);
+    } else {
+        wallet = new Wallet(Types.SEED, request.keyString);
+    }
+
+    const { did }: any = await wallet.getChildKeys(request.didPath);
+
+    return did;
+};
+
+export { setDID, setSingingKey, resolveSigningKey };

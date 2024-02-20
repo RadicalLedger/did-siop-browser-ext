@@ -20,7 +20,12 @@ export class ResolveDidComponent {
         private messageService: BackgroundMessageService
     ) {}
 
-    ngOnInit(): void {}
+    ngOnInit(): void {
+        /* reset form values */
+        (document.getElementById('resolve-did-didPathType') as HTMLInputElement).value = 'custom';
+        (document.getElementById('resolve-did-didPath') as HTMLInputElement).value = '';
+        (document.getElementById('resolve-did-didAddress') as HTMLInputElement).value = '';
+    }
 
     onSelectChange($event) {
         this.didPath = $event.target.value;
@@ -35,6 +40,7 @@ export class ResolveDidComponent {
                     type: this.data.type
                 },
                 (result, error) => {
+                    console.log(result, error);
                     this.didAddress = result || '';
                     this.changeDetector.detectChanges();
                 }
@@ -46,7 +52,7 @@ export class ResolveDidComponent {
 
     onPathChange($event) {
         let value = $event.target.value;
-        this.didPath = value;
+        this.didPath = value === 'custom' ? '' : value;
         this.didPathTypeRef.nativeElement.value = 'custom';
 
         if (value) {

@@ -5,4 +5,9 @@ import { Component } from '@angular/core';
     templateUrl: './add-key.component.html',
     styleUrls: ['./add-key.component.scss']
 })
-export class AddKeyComponent {}
+export class AddKeyComponent {
+    ngOnInit(): void {
+        /* reset form values */
+        (document.getElementById('add-key-value') as HTMLInputElement).value = '';
+    }
+}

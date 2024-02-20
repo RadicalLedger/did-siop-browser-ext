@@ -102,7 +102,7 @@ const setSingingKey = async ({ request, data }: SigningKeyData) => {
 
 const resolveSigningKey = async ({ request, data }: DidPathData) => {
     let wallet;
-
+    console.log(request);
     if (request.type === 'mnemonic') {
         wallet = new Wallet(Types.MNEMONIC, request.keyString);
     } else {

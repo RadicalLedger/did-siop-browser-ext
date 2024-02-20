@@ -404,6 +404,8 @@ export class SettingsComponent {
                             type: values?.mnemonic ? 'mnemonic' : 'private-key'
                         };
 
+                        this.changeDetector.detectChanges();
+
                         /* select the did popup */
                         this.popupService
                             .show({
@@ -460,23 +462,6 @@ export class SettingsComponent {
                                 }
                             })
                             .then((result) => {
-                                /* reset form values */
-                                (
-                                    document.getElementById(
-                                        'resolve-did-didPathType'
-                                    ) as HTMLInputElement
-                                ).value = 'custom';
-                                (
-                                    document.getElementById(
-                                        'resolve-did-didPath'
-                                    ) as HTMLInputElement
-                                ).value = '';
-                                (
-                                    document.getElementById(
-                                        'resolve-did-didAddress'
-                                    ) as HTMLInputElement
-                                ).value = '';
-
                                 if (result.isConfirmed) {
                                     this.loadIdentity();
 
@@ -493,10 +478,7 @@ export class SettingsComponent {
                 }
             })
             .then((result) => {
-                /* reset form values */
-                (document.getElementById('add-key-mnemonic') as HTMLInputElement).checked = false;
-                (document.getElementById('add-key-private') as HTMLInputElement).checked = true;
-                (document.getElementById('add-key-value') as HTMLInputElement).value = '';
+                this.changeDetector.detectChanges();
 
                 if (result.isConfirmed) {
                     this.loadIdentity();

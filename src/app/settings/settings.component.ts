@@ -369,7 +369,79 @@ export class SettingsComponent {
     }
 
     /* on add new signing key */
-    onAddNewKey() {
+    async onAddNewKey() {
+        const steps = ['1', '2'];
+        const values = [];
+        let currentStep;
+
+        const Queue = Swal.mixin({
+            confirmButtonText: 'Next',
+            cancelButtonText: 'Back',
+            progressSteps: steps
+        });
+
+        for (currentStep = 0; currentStep < steps.length; ) {
+            let options;
+
+            if (currentStep == 0) {
+                options = {
+                    title: 'Add New Key',
+                    html: this.addNewKeyEl.nativeElement,
+                    customClass: {
+                        htmlContainer: 'swal2-popup-form'
+                    },
+                    showConfirmButton: true,
+                    showCancelButton: currentStep > 0,
+                    confirmButtonText: 'Next',
+                    inputValue: values[currentStep] ? values[currentStep] : '',
+                    currentProgressStep: currentStep,
+                    preConfirm: () => {
+                        return new Promise((resolve) => {
+                            let values = {
+                                mnemonic: (
+                                    document.getElementById('add-key-mnemonic') as HTMLInputElement
+                                ).checked,
+                                private_key: (
+                                    document.getElementById('add-key-private') as HTMLInputElement
+                                ).checked,
+                                key: (document.getElementById('add-key-value') as HTMLInputElement)
+                                    .value
+                            };
+
+                            if (!values?.key) {
+                                Swal.showValidationMessage('Key string is required');
+                                return resolve(false);
+                            }
+
+                            return resolve(undefined);
+                        });
+                    }
+                };
+            } else if (currentStep == 1) {
+                options = {
+                    title: 'Select DID',
+                    html: this.resolveKeyEl.nativeElement,
+                    showConfirmButton: true,
+                    showCancelButton: currentStep > 0,
+                    confirmButtonText: 'Done',
+                    cancelButtonText: 'Back',
+                    currentProgressStep: currentStep
+                };
+            }
+            const result = await Queue.fire(options);
+
+            if (result.value) {
+                values[currentStep] = result.value;
+                currentStep++;
+                if (currentStep === steps.length) {
+                    break;
+                }
+            } else if (result.dismiss === Swal.DismissReason.cancel) {
+                currentStep--;
+            }
+        }
+        return;
+
         this.popupService
             .show({
                 title: 'Add New Key',

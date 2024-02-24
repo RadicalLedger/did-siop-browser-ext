@@ -1,39 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>DidExtension</title>
+        <base href="/" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" type="image/x-icon" href="favicon.ico" />
 
-<head>
-    <meta charset="utf-8" />
-    <title>DidExtension</title>
-    <base href="/" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
 
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+        <style>
+            .swal2-title {
+                font-size: 1.1em !important;
+            }
 
-    <style>
-        .swal2-title {
-            font-size: 1.1em !important;
-        }
+            .swal2-html-container {
+                font-size: 1em !important;
+            }
 
-        .swal2-html-container {
-            font-size: 1em !important;
-        }
+            div:where(.swal2-container)
+                .swal2-progress-steps
+                .swal2-progress-step.swal2-active-progress-step
+                ~ .swal2-progress-step-line,
+            div:where(.swal2-container)
+                .swal2-progress-steps
+                .swal2-progress-step.swal2-active-progress-step
+                ~ .swal2-progress-step {
+                background-color: #b1efea !important;
+            }
 
-        div:where(.swal2-container) .swal2-progress-steps .swal2-progress-step.swal2-active-progress-step~.swal2-progress-step-line,
-        div:where(.swal2-container) .swal2-progress-steps .swal2-progress-step.swal2-active-progress-step~.swal2-progress-step {
-            background-color: #b1efea !important;
+            div:where(.swal2-container) .swal2-progress-steps .swal2-progress-step,
+            div:where(.swal2-container) .swal2-progress-steps .swal2-progress-step-line {
+                background-color: #24c3b5 !important;
+            }
+        </style>
+    </head>
 
-        }
-
-        div:where(.swal2-container) .swal2-progress-steps .swal2-progress-step,
-        div:where(.swal2-container) .swal2-progress-steps .swal2-progress-step-line {
-            background-color: #24c3b5 !important;
-        }
-    </style>
-</head>
-
-<body>
-    <app-root></app-root>
-</body>
-
+    <body>
+        <app-root></app-root>
+    </body>
 </html>

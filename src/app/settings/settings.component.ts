@@ -26,6 +26,7 @@ export class SettingsComponent {
     @ViewChild('resolveKeyEl', { static: false }) resolveKeyEl: ElementRef;
     @ViewChild('changeDIDKeyEl', { static: false }) changeDIDKeyEl: ElementRef;
     @ViewChild('showKeyEl', { static: false }) showKeyEl: ElementRef;
+    @ViewChild('keyDidEl', { static: false }) keyDidEl: ElementRef;
 
     currentDID: string = '';
     currentKeys: SigningKeys[] = [];
@@ -33,6 +34,7 @@ export class SettingsComponent {
     resolveKeyData: ResolveKeyData = { key: '', type: '' };
     profileImage: string = 'assets/avatar.png';
     name: string = 'Unknown';
+    didKeyData: SetKeyDIDData;
 
     constructor(
         private changeDetector: ChangeDetectorRef,
@@ -370,14 +372,14 @@ export class SettingsComponent {
 
     /* on add new signing key */
     async onAddNewKey() {
-        const steps = ['1', '2'];
-        const values = [];
+        const steps = ['1', '2', '3'];
         let currentStep;
 
         const Queue = Swal.mixin({
             confirmButtonText: 'Next',
             cancelButtonText: 'Back',
-            progressSteps: steps
+            progressSteps: steps,
+            confirmButtonColor: '#24c3b5'
         });
 
         for (currentStep = 0; currentStep < steps.length; ) {
@@ -393,7 +395,6 @@ export class SettingsComponent {
                     showConfirmButton: true,
                     showCancelButton: currentStep > 0,
                     confirmButtonText: 'Next',
-                    inputValue: values[currentStep] ? values[currentStep] : '',
                     currentProgressStep: currentStep,
                     preConfirm: () => {
                         return new Promise((resolve) => {
@@ -413,6 +414,11 @@ export class SettingsComponent {
                                 return resolve(false);
                             }
 
+                            this.resolveKeyData = {
+                                key: values.key,
+                                type: values?.mnemonic ? 'mnemonic' : 'private-key'
+                            };
+
                             return resolve(undefined);
                         });
                     }
@@ -423,145 +429,106 @@ export class SettingsComponent {
                     html: this.resolveKeyEl.nativeElement,
                     showConfirmButton: true,
                     showCancelButton: currentStep > 0,
+                    cancelButtonText: 'Back',
+                    currentProgressStep: currentStep,
+                    preConfirm: () => {
+                        return new Promise((resolve) => {
+                            let values = {
+                                chain_code: (
+                                    document.getElementById(
+                                        'resolve-did-chainCode'
+                                    ) as HTMLInputElement
+                                ).value,
+                                did: (
+                                    document.getElementById(
+                                        'resolve-did-didAddress'
+                                    ) as HTMLInputElement
+                                ).value
+                            };
+
+                            if (!values?.chain_code) {
+                                Swal.showValidationMessage('Chain code is required');
+                                return resolve(false);
+                            }
+                            if (!values?.did) {
+                                Swal.showValidationMessage('DID Address is required');
+                                return resolve(false);
+                            }
+
+                            this.didKeyData = {
+                                ...this.resolveKeyData,
+                                chain_code: values.chain_code,
+                                did: values.did
+                            };
+
+                            this.changeDetector.detectChanges();
+                            return resolve(undefined);
+                        });
+                    }
+                };
+            } else if (currentStep == 2) {
+                options = {
+                    title: 'Summary',
+                    html: this.keyDidEl.nativeElement,
+                    showConfirmButton: true,
+                    showCancelButton: currentStep > 0,
                     confirmButtonText: 'Done',
                     cancelButtonText: 'Back',
-                    currentProgressStep: currentStep
+                    currentProgressStep: currentStep,
+                    preConfirm: () => {
+                        return new Promise((resolve) => {
+                            this.messageService.sendMessage(
+                                {
+                                    task: TASKS.ADD_KEY,
+                                    type: this.didKeyData.type,
+                                    keyString: this.didKeyData.key,
+                                    chainCode: this.didKeyData.chain_code, // selected DID chain code
+                                    didAddress: this.didKeyData.did // selected DID address
+                                },
+                                (result, error) => {
+                                    if (!result || error) {
+                                        Swal.showValidationMessage(
+                                            error || 'Failed to add new singing key'
+                                        );
+                                        return resolve(false);
+                                    }
+
+                                    this.loadIdentity();
+                                    this.changeDetector.detectChanges();
+                                    return resolve(undefined);
+                                }
+                            );
+
+                            return resolve(undefined);
+                        });
+                    }
                 };
             }
+
             const result = await Queue.fire(options);
 
             if (result.value) {
-                values[currentStep] = result.value;
                 currentStep++;
+
+                /* if final step */
                 if (currentStep === steps.length) {
+                    if (result.isConfirmed) {
+                        this.loadIdentity();
+
+                        this.popupService.show({
+                            icon: 'success',
+                            title: 'Success',
+                            text: 'New singing key has been added successfully'
+                        });
+
+                        this.changeDetector.detectChanges();
+                    }
                     break;
                 }
             } else if (result.dismiss === Swal.DismissReason.cancel) {
                 currentStep--;
             }
         }
-        return;
-
-        this.popupService
-            .show({
-                title: 'Add New Key',
-                html: this.addNewKeyEl.nativeElement,
-                customClass: {
-                    htmlContainer: 'swal2-popup-form'
-                },
-                showConfirmButton: true,
-                showCancelButton: true,
-                confirmButtonText: 'Resolve',
-                showLoaderOnConfirm: true,
-                preConfirm: () => {
-                    return new Promise((resolve, reject) => {
-                        let values = {
-                            mnemonic: (
-                                document.getElementById('add-key-mnemonic') as HTMLInputElement
-                            ).checked,
-                            private_key: (
-                                document.getElementById('add-key-private') as HTMLInputElement
-                            ).checked,
-                            key: (document.getElementById('add-key-value') as HTMLInputElement)
-                                .value
-                        };
-
-                        if (!values?.key) {
-                            Swal.showValidationMessage('Key string is required');
-                            return resolve(false);
-                        }
-
-                        this.resolveKeyData = {
-                            key: values.key,
-                            type: values?.mnemonic ? 'mnemonic' : 'private-key'
-                        };
-
-                        this.changeDetector.detectChanges();
-
-                        /* select the did popup */
-                        this.popupService
-                            .show({
-                                title: 'Select DID',
-                                html: this.resolveKeyEl.nativeElement,
-                                showConfirmButton: true,
-                                showCancelButton: true,
-                                confirmButtonText: 'Done',
-                                cancelButtonText: 'Cancel',
-                                preConfirm: () => {
-                                    return new Promise((resolve) => {
-                                        let didPath = (
-                                            document.getElementById(
-                                                'resolve-did-didPath'
-                                            ) as HTMLInputElement
-                                        ).value;
-                                        let didAddress = (
-                                            document.getElementById(
-                                                'resolve-did-didAddress'
-                                            ) as HTMLInputElement
-                                        ).value;
-
-                                        if (!didPath) {
-                                            Swal.showValidationMessage(
-                                                'Resolved DID path is required'
-                                            );
-                                            return resolve(false);
-                                        }
-                                        if (!didAddress) {
-                                            Swal.showValidationMessage('Resolved DID is required');
-                                            return resolve(false);
-                                        }
-
-                                        this.messageService.sendMessage(
-                                            {
-                                                task: TASKS.ADD_KEY,
-                                                type: values?.mnemonic ? 'mnemonic' : 'private-key',
-                                                keyString: values.key,
-                                                didPath: didPath, // selected DID address path
-                                                didAddress: didAddress // selected DID address
-                                            },
-                                            (result, error) => {
-                                                if (!result || error) {
-                                                    Swal.showValidationMessage(
-                                                        error || 'Failed to add new singing key'
-                                                    );
-                                                    return resolve(false);
-                                                }
-
-                                                return resolve(undefined);
-                                            }
-                                        );
-                                    });
-                                }
-                            })
-                            .then((result) => {
-                                if (result.isConfirmed) {
-                                    this.loadIdentity();
-
-                                    this.popupService.show({
-                                        icon: 'success',
-                                        title: 'Success',
-                                        text: 'New singing key has been added successfully'
-                                    });
-                                }
-
-                                return resolve(false);
-                            });
-                    });
-                }
-            })
-            .then((result) => {
-                this.changeDetector.detectChanges();
-
-                if (result.isConfirmed) {
-                    this.loadIdentity();
-
-                    this.popupService.show({
-                        icon: 'success',
-                        title: 'Success',
-                        text: 'New singing key has been added successfully'
-                    });
-                }
-            });
     }
 
     logout() {

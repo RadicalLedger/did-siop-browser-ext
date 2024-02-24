@@ -8,12 +8,12 @@ import { TASKS } from 'src/utils/tasks';
     styleUrls: ['./resolve-did.component.scss']
 })
 export class ResolveDidComponent {
-    didPath: string = '';
+    chainCode: string = '';
     didAddress: string = '';
 
     @Input() data: ResolveKeyData = { type: '', key: '' };
 
-    @ViewChild('didPathType') didPathTypeRef: ElementRef;
+    @ViewChild('chainCodeType') chainCodeTypeRef: ElementRef;
 
     constructor(
         private changeDetector: ChangeDetectorRef,
@@ -22,29 +22,17 @@ export class ResolveDidComponent {
 
     ngOnInit(): void {
         /* reset form values */
-        (document.getElementById('resolve-did-didPathType') as HTMLInputElement).value = 'custom';
-        (document.getElementById('resolve-did-didPath') as HTMLInputElement).value = '';
+        (document.getElementById('resolve-did-chainCodeType') as HTMLInputElement).value = 'custom';
+        (document.getElementById('resolve-did-chainCode') as HTMLInputElement).value = '';
         (document.getElementById('resolve-did-didAddress') as HTMLInputElement).value = '';
     }
 
     onSelectChange($event) {
-        this.didPath = $event.target.value;
+        this.chainCode = $event.target.value;
         this.didAddress = '';
 
-        if (this.didPath) {
-            this.messageService.sendMessage(
-                {
-                    task: TASKS.RESOLVE_KEY,
-                    didPath: this.didPath,
-                    keyString: this.data.key,
-                    type: this.data.type
-                },
-                (result, error) => {
-                    console.log(result, error);
-                    this.didAddress = result || '';
-                    this.changeDetector.detectChanges();
-                }
-            );
+        if (this.chainCode) {
+            this.resolveDID(this.chainCode);
         } else {
             this.changeDetector.detectChanges();
         }
@@ -52,25 +40,31 @@ export class ResolveDidComponent {
 
     onPathChange($event) {
         let value = $event.target.value;
-        this.didPath = value === 'custom' ? '' : value;
-        this.didPathTypeRef.nativeElement.value = 'custom';
+        this.chainCode = value === 'custom' ? '' : value;
+        this.chainCodeTypeRef.nativeElement.value = 'custom';
 
         if (value) {
-            this.messageService.sendMessage(
-                {
-                    task: TASKS.RESOLVE_KEY,
-                    didPath: value,
-                    keyString: this.data.key,
-                    type: this.data.type
-                },
-                (result, error) => {
-                    this.didAddress = result || '';
-                    this.changeDetector.detectChanges();
-                }
-            );
+            this.resolveDID(value);
         } else {
             this.didAddress = '';
             this.changeDetector.detectChanges();
         }
+    }
+
+    /* resolve DID and set values */
+    private resolveDID(chainCode) {
+        this.messageService.sendMessage(
+            {
+                task: TASKS.RESOLVE_KEY,
+                chainCode: chainCode,
+                keyString: this.data.key,
+                type: this.data.type
+            },
+            (result, error) => {
+                console.log(result, error);
+                this.didAddress = result || '';
+                this.changeDetector.detectChanges();
+            }
+        );
     }
 }

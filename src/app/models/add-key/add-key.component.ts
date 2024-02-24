@@ -8,10 +8,10 @@ import { TASKS } from 'src/utils/tasks';
     styleUrls: ['./add-key.component.scss']
 })
 export class AddKeyComponent {
-    @ViewChild('didPathType') didPathTypeRef: ElementRef;
+    @ViewChild('chainCodeType') chainCodeTypeRef: ElementRef;
 
     index: 0 | 1 = 0;
-    didPath: string = '';
+    chainCode: string = '';
     didAddress: string = '';
 
     constructor(
@@ -22,13 +22,13 @@ export class AddKeyComponent {
     ngOnInit(): void {
         /* reset form values */
         (document.getElementById('add-key-value') as HTMLInputElement).value = '';
-        (document.getElementById('resolve-did-didPathType') as HTMLInputElement).value = 'custom';
-        (document.getElementById('resolve-did-didPath') as HTMLInputElement).value = '';
+        (document.getElementById('resolve-did-chainCodeType') as HTMLInputElement).value = 'custom';
+        (document.getElementById('resolve-did-chainCode') as HTMLInputElement).value = '';
         (document.getElementById('resolve-did-didAddress') as HTMLInputElement).value = '';
     }
 
     onSelectChange($event) {
-        this.didPath = $event.target.value;
+        this.chainCode = $event.target.value;
         this.didAddress = '';
 
         let values = {
@@ -37,11 +37,11 @@ export class AddKeyComponent {
             key: (document.getElementById('add-key-value') as HTMLInputElement).value
         };
 
-        if (this.didPath) {
+        if (this.chainCode) {
             this.messageService.sendMessage(
                 {
                     task: TASKS.RESOLVE_KEY,
-                    didPath: this.didPath,
+                    chainCode: this.chainCode,
                     keyString: values.key,
                     type: values?.mnemonic ? 'mnemonic' : 'private-key'
                 },
@@ -59,8 +59,8 @@ export class AddKeyComponent {
     onPathChange($event) {
         let value = $event.target.value;
 
-        this.didPath = value === 'custom' ? '' : value;
-        this.didPathTypeRef.nativeElement.value = 'custom';
+        this.chainCode = value === 'custom' ? '' : value;
+        this.chainCodeTypeRef.nativeElement.value = 'custom';
 
         let values = {
             mnemonic: (document.getElementById('add-key-mnemonic') as HTMLInputElement).checked,
@@ -72,7 +72,7 @@ export class AddKeyComponent {
             this.messageService.sendMessage(
                 {
                     task: TASKS.RESOLVE_KEY,
-                    didPath: value,
+                    chainCode: value,
                     keyString: values.key,
                     type: values?.mnemonic ? 'mnemonic' : 'private-key'
                 },

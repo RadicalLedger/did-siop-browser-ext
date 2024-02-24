@@ -21,6 +21,7 @@ import { ConfirmRequestComponent } from './models/confirm-request/confirm-reques
 import { PresentationComponent } from './presentation/presentation.component';
 import { ShowKeyComponent } from './models/show-key/show-key.component';
 import { ResolveDidComponent } from './models/resolve-did/resolve-did.component';
+import { SetKeyDidComponent } from './models/set-key-did/set-key-did.component';
 
 @NgModule({
     declarations: [
@@ -39,7 +40,8 @@ import { ResolveDidComponent } from './models/resolve-did/resolve-did.component'
         ConfirmRequestComponent,
         PresentationComponent,
         ShowKeyComponent,
-        ResolveDidComponent
+        ResolveDidComponent,
+        SetKeyDidComponent
     ],
     imports: [BrowserModule, AppRoutingModule, ReactiveFormsModule, MatIconModule],
     providers: [],

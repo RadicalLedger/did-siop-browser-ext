@@ -245,7 +245,7 @@ export default {
                     keyString: request.keyString,
                     type: request.type,
                     didAddress: request.didAddress,
-                    didPath: request.didPath
+                    chainCode: request.chainCode
                 },
                 data
             });
@@ -305,7 +305,7 @@ export default {
                 request: {
                     keyString: request.keyString,
                     type: request.type,
-                    didPath: request.didPath
+                    chainCode: request.chainCode
                 },
                 data
             });

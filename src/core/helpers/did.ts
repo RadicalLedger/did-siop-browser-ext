@@ -8,7 +8,7 @@ interface SigningKeyData extends Request {
     request: {
         type?: string;
         didAddress?: string;
-        didPath?: string;
+        chainCode?: string;
         currentDID: string;
         keyString: string;
     };
@@ -18,7 +18,7 @@ interface DidPathData extends Request {
     request: {
         type?: string;
         keyString: string;
-        didPath: string;
+        chainCode: string;
     };
 }
 
@@ -51,9 +51,9 @@ const setSingingKey = async ({ request, data }: SigningKeyData) => {
     if (request.type === 'mnemonic') {
         const wallet = new Wallet(Types.MNEMONIC, request.keyString);
 
-        if (request?.didPath) {
+        if (request?.chainCode) {
             const { privateKey: privateKey, did: didAddress }: any = await wallet.getChildKeys(
-                request.didPath
+                request.chainCode
             );
 
             private_key = privateKey;
@@ -109,7 +109,7 @@ const resolveSigningKey = async ({ request, data }: DidPathData) => {
         wallet = new Wallet(Types.SEED, request.keyString);
     }
 
-    const { did }: any = await wallet.getChildKeys(request.didPath);
+    const { did }: any = await wallet.getChildKeys(request.chainCode);
 
     return did;
 };

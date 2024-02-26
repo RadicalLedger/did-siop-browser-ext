@@ -29,17 +29,37 @@ interface ChangeDIDData extends Request {
 }
 
 const setDID = ({ request, data }: ChangeDIDData) => {
+    let reset = true;
+
     /* store did */
     let encryptedDID = utils.encrypt(request.did, data.loggedInState);
     storage.set({ [STORAGE_KEYS.userDID]: encryptedDID });
 
+    if (data.signingInfoSet?.length > 0) {
+        for (const signinInfo of data.signingInfoSet) {
+            let chainCode = signinInfo?.chainCode || 'm/256/256/2';
+
+            /* find the relevant key for the given DID */
+            const wallet = new Wallet(Types.SEED, signinInfo.key);
+            wallet.getChildKeys(chainCode).then((result) => {
+                if (result.did == request.did) {
+                    data.provider.addSigningParams(signinInfo.key);
+                    reset = false;
+                }
+            });
+        }
+    }
+
     /* reset singing info set */
-    data.signingInfoSet = [];
-    let encryptedSigningInfo = utils.encrypt(
-        JSON.stringify(data.signingInfoSet),
-        data.loggedInState
-    );
-    storage.set({ [STORAGE_KEYS.signingInfoSet]: encryptedSigningInfo });
+    if (reset) {
+        data.signingInfoSet = [];
+        let encryptedSigningInfo = utils.encrypt(
+            JSON.stringify(data.signingInfoSet),
+            data.loggedInState
+        );
+
+        storage.set({ [STORAGE_KEYS.signingInfoSet]: encryptedSigningInfo });
+    }
 
     return true;
 };
@@ -47,11 +67,12 @@ const setDID = ({ request, data }: ChangeDIDData) => {
 const setSingingKey = async ({ request, data }: SigningKeyData) => {
     let private_key = request.keyString;
     let did = request?.didAddress || request.currentDID;
+    let chainCode = request?.chainCode;
 
     if (request.type === 'mnemonic') {
         const wallet = new Wallet(Types.MNEMONIC, request.keyString);
 
-        if (request?.chainCode) {
+        if (chainCode) {
             const { privateKey: privateKey, did: didAddress }: any = await wallet.getChildKeys(
                 request.chainCode
             );
@@ -68,10 +89,12 @@ const setSingingKey = async ({ request, data }: SigningKeyData) => {
 
             private_key = holderPrivateKey;
             did = holderDID;
+            chainCode = 'm/256/256/2';
 
             if (issuerDID === request.currentDID) {
                 private_key = issuerPrivateKey;
                 did = issuerDID;
+                chainCode = 'm/256/256/1';
             }
         }
     }
@@ -83,7 +106,8 @@ const setSingingKey = async ({ request, data }: SigningKeyData) => {
     let kid = data.provider.addSigningParams(private_key);
     let signinInfo = {
         key: private_key,
-        kid: kid
+        kid,
+        chainCode
     };
 
     if (request.type === 'mnemonic') signinInfo['mnemonic'] = request.keyString;

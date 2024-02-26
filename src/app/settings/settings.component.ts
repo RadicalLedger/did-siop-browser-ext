@@ -393,7 +393,8 @@ export class SettingsComponent {
                         htmlContainer: 'swal2-popup-form'
                     },
                     showConfirmButton: true,
-                    showCancelButton: currentStep > 0,
+                    showCancelButton: true,
+                    cancelButtonText: 'Cancel',
                     confirmButtonText: 'Next',
                     currentProgressStep: currentStep,
                     preConfirm: () => {
@@ -506,12 +507,13 @@ export class SettingsComponent {
             }
 
             const result = await Queue.fire(options);
-
-            if (result.value) {
-                currentStep++;
-
+            console.log(result, currentStep);
+            if (result.dismiss === Swal.DismissReason.cancel && currentStep == 0) {
+                // close the popup
+                break;
+            } else {
                 /* if final step */
-                if (currentStep === steps.length) {
+                if (currentStep === steps.length - 1) {
                     if (result.isConfirmed) {
                         this.loadIdentity();
 
@@ -524,9 +526,11 @@ export class SettingsComponent {
                         this.changeDetector.detectChanges();
                     }
                     break;
+                } else if (result.dismiss === Swal.DismissReason.cancel) {
+                    currentStep--;
+                } else {
+                    currentStep++;
                 }
-            } else if (result.dismiss === Swal.DismissReason.cancel) {
-                currentStep--;
             }
         }
     }

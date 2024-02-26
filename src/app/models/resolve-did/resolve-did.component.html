@@ -1,35 +1,17 @@
 <div id="resolve-did">
-    <label>
-        Select Chain Code: &nbsp;
+    <label class="select-wrap">
+        <span>Select Chain Code:</span>
 
-        <select
-            id="resolve-did-chainCodeType"
-            (change)="onSelectChange($event)"
-            name="path"
-            #chainCodeType>
+        <select id="resolve-did-chainCodeType" (change)="onSelectChange($event)" name="path" #chainCodeType>
             <option value="m/256/256/2">Holder</option>
             <option value="m/256/256/1">Issuer</option>
             <option value="custom" selected>Custom</option>
         </select>
     </label>
 
-    <input
-        id="resolve-did-chainCode"
-        (input)="onPathChange($event)"
-        class="input"
-        type="text"
-        name="chainCode"
-        placeholder="DID Chain Code (m/256)"
-        [value]="chainCode" />
+    <input id="resolve-did-chainCode" (input)="onPathChange($event)" class="input" type="text" name="chainCode"
+        placeholder="DID Chain Code (m/256)" [value]="chainCode" />
 
-    <textarea
-        readonly
-        id="resolve-did-didAddress"
-        class="input textarea no-resize"
-        type="text"
-        name="didAddress"
-        placeholder="DID Address"
-        [value]="didAddress"
-        cols="30"
-        rows="5"></textarea>
+    <textarea readonly id="resolve-did-didAddress" class="input textarea no-resize" type="text" name="didAddress"
+        placeholder="DID Address" [value]="didAddress" cols="30" rows="5"></textarea>
 </div>

@@ -7,7 +7,8 @@ import { Request } from '../../types/core';
 import configs from 'src/configs';
 import jwt from 'jsonwebtoken';
 import VCSD from 'sd-vc-lib';
-import Wallet, { Types, generateMnemonic } from 'did-hd-wallet';
+import Wallet from 'did-hd-wallet';
+import KeyMethod from 'zedeid-did-method-key';
 import { CONTEXT_TASKS } from 'src/utils/context';
 import { storage, tabs } from '../runtime';
 import queryString from 'query-string';
@@ -139,18 +140,22 @@ export default {
     },
     [TASKS.CREATE_DID]: async ({ request, data }: Request, response) => {
         try {
-            const resolver_url = configs.env.offchain;
-            const mnemonic = generateMnemonic(128);
+            const resolver_url = configs.env.offchain + 'key/did';
 
-            const wallet = new Wallet(Types.MNEMONIC, mnemonic);
+            const wallet = new Wallet();
+            const mnemonic = wallet.generateMnemonic(128);
+            wallet.fromSeed(wallet.mnemonicToSeed(mnemonic));
             const ed = new VCSD.utils.ed25519();
 
             const {
                 publicKey: holderPublicKey,
                 privateKey: holderPrivateKey,
                 did: holderDID,
-                verificationKey: holderVerificationKey
-            }: any = await wallet.getChildKeys('m/256/256/2');
+                didDocument: holderDIDDocument
+            }: any = await wallet.derivePath('m/256/256/2');
+            const holderVerificationKey = await new KeyMethod().createVerificationMethod(
+                holderPrivateKey
+            );
 
             let holderChallengeResponse: any = await fetch(`${resolver_url}`, {
                 method: 'POST',
@@ -182,7 +187,8 @@ export default {
                             )
                             .toHex(),
                         jwt: holderChallengeResponse.challengeToken
-                    }
+                    },
+                    didDocument: holderDIDDocument
                 })
             });
             holderResponse = await holderResponse.json();

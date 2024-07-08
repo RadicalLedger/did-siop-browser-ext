@@ -2,7 +2,7 @@ import { Request } from 'src/types/core';
 import { STORAGE_KEYS } from 'src/utils/storage';
 import utils from 'src/utils';
 import { storage } from '../runtime';
-import Wallet, { Types } from 'did-hd-wallet';
+import Wallet from 'did-hd-wallet';
 
 interface SigningKeyData extends Request {
     request: {
@@ -40,8 +40,9 @@ const setDID = ({ request, data }: ChangeDIDData) => {
             let chainCode = signinInfo?.chainCode || 'm/256/256/2';
 
             /* find the relevant key for the given DID */
-            const wallet = new Wallet(Types.SEED, signinInfo.key);
-            wallet.getChildKeys(chainCode).then((result) => {
+            const wallet = new Wallet();
+            wallet.fromSeed(signinInfo.key);
+            wallet.derivePath(chainCode).then((result) => {
                 if (result.did == request.did) {
                     data.provider.addSigningParams(signinInfo.key);
                     reset = false;
@@ -70,20 +71,21 @@ const setSingingKey = async ({ request, data }: SigningKeyData) => {
     let chainCode = request?.chainCode;
 
     if (request.type === 'mnemonic') {
-        const wallet = new Wallet(Types.MNEMONIC, request.keyString);
+        const wallet = new Wallet();
+        wallet.fromSeed(wallet.mnemonicToSeed(request.keyString));
 
         if (chainCode) {
-            const { privateKey: privateKey, did: didAddress }: any = await wallet.getChildKeys(
+            const { privateKey: privateKey, did: didAddress }: any = await wallet.derivePath(
                 request.chainCode
             );
 
             private_key = privateKey;
             did = didAddress;
         } else {
-            const { privateKey: issuerPrivateKey, did: issuerDID }: any = await wallet.getChildKeys(
+            const { privateKey: issuerPrivateKey, did: issuerDID }: any = await wallet.derivePath(
                 'm/256/256/1'
             );
-            const { privateKey: holderPrivateKey, did: holderDID }: any = await wallet.getChildKeys(
+            const { privateKey: holderPrivateKey, did: holderDID }: any = await wallet.derivePath(
                 'm/256/256/2'
             );
 
@@ -125,15 +127,15 @@ const setSingingKey = async ({ request, data }: SigningKeyData) => {
 };
 
 const resolveSigningKey = async ({ request, data }: DidPathData) => {
-    let wallet;
+    let wallet = new Wallet();
     console.log(request);
     if (request.type === 'mnemonic') {
-        wallet = new Wallet(Types.MNEMONIC, request.keyString);
+        wallet.fromSeed(wallet.mnemonicToSeed(request.keyString));
     } else {
-        wallet = new Wallet(Types.SEED, request.keyString);
+        wallet.fromSeed(request.keyString);
     }
 
-    const { did }: any = await wallet.getChildKeys(request.chainCode);
+    const { did }: any = await wallet.derivePath(request.chainCode);
 
     return did;
 };

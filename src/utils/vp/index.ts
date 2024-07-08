@@ -19,6 +19,7 @@ const createVP = ({ did, vcs, private_key }: { did: string; vcs: any[]; private_
         const vp = await VCSD.verifiable.presentation.create({
             holderPrivateKey: private_key,
             verifiableCredential: vcs,
+            holderDID: did,
             documentLoader
         });
 

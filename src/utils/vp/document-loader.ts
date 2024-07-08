@@ -5,7 +5,7 @@ const documentLoader = async (iri: string): Promise<any> => {
     let url = iri.split('#')[0];
 
     if (url.startsWith('did:')) {
-        url = `${configs.env.offchain}/${url}`;
+        url = `${configs.env.offchain}/key/did/${url}`;
 
         doc = await fetchDoc(url);
         doc = doc?.didDocument;

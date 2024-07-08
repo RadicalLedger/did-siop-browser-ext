@@ -3,7 +3,7 @@ import configs from 'src/configs';
 export class CustomDidResolver {
     async resolveDidDocument(did: string) {
         var result;
-        let url = `${configs.env.offchain}/${did}`;
+        let url = `${configs.env.offchain}/key/did/${did}`;
 
         try {
             result = await fetch(url, {

@@ -1,7 +1,12 @@
 import { TASKS } from 'src/utils/tasks';
 import utils from 'src/utils';
 import { checkSigning, getStorage, getProvider, sendContext } from 'src/core/helpers';
-import { resolveSigningKey, setDID, setSingingKey } from '../helpers/did';
+import {
+    deriveIssuerHolderDIDFromMnemonic,
+    resolveSigningKey,
+    setDID,
+    setSingingKey
+} from '../helpers/did';
 import { STORAGE_KEYS } from 'src/utils/storage';
 import { Request } from '../../types/core';
 import configs from 'src/configs';
@@ -14,6 +19,7 @@ import { storage, tabs } from '../runtime';
 import queryString from 'query-string';
 import { removeRequest } from '../helpers/requests';
 import createVP from 'src/utils/vp';
+import MoonMethod from 'zedeid-did-method-moon';
 
 /* tasks */
 export default {
@@ -624,5 +630,61 @@ export default {
             console.log(error);
             response({ error: error?.message });
         }
+    },
+    [TASKS.RESOLVE_DID]: async ({ request, data }: Request, response) => {
+        const mnemonic = request.mnemonic;
+        let issuerRes, holderRes, didMethod;
+
+        let { holderDID, holderPrivateKey } = await deriveIssuerHolderDIDFromMnemonic(
+            mnemonic,
+            new KeyMethod()
+        );
+        try {
+            holderRes = await fetch(`${configs.env.offchain}key/did/${holderDID}`);
+            if (!holderRes?.ok) {
+                throw new Error('DID does not exist');
+            }
+        } catch (error) {
+            console.error(error);
+        }
+
+        try {
+            if (!issuerRes?.data && !holderRes?.data) {
+                let { holderDID: holderMoonDID, holderPrivateKey: holderMoonPrivateKey } =
+                    await deriveIssuerHolderDIDFromMnemonic(mnemonic, new MoonMethod('mainnet'));
+                holderRes = await fetch(`${configs.env.offchain}moon/did/${holderMoonDID}`);
+                if (!holderRes?.ok) {
+                    throw new Error('DID does not exist');
+                }
+                holderDID = holderMoonDID;
+                holderPrivateKey = holderMoonPrivateKey;
+                didMethod = 'mainnet';
+            }
+        } catch (error) {
+            console.error(error);
+            return response({
+                result: {
+                    error: 'DID does not exist'
+                }
+            });
+        }
+
+        // data.provider = await getProvider(holderDID);
+
+        console.log('error false');
+        await setSingingKey({
+            request: {
+                currentDID: holderDID,
+                keyString: mnemonic,
+                type: 'mnemonic'
+            },
+            data
+        });
+
+        return response({
+            result: {
+                holderDID
+            }
+        });
     }
 };

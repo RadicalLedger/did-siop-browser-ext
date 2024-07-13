@@ -3,6 +3,8 @@ import { STORAGE_KEYS } from 'src/utils/storage';
 import utils from 'src/utils';
 import { storage } from '../runtime';
 import Wallet from 'did-hd-wallet';
+import KeyMethod from 'zedeid-did-method-key';
+import MoonMethod from 'zedeid-did-method-moon';
 
 interface SigningKeyData extends Request {
     request: {
@@ -69,9 +71,10 @@ const setSingingKey = async ({ request, data }: SigningKeyData) => {
     let private_key = request.keyString;
     let did = request?.didAddress || request.currentDID;
     let chainCode = request?.chainCode;
+    const didMethod = did.split(':')[1];
 
     if (request.type === 'mnemonic') {
-        const wallet = new Wallet();
+        const wallet = didMethod === 'key' ? new Wallet() : new Wallet(new MoonMethod('mainnet'));
         wallet.fromSeed(wallet.mnemonicToSeed(request.keyString));
 
         if (chainCode) {
@@ -105,7 +108,7 @@ const setSingingKey = async ({ request, data }: SigningKeyData) => {
     setDID({ request: { did }, data });
 
     /* set private key */
-    let kid = data.provider.addSigningParams(private_key);
+    let kid = data?.provider?.addSigningParams(private_key);
     let signinInfo = {
         key: private_key,
         kid,
@@ -140,4 +143,35 @@ const resolveSigningKey = async ({ request, data }: DidPathData) => {
     return did;
 };
 
-export { setDID, setSingingKey, resolveSigningKey };
+const deriveIssuerHolderDIDFromMnemonic = async (mnemonic: string, method: any) => {
+    const wallet = new Wallet(method);
+    wallet.fromSeed(wallet.mnemonicToSeed(mnemonic));
+    const {
+        publicKey: issuerPublicKey,
+        privateKey: issuerPrivateKey,
+        did: issuerDID,
+        didDocument: issuerDIDDocument
+    } = await wallet.derivePath('m/256/256/1');
+    const issuerVerificationKey = await new KeyMethod().createVerificationMethod(issuerPrivateKey);
+    const {
+        publicKey: holderPublicKey,
+        privateKey: holderPrivateKey,
+        did: holderDID,
+        didDocument: holderDIDDocument
+    } = await wallet.derivePath('m/256/256/2');
+    const holderVerificationKey = await new KeyMethod().createVerificationMethod(holderPrivateKey);
+    return {
+        issuerDID,
+        issuerPublicKey,
+        issuerPrivateKey,
+        issuerDIDDocument,
+        holderDID,
+        holderPublicKey,
+        holderPrivateKey,
+        holderDIDDocument,
+        issuerVerificationKey,
+        holderVerificationKey
+    };
+};
+
+export { setDID, setSingingKey, resolveSigningKey, deriveIssuerHolderDIDFromMnemonic };

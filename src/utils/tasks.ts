@@ -24,5 +24,6 @@ export const enum TASKS {
     GET_VPS,
     GET_LOGIN_STATE,
     UPDATE_IDENTITY,
-    RESOLVE_KEY
+    RESOLVE_KEY,
+    RESOLVE_DID
 }

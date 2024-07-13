@@ -50,6 +50,66 @@ export class SettingsComponent {
         this.onProfile.emit(true);
     }
 
+    onImport() {
+        this.popupService
+            .show({
+                title: 'Import Identity',
+                html: this.addNewKeyEl.nativeElement,
+                customClass: {
+                    htmlContainer: 'swal2-popup-form'
+                },
+                showConfirmButton: true,
+                showCancelButton: true,
+                confirmButtonText: 'Import',
+                preConfirm: () => {
+                    return new Promise((resolve, reject) => {
+                        let values = {
+                            mnemonic: (
+                                document.getElementById('add-key-mnemonic') as HTMLInputElement
+                            ).checked,
+                            private_key: (
+                                document.getElementById('add-key-private') as HTMLInputElement
+                            ).checked,
+                            key: (document.getElementById('add-key-value') as HTMLInputElement)
+                                .value
+                        };
+                        if (!values.mnemonic) {
+                            Swal.showValidationMessage('Mnemonic is required');
+                            return resolve(false);
+                        }
+                        if (!values.key) {
+                            Swal.showValidationMessage('Mnemonic is required');
+                            return resolve(false);
+                        }
+
+                        this.messageService.sendMessage(
+                            {
+                                task: TASKS.RESOLVE_DID,
+                                mnemonic: values.key
+                            },
+                            (result, error) => {
+                                if (result?.error) {
+                                    Swal.showValidationMessage('Failed to resolve DID');
+                                    return resolve(false);
+                                }
+                                this.loadIdentity();
+                                return resolve(undefined);
+                            }
+                        );
+                    });
+                }
+            })
+            .then((result) => {
+                if (result.isConfirmed) {
+                    this.popupService.show({
+                        icon: 'success',
+                        title: 'Success',
+                        text: 'New singing key has been added successfully'
+                    });
+                }
+            });
+    }
+
     /* test keys setup */
     onTestKeys() {
         this.popupService
@@ -125,7 +185,6 @@ export class SettingsComponent {
                                 task: TASKS.CREATE_DID
                             },
                             (result, error) => {
-                                console.log(result, error);
                                 if (error) {
                                     Swal.showValidationMessage(error || 'Failed to create DID key');
                                     return resolve(false);

@@ -54,6 +54,7 @@
         "tslib": "^2.3.0",
         "util": "^0.12.5",
         "zedeid-did-method-key": "https://github.com/RadicalLedger/zedeid-did-method-key",
+        "zedeid-did-method-moon": "https://github.com/RadicalLedger/zedeid-did-method-moon#feat/verification-method",
         "zone.js": "~0.13.0"
     },
     "devDependencies": {

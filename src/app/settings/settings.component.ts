@@ -73,23 +73,20 @@ export class SettingsComponent {
                             key: (document.getElementById('add-key-value') as HTMLInputElement)
                                 .value
                         };
-                        if (!values.mnemonic) {
-                            Swal.showValidationMessage('Mnemonic is required');
-                            return resolve(false);
-                        }
-                        if (!values.key) {
-                            Swal.showValidationMessage('Mnemonic is required');
+                        if (!values.mnemonic && !values.key) {
+                            Swal.showValidationMessage('Mnemonic or private key is required');
                             return resolve(false);
                         }
 
                         this.messageService.sendMessage(
                             {
                                 task: TASKS.RESOLVE_DID,
-                                mnemonic: values.key
+                                mnemonic: values.mnemonic ? values.key : undefined,
+                                privateKey: values.private_key ? values.key : undefined
                             },
                             (result, error) => {
                                 if (result?.error) {
-                                    Swal.showValidationMessage('Failed to resolve DID');
+                                    Swal.showValidationMessage(result.error);
                                     return resolve(false);
                                 }
                                 this.loadIdentity();

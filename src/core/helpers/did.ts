@@ -74,7 +74,8 @@ const setSingingKey = async ({ request, data }: SigningKeyData) => {
     const didMethod = did.split(':')[1];
 
     if (request.type === 'mnemonic') {
-        const wallet = didMethod === 'key' ? new Wallet() : new Wallet(new MoonMethod('mainnet'));
+        const wallet =
+            didMethod === 'key' ? new Wallet() : new Wallet(new MoonMethod(did.split(':')[2]));
         wallet.fromSeed(wallet.mnemonicToSeed(request.keyString));
 
         if (chainCode) {

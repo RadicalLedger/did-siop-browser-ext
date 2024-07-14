@@ -20,6 +20,10 @@ import queryString from 'query-string';
 import { removeRequest } from '../helpers/requests';
 import createVP from 'src/utils/vp';
 import MoonMethod from 'zedeid-did-method-moon';
+import { CustomDidResolver } from 'src/utils/custom-resolver';
+import { validateMnemonic } from 'bip39';
+import { CHAIN_NAME } from 'src/utils/on-chain-enum';
+import { ethers } from 'ethers';
 
 /* tasks */
 export default {
@@ -632,13 +636,30 @@ export default {
         }
     },
     [TASKS.RESOLVE_DID]: async ({ request, data }: Request, response) => {
-        const mnemonic = request.mnemonic;
-        let issuerRes, holderRes, didMethod;
+        const mnemonic = request?.mnemonic;
+        const privateKey = request?.privateKey;
 
-        let { holderDID, holderPrivateKey } = await deriveIssuerHolderDIDFromMnemonic(
-            mnemonic,
-            new KeyMethod()
-        );
+        if (mnemonic) {
+            const validation = validateMnemonic(mnemonic);
+            if (!validation) {
+                return response({
+                    result: {
+                        error: 'Invalid mnemonic'
+                    }
+                });
+            }
+        }
+
+        let holderRes, didMethod, holderDID, holderPrivateKey;
+
+        if (mnemonic) {
+            let { holderDID: holderKeyDID, holderPrivateKey: holderKeyPrivateKey } =
+                await deriveIssuerHolderDIDFromMnemonic(mnemonic, new KeyMethod());
+            holderDID = holderKeyDID;
+            holderPrivateKey = holderKeyPrivateKey;
+        } else {
+        }
+
         try {
             holderRes = await fetch(`${configs.env.offchain}key/did/${holderDID}`);
             if (!holderRes?.ok) {
@@ -649,16 +670,35 @@ export default {
         }
 
         try {
-            if (!issuerRes?.data && !holderRes?.data) {
-                let { holderDID: holderMoonDID, holderPrivateKey: holderMoonPrivateKey } =
-                    await deriveIssuerHolderDIDFromMnemonic(mnemonic, new MoonMethod('mainnet'));
-                holderRes = await fetch(`${configs.env.offchain}moon/did/${holderMoonDID}`);
-                if (!holderRes?.ok) {
+            const alphaMoonResolver = new CustomDidResolver('moon', CHAIN_NAME.ALPHA);
+            const mainnetMoonResolver = new CustomDidResolver('moon', CHAIN_NAME.MAINNET);
+            if (!holderRes?.data) {
+                if (mnemonic) {
+                    let { holderDID: holderMoonDID, holderPrivateKey: holderMoonPrivateKey } =
+                        await deriveIssuerHolderDIDFromMnemonic(
+                            mnemonic,
+                            new MoonMethod(CHAIN_NAME.MAINNET)
+                        );
+                    holderDID = holderMoonDID;
+                    holderPrivateKey = holderMoonPrivateKey;
+                } else {
+                    const address = new ethers.Wallet(privateKey).address.toLowerCase();
+                    holderDID = `did:moon:${CHAIN_NAME.MAINNET}:${address}`;
+                    holderPrivateKey = privateKey;
+                }
+                holderRes = await mainnetMoonResolver.resolve(holderDID);
+                didMethod = CHAIN_NAME.MAINNET;
+                holderDID = holderDID;
+                if (!holderRes) {
+                    holderDID = holderDID.replace(CHAIN_NAME.MAINNET, CHAIN_NAME.ALPHA);
+                    holderRes = await alphaMoonResolver.resolve(holderDID);
+                    didMethod = CHAIN_NAME.ALPHA;
+                }
+                holderPrivateKey = holderPrivateKey;
+
+                if (!holderRes) {
                     throw new Error('DID does not exist');
                 }
-                holderDID = holderMoonDID;
-                holderPrivateKey = holderMoonPrivateKey;
-                didMethod = 'mainnet';
             }
         } catch (error) {
             console.error(error);
@@ -671,14 +711,25 @@ export default {
 
         data.provider = await getProvider(holderDID);
 
-        await setSingingKey({
-            request: {
-                currentDID: holderDID,
-                keyString: mnemonic,
-                type: 'mnemonic'
-            },
-            data
-        });
+        if (mnemonic) {
+            await setSingingKey({
+                request: {
+                    currentDID: holderDID,
+                    keyString: mnemonic,
+                    type: 'mnemonic'
+                },
+                data
+            });
+        } else {
+            await setSingingKey({
+                request: {
+                    currentDID: holderDID,
+                    keyString: privateKey,
+                    type: 'privateKey'
+                },
+                data
+            });
+        }
 
         return response({
             result: {

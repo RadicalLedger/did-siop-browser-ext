@@ -6,8 +6,9 @@ import config from 'src/configs';
 const createVP = ({ did, vcs, private_key }: { did: string; vcs: any[]; private_key: string }) => {
     return new Promise(async (resolve) => {
         const challenge = 'fcc8b78e-ecca-426a-a69f-8e7c927b845f';
+        const didMethod = did.split(':')[1];
 
-        let zedeid_doc: any = await fetch(`${config.env.offchain}/key/did/${did}`);
+        let zedeid_doc: any = await fetch(`${config.env.offchain}/${didMethod}/did/${did}`);
         zedeid_doc = await zedeid_doc.json();
 
         if (!zedeid_doc?.didDocument) {

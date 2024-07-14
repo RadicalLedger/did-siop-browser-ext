@@ -1,12 +1,16 @@
 import configs from 'src/configs';
 
 export class CustomDidResolver {
+    private url: string;
+
+    constructor(didMethod: string) {
+        this.url = `${configs.env.offchain}${didMethod}/did/`;
+    }
     async resolveDidDocument(did: string) {
         var result;
-        let url = `${configs.env.offchain}/key/did/${did}`;
 
         try {
-            result = await fetch(url, {
+            result = await fetch(this.url + did, {
                 headers: {
                     Accept: 'application/json',
                     'Accept-Encoding': 'identity'
@@ -15,7 +19,7 @@ export class CustomDidResolver {
 
             result = await result.json();
         } catch (error) {
-            result = await fetch(url);
+            result = await fetch(this.url + did);
             result = await result.json();
         }
 

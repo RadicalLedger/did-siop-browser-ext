@@ -14,10 +14,11 @@ const getStorage = async (key: string) => {
 };
 
 const getProvider = async (did: string) => {
+    const didMethod = did.split(':')[1];
     return new Promise(async (resolve, reject) => {
         try {
             const resolver = new Resolvers.CombinedDidResolver('key');
-            const customResolver = new CustomDidResolver();
+            const customResolver = new CustomDidResolver(didMethod);
             resolver.removeAllResolvers();
             resolver.addResolver(customResolver);
 

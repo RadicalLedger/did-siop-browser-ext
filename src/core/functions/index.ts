@@ -669,9 +669,8 @@ export default {
             });
         }
 
-        // data.provider = await getProvider(holderDID);
+        data.provider = await getProvider(holderDID);
 
-        console.log('error false');
         await setSingingKey({
             request: {
                 currentDID: holderDID,

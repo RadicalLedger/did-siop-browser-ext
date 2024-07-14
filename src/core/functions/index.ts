@@ -637,7 +637,7 @@ export default {
     },
     [TASKS.RESOLVE_DID]: async ({ request, data }: Request, response) => {
         const mnemonic = request?.mnemonic;
-        const privateKey = request?.privateKey;
+        let privateKey = request?.privateKey;
 
         if (mnemonic) {
             const validation = validateMnemonic(mnemonic);
@@ -650,6 +650,10 @@ export default {
             }
         }
 
+        if (privateKey && privateKey?.startsWith('0x')) {
+            privateKey = privateKey.slice(2);
+        }
+
         let holderRes, didMethod, holderDID, holderPrivateKey;
 
         if (mnemonic) {
@@ -658,6 +662,12 @@ export default {
             holderDID = holderKeyDID;
             holderPrivateKey = holderKeyPrivateKey;
         } else {
+            const holderVerificationKey = await new KeyMethod().createVerificationMethod(
+                privateKey
+            );
+
+            holderDID = holderVerificationKey.controller;
+            holderPrivateKey = privateKey;
         }
 
         try {
@@ -672,7 +682,7 @@ export default {
         try {
             const alphaMoonResolver = new CustomDidResolver('moon', CHAIN_NAME.ALPHA);
             const mainnetMoonResolver = new CustomDidResolver('moon', CHAIN_NAME.MAINNET);
-            if (!holderRes?.data) {
+            if (!holderRes?.ok) {
                 if (mnemonic) {
                     let { holderDID: holderMoonDID, holderPrivateKey: holderMoonPrivateKey } =
                         await deriveIssuerHolderDIDFromMnemonic(
